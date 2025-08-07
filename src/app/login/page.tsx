@@ -2,18 +2,35 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import home from '@/app/assets/images/home.png'
+import logo from '@/app/assets/logo/Logo.jpg'
 
 export default function LoginPage() {
   return (
     <>
       {/* Left side - Login Form */}
-      <div className="flex items-center justify-center p-8 bg-sky-900/5">
+      <div className="relative flex items-center justify-center p-8 bg-sky-900/5 min-h-screen">
+        {/* Logo and text positioned at top-left */}
+        <div className="absolute top-8 left-8 flex items-center gap-4">
+          <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0">
+            <div className="w-full h-full relative rounded-full overflow-hidden border-2 border-white/20 shadow-lg">
+              <Image
+                src={logo}
+                alt="LASU Logo"
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
+          <span className='text-2xl text-white font-bold whitespace-nowrap'>LASU Fleet <br /> Manager </span>
+        </div>
+        {/* left content */}
         <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <h2 className="mt-6 text-4xl md:text-6xl text-white">
+          <div className="text-left w-full">
+            <h2 className="text-4xl md:text-6xl text-white font-bold mb-2">
               Welcome back
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="text-sm text-gray-300">
               Sign in to your LASU Fleet account
             </p>
           </div>
@@ -97,8 +114,8 @@ export default function LoginPage() {
             />
           </div>
         </div> */}
-        <div className="relative z-10 w-full max-w-4xl h-full flex items-center justify-center">
-          <div className="w-full h-full max-w-[600px] max-h-[400px] relative">
+        <div className="relative z-10 w-full h-full flex items-center justify-center">
+          <div className="w-full h-full max-w-[800px] max-h-[600px] relative">
             <Image
               src={home}
               alt="LASU Fleet Dashboard"
@@ -106,6 +123,7 @@ export default function LoginPage() {
               className="object-contain"
               priority
               quality={100}
+              sizes="(max-width: 1200px) 100vw, 800px"
             />
           </div>
         </div>
