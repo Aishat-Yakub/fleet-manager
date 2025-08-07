@@ -1,19 +1,38 @@
-import React from 'react'
-import Navbar from './Navbar'
+import React from 'react';
+import Navbar from './Navbar';
+import Image from 'next/image';
+import homeImage from '../app/assets/images/home.png';
 
 export default function Homepage() {
   return (
-    <div className='min-h-screen'>
+    <div className='min-h-screen bg-sky-950/5'>
       <Navbar/>
-
-      {/* content */}
-      <div className='container mx-auto px-8 py-12'>
-        <div className='max-w-2xl'>
-          <h1 className='text-5xl md:text-5xl lg:text-7xl font-bold mb-4'>One platform <br />
-          Total fleet control.</h1>
-          <p className='text-white/50 text-lg'>A fleet management system for LASU</p>
+        {/* content */}
+        <div className='container mx-auto px-8 py-12'>
+          <div className='flex flex-col md:flex-row items-center justify-between gap-12'>
+            <div className='max-w-2xl'>
+              <h1 className='text-5xl md:text-6xl lg:text-8xl font-bold mb-4 text-white'>One platform 
+                <span className='text-sky-600 text-4xl lg:text-8xl block'>
+                    Total fleet control. 
+                </span>
+              </h1>     
+              <p className='text-white/20 text-lg'>
+              Keep your fleet running smoothly with LASU Fleet Manager — manage maintenance, repairs, and operations for vehicles, drivers, fuel, and equipment all in one place, while turning your data into insights that keep things moving
+              </p>
+            </div>
+            <div className='w-full md:w-1/2 lg:w-[45%] xl:w-1/2 bg-white p-4 rounded-3xl'>
+              <div className='relative w-full h-[400px] md:h-[500px] lg:h-[600px]'>
+                <Image 
+                  src={homeImage} 
+                  alt='Fleet management dashboard' 
+                  className='rounded-lg object-contain'
+                  fill
+                  priority
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
     </div>
   )
 }
