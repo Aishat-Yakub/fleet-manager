@@ -101,19 +101,19 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-screen-xl xl:max-w-screen-2xl mx-auto px-4">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
         <p className="text-gray-600">Welcome back! Here's what's happening with your fleet.</p>
       </div>
-
+  
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => (
           <StatCard key={index} {...stat} />
         ))}
       </div>
-
+  
       {/* Quick Actions */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-
+  
       {/* Recent Activity */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h2>
@@ -133,4 +133,5 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+  
 }

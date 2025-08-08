@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Sidebar from '@/components/admin/Sidebar';
+import NotificationSidebar from '@/components/admin/NotificationSidebar';
 
 export default function AdminLayout({
   children,
@@ -19,6 +20,11 @@ export default function AdminLayout({
           <main className="p-6 max-w-7xl mx-auto">
             {children}
           </main>
+        </div>
+
+        {/* Notification Sidebar */}
+        <div className="hidden md:flex">
+          <NotificationSidebar />
         </div>
       </div>
     </div>

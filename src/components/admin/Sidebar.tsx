@@ -29,7 +29,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { 
     name: 'Dashboard', 
-    href: '/admin/dashboard', 
+    href: '/dashboard', 
     icon: <LayoutDashboard className="w-5 h-5" />,
     group: 'Overview'
   },
@@ -37,34 +37,28 @@ const navItems: NavItem[] = [
   // User Management
   { 
     name: 'All Users', 
-    href: '/admin/users', 
+    href: '/users', 
     icon: <Users className="w-5 h-5" />,
     group: 'User Management'
   },
   { 
     name: 'Add User', 
-    href: '/admin/users/create', 
+    href: '/users/create', 
     icon: <UserPlus className="w-5 h-5" />,
     group: 'User Management'
   },
-  { 
-    name: 'Manage Admins', 
-    href: '/admin/users/admins', 
-    icon: <ShieldCheck className="w-5 h-5" />,
-    group: 'User Management'
-  },
+  // { 
+  //   name: 'Manage Admins', 
+  //   href: '/admin', 
+  //   icon: <ShieldCheck className="w-5 h-5" />,
+  //   group: 'User Management'
+  // },
   
   // Vehicle Management
   { 
-    name: 'All Vehicles', 
-    href: '/admin/vehicles', 
+    name: 'Vehicles', 
+    href: '/vehicles', 
     icon: <Car className="w-5 h-5" />,
-    group: 'Vehicle Management'
-  },
-  { 
-    name: 'Add Vehicle', 
-    href: '/admin/vehicles/create', 
-    icon: <CarTaxiFront className="w-5 h-5" />,
     group: 'Vehicle Management'
   },
   { 
@@ -77,12 +71,12 @@ const navItems: NavItem[] = [
   // Audit & Logs
   { 
     name: 'Audit Logs', 
-    href: '/admin/audit-logs', 
+    href: '/auditors', 
     icon: <FileText className="w-5 h-5" />,
     group: 'Audit & Monitoring'
   },
   
-  // System
+  // Manager
   { 
     name: 'Settings', 
     href: '/admin/settings', 
