@@ -4,7 +4,7 @@ interface navLinks{
 }
 
 export const navItems: navLinks[] =[
-    {title: 'home', href: '/'},
-    {title: 'about', href: '/about'},
-    {title: 'contact', href: '/contact'},
+    {title: 'Home', href: '/'},
+    {title: 'Problem', href: '/'},
+    {title: 'Solution', href: '/'},
 ]
