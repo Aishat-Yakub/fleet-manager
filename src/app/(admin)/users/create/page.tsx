@@ -63,7 +63,7 @@ export default function CreateUserForm() {
   };
 
   return (
-    <div className="bg-[#111] text-white p-6 rounded-lg shadow-lg">
+    <div className="text-sky-950 border border-sky-950 p-6 rounded-lg">
       <h2 className="text-xl font-semibold mb-6">Create New User</h2>
 
       {successMsg && (
@@ -80,7 +80,7 @@ export default function CreateUserForm() {
           value={formData.name}
           onChange={(e) => handleChange("name", e.target.value)}
           required
-          className="bg-gray-800 border border-gray-700 p-2 rounded text-white placeholder-gray-400"
+          className="bg-sky-100/50 border border-sky-700/40 p-2 rounded text-sky-950 placeholder-sky-950"
         />
         <input
           type="email"
@@ -88,14 +88,14 @@ export default function CreateUserForm() {
           value={formData.email}
           onChange={(e) => handleChange("email", e.target.value)}
           required
-          className="bg-gray-800 border border-gray-700 p-2 rounded text-white placeholder-gray-400"
+          className="bg-sky-100/50 border border-sky-700/40 p-2 rounded text-sky-950 placeholder-sky-950"
         />
         <select
           value={formData.role}
           onChange={(e) => handleChange("role", e.target.value)}
-          required
-          className="bg-gray-800 border border-gray-700 p-2 rounded text-white"
-        >
+            required
+            className="bg-sky-100/50 border border-sky-700/40 p-2 rounded text-sky-950 placeholder-sky-950"
+          >
           <option value="">Select Role</option>
           <option value="driver">Driver</option>
           <option value="manager">Manager</option>
@@ -107,7 +107,7 @@ export default function CreateUserForm() {
           placeholder="Phone Number"
           value={formData.phone}
           onChange={(e) => handleChange("phone", e.target.value)}
-          className="bg-gray-800 border border-gray-700 p-2 rounded text-white placeholder-gray-400"
+          className="bg-sky-100/50 border border-sky-700/40 p-2 rounded text-sky-950 placeholder-sky-950"
         />
         <input
           type="password"
@@ -115,14 +115,14 @@ export default function CreateUserForm() {
           value={formData.password}
           onChange={(e) => handleChange("password", e.target.value)}
           required
-          className="bg-gray-800 border border-gray-700 p-2 rounded text-white placeholder-gray-400"
+          className="bg-sky-100/50 border border-sky-700/40 p-2 rounded text-sky-950 placeholder-sky-950"
         />
 
         <div className="md:col-span-2 flex justify-end">
           <button
             type="submit"
             disabled={loading}
-            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition disabled:opacity-50"
+            className="bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded-lg text-white transition disabled:opacity-50"
           >
             {loading ? "Creating..." : "Create User"}
           </button>

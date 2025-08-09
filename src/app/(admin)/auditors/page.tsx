@@ -50,7 +50,7 @@ export default function AuditorLogsTable() {
   };
 
   return (
-    <div className="bg-[#111] text-white p-6 rounded-lg shadow-lg">
+    <div className="text-sky-950 p-6 rounded-lg border border-sky-950">
       <h2 className="text-xl font-semibold mb-4">Auditor Logs</h2>
 
       {/* Filters */}
@@ -58,7 +58,7 @@ export default function AuditorLogsTable() {
         <select
           value={filters.type}
           onChange={(e) => handleFilterChange("type", e.target.value)}
-          className="bg-gray-900 border border-gray-700 rounded px-3 py-2"
+          className="bg-sky-700/10 border border-sky-950/20  text-sky-950 placeholder-sky-950 rounded px-3 py-2"
         >
           <option value="">All Types</option>
           <option value="fuel">Fuel</option>
@@ -70,19 +70,19 @@ export default function AuditorLogsTable() {
           type="date"
           value={filters.from}
           onChange={(e) => handleFilterChange("from", e.target.value)}
-          className="bg-gray-900 border border-gray-700 rounded px-3 py-2"
+          className="bg-sky-700/10 border border-sky-950/20  text-sky-950 placeholder-sky-950 rounded px-3 py-2"
         />
 
         <input
           type="date"
           value={filters.to}
           onChange={(e) => handleFilterChange("to", e.target.value)}
-          className="bg-gray-900 border border-gray-700 rounded px-3 py-2"
+          className="bg-sky-700/10 border border-sky-950/20  text-sky-950 placeholder-sky-950 rounded px-3 py-2"
         />
 
         <button
           onClick={fetchLogs}
-          className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded"
+          className="bg-sky-600 hover:bg-sky-700 px-4 py-2 rounded"
         >
           Apply
         </button>
@@ -90,7 +90,7 @@ export default function AuditorLogsTable() {
 
       {/* Error */}
       {errorMsg && (
-        <div className="bg-red-600 text-white p-3 mb-4 rounded">{errorMsg}</div>
+        <div className="text-red-600 p-3 mb-4 rounded">{errorMsg}</div>
       )}
 
       {/* Table */}
@@ -98,8 +98,8 @@ export default function AuditorLogsTable() {
         <p>Loading logs...</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-700 rounded-lg overflow-hidden">
-            <thead className="bg-gray-800 text-gray-300">
+          <table className="min-w-full border border-sky-950 rounded-lg overflow-hidden">
+            <thead className="bg-sky-200/20 border border-sky-950 text-sky-950">
               <tr>
                 <th className="py-2 px-4 border-b border-gray-700 text-left">Log ID</th>
                 <th className="py-2 px-4 border-b border-gray-700 text-left">Type</th>

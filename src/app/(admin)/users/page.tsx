@@ -67,13 +67,13 @@ export default function UsersTable() {
   };
 
   return (
-    <div className="p-6 bg-[#1e1e2f] text-white rounded-lg h-full shadow-lg max-w-full md:max-w-6xl mx-auto">
+    <div className="p-6  text-sky-950 border border-sky-950 rounded-lg h-full  max-w-full  mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h2 className="text-2xl font-semibold">Guest List</h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition"
+          className="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg transition"
         >
           <Plus size={16} /> Add Guest
         </button>
@@ -82,7 +82,7 @@ export default function UsersTable() {
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm border border-gray-700 rounded-lg overflow-hidden">
-          <thead className="bg-[#27293d] text-gray-300">
+          <thead className="bg-sky-100 text-sky-950">
             <tr>
               <th className="p-3 text-left">Guest Name</th>
               <th className="p-3 text-left">Category</th>
@@ -97,7 +97,7 @@ export default function UsersTable() {
             {users.map((user) => (
               <tr
                 key={user.id}
-                className="border-b border-gray-700 hover:bg-[#33334d] transition"
+                className="border-b border-gray-700 transition"
               >
                 <td className="p-3">{user.name}</td>
                 <td className="p-3">{user.category}</td>
@@ -119,7 +119,7 @@ export default function UsersTable() {
               <tr>
                 <td
                   colSpan={7}
-                  className="p-4 text-center text-gray-500 italic"
+                  className="p-4 text-center text-sky-950 italic"
                 >
                   No guests added yet.
                 </td>
@@ -131,11 +131,11 @@ export default function UsersTable() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center z-50 px-4">
-          <div className="bg-[#27293d] p-6 rounded-lg w-full max-w-lg relative">
+        <div className="fixed inset-0 bg-sky-50/70 border border-sky-950 flex justify-center items-center z-50 px-4">
+          <div className="bg-sky-50 p-6 rounded-lg w-full max-w-lg relative">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white"
+              className="absolute top-3 right-3 text-sky-950"
             >
               <X size={18} />
             </button>
@@ -155,23 +155,23 @@ export default function UsersTable() {
                       [field]: e.target.value,
                     }))
                   }
-                  className="bg-[#1e1e2f] border border-gray-600 p-2 rounded text-white placeholder-gray-400"
+                  className="bg-sky-50 border border-sky-950 p-2 rounded text-sky-950 placeholder-gray-400"
                 />
               ))}
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 rounded bg-gray-700 hover:bg-gray-600"
+                className="px-4 py-2 rounded bg-sky-100 border border-sky-950 hover:bg-sky-200"
               >
                 Cancel
               </button>
-              <button
+              <button 
                 onClick={handleAddUser}
-                className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700"
+                className="px-4 py-2 rounded bg-sky-500 border border-sky-950 hover:bg-sky-600600"
               >
                 Save
-              </button>
+              </button> 
             </div>
           </div>
         </div>

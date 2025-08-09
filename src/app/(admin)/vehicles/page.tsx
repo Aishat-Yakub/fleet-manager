@@ -78,23 +78,24 @@ export default function VehicleForm() {
   };
 
   return (
-    <div className="max-w-lg p-6 bg-white shadow-lg rounded-xl">
-      <h2 className="text-xl font-semibold mb-4">Create New Vehicle</h2>
+    <div className="p-6 border border-sky-950 rounded-xl">
+      <h2 className="text-xl font-semibold text-sky-950 mb-4">Create New Vehicle</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
+
           type="text"
           name="plateNumber"
           placeholder="Plate Number"
           value={formData.plateNumber}
           onChange={handleChange}
-          className="w-full border rounded-md px-3 py-2"
+          className="w-full border bg-sky-700/10 border-sky-950/20  text-sky-950 placeholder-sky-950 rounded-md px-3 py-2"
         />
         <input
           type="date"
           name="registrationDate"
           value={formData.registrationDate}
           onChange={handleChange}
-          className="w-full border rounded-md px-3 py-2"
+          className="w-full border bg-sky-700/10 border-sky-950/20  text-sky-950 placeholder-sky-950 rounded-md px-3 py-2"
         />
         <input
           type="text"
@@ -102,7 +103,7 @@ export default function VehicleForm() {
           placeholder="Vehicle Model"
           value={formData.model}
           onChange={handleChange}
-          className="w-full border rounded-md px-3 py-2"
+          className="w-full border bg-sky-700/10 border-sky-950/20  text-sky-950 placeholder-sky-950 rounded-md px-3 py-2"
         />
         <input
           type="text"
@@ -110,7 +111,7 @@ export default function VehicleForm() {
           placeholder="Color"
           value={formData.color}
           onChange={handleChange}
-          className="w-full border rounded-md px-3 py-2"
+          className="w-full border bg-sky-700/10 border-sky-950/20  text-sky-950 placeholder-sky-950 rounded-md px-3 py-2"
         />
         <input
           type="text"
@@ -118,7 +119,7 @@ export default function VehicleForm() {
           placeholder="Condition (e.g. Good, Needs Repair)"
           value={formData.condition}
           onChange={handleChange}
-          className="w-full border rounded-md px-3 py-2"
+          className="w-full border bg-sky-700/10 border-sky-950/20  text-sky-950 placeholder-sky-950 rounded-md px-3 py-2"
         />
         <input
           type="number"
@@ -126,12 +127,12 @@ export default function VehicleForm() {
           placeholder="Owner ID"
           value={formData.ownerId || ""}
           onChange={handleChange}
-          className="w-full border rounded-md px-3 py-2"
+          className="w-full border bg-sky-700/10 border-sky-950/20  text-sky-950 placeholder-sky-950 rounded-md px-3 py-2"
         />
         <button
           type="submit"
           disabled={loading}
-          className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50"
+          className="bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-700 disabled:opacity-50"
         >
           {loading ? "Creating..." : "Create Vehicle"}
         </button>
