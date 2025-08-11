@@ -75,12 +75,12 @@ export const MaintenanceRequests = ({ ownerId }: MaintenanceRequestsProps) => {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full border-0 shadow-none">
+      <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle>Maintenance Requests</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-sky-950">Maintenance Requests</CardTitle>
+            <CardDescription className="text-sky-900">
               Submit and track maintenance requests for your vehicles
             </CardDescription>
           </div>
@@ -103,7 +103,7 @@ export const MaintenanceRequests = ({ ownerId }: MaintenanceRequestsProps) => {
       </CardHeader>
       <CardContent>
         {showForm && (
-          <form onSubmit={handleSubmit} className="space-y-4 mb-6 p-4 border rounded-lg bg-slate-50">
+          <form onSubmit={handleSubmit} className="space-y-4 mb-6 p-4 border rounded-lg bg-slate-50 border-gray-200">
             <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="vehicleId">Vehicle ID</Label>
@@ -160,13 +160,13 @@ export const MaintenanceRequests = ({ ownerId }: MaintenanceRequestsProps) => {
         )}
 
         {error && (
-          <div className="mb-4 p-3 text-sm text-red-700 bg-red-100 rounded-md">
+          <div className="mb-4 p-3 text-sm text-sky-950 bg-red-100 rounded-md">
             {error}
           </div>
         )}
 
         <div className="border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-sky-950 mb-4">
             Recent Maintenance Requests
           </h3>
 
@@ -179,23 +179,23 @@ export const MaintenanceRequests = ({ ownerId }: MaintenanceRequestsProps) => {
               No maintenance requests found.
             </div>
           ) : (
-            <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-300">
+            <div className="overflow-hidden border border-gray-200 rounded-lg">
+              <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                       Vehicle
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                       Issue
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                       Priority
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                       Status
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                       Date
                     </th>
                   </tr>

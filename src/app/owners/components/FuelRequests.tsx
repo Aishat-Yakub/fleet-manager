@@ -83,6 +83,7 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
                   onChange={handleChange}
                   placeholder="Vehicle ID"
                   required
+                  className='text-black placeholder:text-gray-500'
                 />
               </div>
               <div className="space-y-2">
@@ -95,6 +96,7 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
                   onChange={handleChange}
                   placeholder="e.g. 20"
                   required
+                  className='text-black placeholder:text-gray-500'
                 />
               </div>
             </div>
@@ -107,7 +109,8 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
                 onChange={handleChange}
                 placeholder="Any additional information..."
                 rows={3}
-              />
+                className='text-black placeholder:text-gray-500'
+                />
             </div>
             <div className="flex justify-end gap-2">
               <Button
@@ -131,7 +134,7 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
         )}
 
         <div className="space-y-4">
-          <h3 className="text-lg font-medium">Recent Fuel Requests</h3>
+          <h3 className="text-lg font-medium text-black">Recent Fuel Requests</h3>
           
           {isLoading && !fuelRequests.length ? (
             <div className="flex justify-center items-center py-8">
@@ -146,16 +149,16 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-950 uppercase tracking-wider">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-950 uppercase tracking-wider">
                       Vehicle
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-950 uppercase tracking-wider">
                       Amount
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-950 uppercase tracking-wider">
                       Status
                     </th>
                   </tr>

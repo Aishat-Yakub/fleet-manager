@@ -366,8 +366,8 @@ export default function OwnerDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-50">
-      <div className="container mx-auto p-4 sm:p-6 max-w-7xl border border-black">
+    <div className="min-h-screen bg-sky-50 flex flex-col items-center pt-20">
+      <div className="w-full max-w-7xl p-6 sm:p-8 md:border md:border-black rounded-lg mt-4">
         <div className="flex items-center mb-8">
           <Button
             variant="ghost"
@@ -386,31 +386,32 @@ export default function OwnerDashboard() {
           onValueChange={handleTabChange} 
           className="w-full"
         >
+          {/* tab-section */}
           <TabsList 
-            className="bg-white border border-sky-950 font-bold rounded-lg grid w-full grid-cols-2 sm:grid-cols-4 gap-0 mb-8 p-1"
+            className="border border-sky-950 font-bold rounded-lg grid w-full grid-cols-2 sm:grid-cols-4 gap-0 mb-8 p-1 hover:text-sky-950"
             aria-label="Vehicle management sections"
           >
             <TabsTrigger 
               value="condition" 
-              className="data-[state=active]:bg-sky-100/40 data-[state=active]:text-sky-950 hover:text-sky-950 transition-colors text-sky-950"
+              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
             >
               Condition Updates
             </TabsTrigger>
             <TabsTrigger 
               value="fuel" 
-              className="data-[state=active]:bg-sky-100 data-[state=active]:text-sky-950 hover:bg-sky-100 hover:text-sky-950 transition-colors text-sky-950"
+              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
             >
               Fuel Requests
             </TabsTrigger>
             <TabsTrigger 
               value="maintenance" 
-              className="data-[state=active]:bg-sky-100 data-[state=active]:text-sky-950 hover:bg-sky-100 hover:text-sky-950 transition-colors text-sky-950"
+              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
             >
               Maintenance
             </TabsTrigger>
             <TabsTrigger 
               value="inspections" 
-              className="data-[state=active]:bg-sky-100 data-[state=active]:text-sky-950 hover:bg-sky-100 hover:text-sky-950 transition-colors text-sky-950"
+              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
             >
               Inspections
             </TabsTrigger>
@@ -517,7 +518,7 @@ export default function OwnerDashboard() {
         <TabsContent value="fuel" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Fuel Requests</CardTitle>
+              <CardTitle className="text-sky-950">Fuel Requests</CardTitle>
             </CardHeader>
             <CardContent>
               {/* New Fuel Request Form */}
@@ -535,7 +536,7 @@ export default function OwnerDashboard() {
                         onChange={(e) =>
                           setNewFuelRequest({ ...newFuelRequest, vehicleId: e.target.value })
                         }
-                        className="bg-white border-sky-200 focus-visible:ring-sky-500"
+                        className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
                         required
                         placeholder="Enter vehicle ID"
                       />
@@ -555,7 +556,7 @@ export default function OwnerDashboard() {
                         onChange={(e) =>
                           setNewFuelRequest({ ...newFuelRequest, amount: e.target.value })
                         }
-                        className="bg-white border-sky-200 focus-visible:ring-sky-500"
+                        className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
                         required
                         placeholder="e.g., 20.5"
                       />
@@ -572,7 +573,7 @@ export default function OwnerDashboard() {
                         onChange={(e) =>
                           setNewFuelRequest({ ...newFuelRequest, notes: e.target.value })
                         }
-                        className="min-h-[80px] bg-white border-sky-200 focus-visible:ring-sky-500"
+                        className="min-h-[80px] bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
                         placeholder="Any additional information about this request"
                       />
                     </div>
@@ -599,7 +600,7 @@ export default function OwnerDashboard() {
               ) : (
                 <div className="flex justify-end mb-6">
                   <Button 
-                    className="bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                    className="bg-blue-600 text-blacks hover:bg-blue-700 transition-colors"
                     onClick={() => setShowFuelRequestForm(true)}
                   >
                     <Plus className="mr-2 h-4 w-4" />
@@ -609,22 +610,22 @@ export default function OwnerDashboard() {
               )}
               
               {/* Fuel Requests List */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Recent Fuel Requests</h3>
+              <div className="space-y-4 border border-">
+                <h3 className="text-lg font-medium text-sky-950">Recent Fuel Requests</h3>
                 
                 {isLoadingFuelRequests ? (
                   <div className="flex justify-center items-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sky-950"></div>
                     <span className="ml-2">Loading fuel requests...</span>
                   </div>
                 ) : fuelRequests.length > 0 ? (
                   fuelRequests.map((request) => (
-                    <div key={request.id} className="border rounded-lg p-4 bg-white">
+                    <div key={request.id} className="border border-sky-950 rounded-lg p-4 bg-white">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
                           <p className="font-medium">
                             {request.vehicle || `Vehicle ID: ${request.vehicleId}`}
-                          </p>
+                          </p>slate
                           <p className="text-sm text-gray-500">
                             {request.amount}L • {new Date(request.date).toLocaleDateString('en-US', {
                               year: 'numeric',
@@ -669,11 +670,11 @@ export default function OwnerDashboard() {
         </TabsContent>
 
         {/* Maintenance Tab Content */}
-        <TabsContent value="maintenance" className="space-y-6">
+        <TabsContent value="maintenance" className="space-y-6 text-sky-950">
           <Card>
             <CardHeader>
-              <CardTitle>Maintenance Requests</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-sky-950">Maintenance Requests</CardTitle>
+              <CardDescription className="text-sky-950">
                 Submit and track maintenance requests for your vehicles
               </CardDescription>
             </CardHeader>
@@ -694,7 +695,7 @@ export default function OwnerDashboard() {
                       onChange={(e) =>
                         setNewMaintenanceRequest({ ...newMaintenanceRequest, vehicleId: e.target.value })
                       }
-                      className="bg-white border-sky-200 focus-visible:ring-sky-500"
+                      className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
                       required
                       placeholder="Enter vehicle ID"
                     />
@@ -714,7 +715,7 @@ export default function OwnerDashboard() {
                           priority: e.target.value as 'low' | 'medium' | 'high' 
                         })
                       }
-                      className="flex h-10 w-full rounded-md bg-white border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex h-10 w-full rounded-md bg-transparent text-sky-950 border border-sky-200 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-sky-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       required
                     >
                       <option value="low">Low</option>
@@ -734,7 +735,7 @@ export default function OwnerDashboard() {
                       onChange={(e) =>
                         setNewMaintenanceRequest({ ...newMaintenanceRequest, issue: e.target.value })
                       }
-                      className="min-h-[100px] bg-white border-sky-200 focus-visible:ring-sky-500"
+                      className="min-h-[100px] bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
                       placeholder="Describe the issue in detail..."
                       required
                     />
@@ -753,39 +754,39 @@ export default function OwnerDashboard() {
 
               {/* Maintenance Requests List */}
               <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                <h3 className="text-lg font-medium text-sky-950 mb-4">
                   Recent Maintenance Requests
                 </h3>
 
                 {maintenanceRequests.length > 0 ? (
                   <div className="overflow-hidden ring-1 ring-black ring-opacity-5 rounded-lg">
-                    <table className="min-w-full divide-y divide-gray-300">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-sky-50">
                         <tr>
-                          <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                          <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-sky-950 sm:pl-6">
                             Vehicle
                           </th>
-                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                             Issue
                           </th>
-                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                             Priority
                           </th>
-                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                             Status
                           </th>
-                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                          <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                             Date
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
                         {maintenanceRequests.map((request) => (
-                          <tr key={request.id} className="hover:bg-gray-50">
-                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                          <tr key={request.id} className="hover:bg-sky-50">
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-sky-950 sm:pl-6">
                               {request.vehicle?.name || `Vehicle #${request.vehicleId}`}
                             </td>
-                            <td className="px-3 py-4 text-sm text-gray-500 max-w-xs truncate">
+                            <td className="px-3 py-4 text-sm text-sky-900 max-w-xs truncate">
                               {request.issue}
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm">
@@ -814,9 +815,9 @@ export default function OwnerDashboard() {
                                 ).join(' ')}
                               </span>
                             </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                              {new Date(request.createdAt).toLocaleDateString()}
-                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-950">
+                                {new Date(request.createdAt).toLocaleDateString()}
+                              </td>
                           </tr>
                         ))}
                       </tbody>
@@ -840,8 +841,8 @@ export default function OwnerDashboard() {
         <TabsContent value="inspections" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Vehicle Inspection Files</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-sky-950">Vehicle Inspection Files</CardTitle>
+              <CardDescription className="text-sky-900">
                 Upload and manage your vehicle inspection documents
               </CardDescription>
             </CardHeader>
@@ -852,7 +853,7 @@ export default function OwnerDashboard() {
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <UploadCloud className="h-12 w-12 text-gray-400" />
                     <div className="flex flex-col items-center">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-sky-950">
                         <label 
                           htmlFor="inspection-file-upload" 
                           className="relative cursor-pointer font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
@@ -869,21 +870,21 @@ export default function OwnerDashboard() {
                         </label>
                         <span className="pl-1">or drag and drop</span>
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-sky-900">
                         PDF, DOC, XLS, JPG, PNG up to 10MB
                       </p>
                     </div>
                   </div>
 
                   {selectedFile && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-md">
+                    <div className="mt-4 p-3 bg-sky-50 rounded-md">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
-                          <FileIcon className="h-5 w-5 text-blue-500" />
-                          <span className="text-sm font-medium text-gray-900 truncate max-w-xs">
+                          <FileIcon className="h-5 w-5 text-sky-950" />
+                          <span className="text-sm font-medium text-sky-950 truncate max-w-xs">
                             {selectedFile.name}
                           </span>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-sky-900">
                             {formatFileSize(selectedFile.size)}
                           </span>
                         </div>

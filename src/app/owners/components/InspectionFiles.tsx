@@ -128,7 +128,7 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
                   />
                 </div>
                 {selectedFile && (
-                  <div className="mt-2 text-sm text-gray-600">
+                  <div className="mt-2 text-sm text-sky-700">
                     Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
                   </div>
                 )}
@@ -149,12 +149,14 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
                   variant="outline"
                   onClick={() => setShowUploadForm(false)}
                   disabled={isUploading}
+                  className="text-sky-950 hover:text-sky-900"
                 >
                   Cancel
                 </Button>
                 <Button 
                   type="submit" 
                   disabled={!selectedFile || !vehicleId || isUploading}
+                  className="text-sky-950 hover:text-sky-900"
                 >
                   {isUploading ? 'Uploading...' : 'Upload File'}
                 </Button>
@@ -170,7 +172,7 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
         )}
 
         <div className="border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
+          <h3 className="text-lg font-medium text-sky-950 mb-4">
             Inspection Files
           </h3>
 
@@ -179,24 +181,24 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
           ) : inspectionFiles.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-sky-950">
               No inspection files found.
             </div>
           ) : (
             <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <table className="min-w-full divide-y divide-gray-300">
-                <thead className="bg-gray-50">
+                <thead className="bg-sky-50">
                   <tr>
-                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">
+                    <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-sky-950 sm:pl-6">
                       File
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                       Vehicle
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                       Uploaded
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                    <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
                       Size
                     </th>
                     <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -206,37 +208,36 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {inspectionFiles.map((file) => (
-                    <tr key={file.id}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                    <tr key={file.id} className="hover:bg-sky-50">
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-sky-950 sm:pl-6">
                         <div className="flex items-center">
-                          <FileIcon className="h-5 w-5 text-gray-400 mr-2" />
-                          <a 
-                            href={file.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 hover:underline"
-                          >
-                            {file.name}
-                          </a>
+                          <FileIcon className="h-5 w-5 flex-shrink-0 text-sky-700 mr-2" />
+                          <span>{file.name}</span>
                         </div>
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {file.vehicleId}
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-900">
+                        {file.vehicleId ? `Vehicle #${file.vehicleId}` : 'N/A'}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-900">
                         {new Date(file.uploadedAt).toLocaleDateString()}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-900">
                         {formatFileSize(file.size)}
                       </td>
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                        <a 
+                          href={file.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sky-700 hover:text-sky-900 mr-4 font-medium hover:underline"
+                        >
+                          View
+                        </a>
                         <button
                           onClick={() => handleDeleteClick(file)}
-                          className="text-red-600 hover:text-red-900"
-                          disabled={isLoading}
+                          className="text-red-600 hover:text-red-800 font-medium hover:underline"
                         >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
+                          Delete
                         </button>
                       </td>
                     </tr>
