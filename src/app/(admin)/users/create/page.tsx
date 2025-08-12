@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { fetchApi } from '@/lib/api';
 
 interface CreateUserPayload {
   name: string;
@@ -34,29 +35,20 @@ export default function CreateUserForm() {
     setErrorMsg("");
 
     try {
-      const res = await fetch("/api/admin/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      await fetchApi('/admin/users', {
+        method: 'POST',
         body: JSON.stringify(formData),
       });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Failed to create user");
-      }
-
-      setSuccessMsg("User created successfully");
+      setSuccessMsg('User created successfully');
       setFormData({
-        name: "",
-        email: "",
-        role: "",
-        phone: "",
-        password: "",
+        name: '',
+        email: '',
+        role: '',
+        phone: '',
+        password: '',
       });
     } catch (err: any) {
-      setErrorMsg(err.message || "Something went wrong");
+      setErrorMsg(err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }

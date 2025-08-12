@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { FuelRequest } from '../types';
+import { fetchApi } from '@/lib/api';
 
 export const useFuelRequests = (ownerId: string) => {
   const [fuelRequests, setFuelRequests] = useState<FuelRequest[]>([]);
@@ -10,13 +11,8 @@ export const useFuelRequests = (ownerId: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/owners/${ownerId}/fuel-requests`);
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch fuel requests');
-      }
-      
-      const data = await response.json();
+      const data = await fetchApi<FuelRequest[]>(`/fuel-requests?ownerId=${ownerId}`);
       setFuelRequests(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -31,19 +27,17 @@ export const useFuelRequests = (ownerId: string) => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/owners/${ownerId}/fuel-requests`, {
+      const newRequest = await fetchApi<FuelRequest>('/fuel-requests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify({
+          ...requestData,
+          owner_id: ownerId,
+        }),
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to create fuel request');
-      }
-      
-      const newRequest = await response.json();
       setFuelRequests(prev => [...prev, newRequest]);
       return { success: true, data: newRequest };
     } catch (err) {

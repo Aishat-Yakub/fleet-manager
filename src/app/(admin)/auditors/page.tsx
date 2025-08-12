@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fetchApi } from '@/lib/api';
 
 interface AuditLog {
   logId: number;
@@ -33,11 +34,8 @@ export default function AuditorLogsTable() {
       if (filters.from) params.append("from", filters.from);
       if (filters.to) params.append("to", filters.to);
 
-      const res = await fetch(`/api/auditor/logs?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch audit logs");
-
-      const data = await res.json();
-      setLogs(data);
+  const data = await fetchApi(`/auditor/logs?${params.toString()}`);
+  setLogs(data as AuditLog[]);
     } catch (err: any) {
       setErrorMsg(err.message || "Error loading logs");
     } finally {

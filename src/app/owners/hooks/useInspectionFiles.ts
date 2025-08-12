@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { InspectionFile } from '../types';
+import { fetchApi } from '@/lib/api';
 
 export const useInspectionFiles = (ownerId: string) => {
   const [inspectionFiles, setInspectionFiles] = useState<InspectionFile[]>([]);
@@ -12,14 +13,24 @@ export const useInspectionFiles = (ownerId: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/owners/${ownerId}/inspection-files`);
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch inspection files');
-      }
+      const data = await fetchApi<any[]>(`/inspection-files?ownerId=${ownerId}`, {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
       
-      const data = await response.json();
-      setInspectionFiles(data);
+      // Transform the response to match our frontend types if needed
+      const formattedData = data.map((file) => ({
+        id: file.id.toString(),
+        name: file.filename || 'Inspection File',
+        url: file.file_url || `https://lasu-fleet.free.nf/storage/${file.file_path}`,
+        uploadedAt: file.created_at || new Date().toISOString(),
+        vehicleId: file.vehicle_id?.toString() || '',
+        size: file.file_size || 0
+      }));
+      
+      setInspectionFiles(formattedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error fetching inspection files:', err);
@@ -30,8 +41,9 @@ export const useInspectionFiles = (ownerId: string) => {
 
   const uploadInspectionFile = useCallback(async (file: File, vehicleId: string) => {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('vehicleId', vehicleId);
+    formData.append('inspection_file', file);
+    formData.append('vehicle_id', vehicleId);
+    formData.append('owner_id', ownerId);
 
     try {
       setIsUploading(true);
@@ -48,24 +60,36 @@ export const useInspectionFiles = (ownerId: string) => {
           }
         };
 
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            const response = JSON.parse(xhr.response);
-            setInspectionFiles(prev => [...prev, response]);
-            resolve({ success: true });
-          } else {
-            reject(new Error('Upload failed'));
+        xhr.onload = async () => {
+          try {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              const response = JSON.parse(xhr.response);
+              // Refresh the files list after successful upload
+              await fetchInspectionFiles();
+              resolve({ success: true });
+            } else {
+              const errorData = JSON.parse(xhr.responseText);
+              throw new Error(errorData.message || 'Upload failed');
+            }
+          } catch (err) {
+            setError(err instanceof Error ? err.message : 'Upload failed');
+            reject(err);
+          } finally {
+            setIsUploading(false);
           }
-          setIsUploading(false);
         };
 
         xhr.onerror = () => {
           setError('Upload failed. Please check your connection.');
           setIsUploading(false);
-          reject(new Error('Upload failed'));
+          reject(new Error('Network error'));
         };
 
-        xhr.open('POST', `/api/owners/${ownerId}/inspection-files`, true);
+        xhr.open('POST', `${API_BASE_URL}/inspection-files/upload`, true);
+        
+        // Add authentication header if needed
+        // xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        
         xhr.send(formData);
       });
     } catch (err) {
@@ -78,15 +102,16 @@ export const useInspectionFiles = (ownerId: string) => {
   const deleteInspectionFile = useCallback(async (fileId: string) => {
     try {
       setError(null);
-      const response = await fetch(`/api/owners/${ownerId}/inspection-files/${fileId}`, {
+      
+      await fetchApi(`/inspection-files/${fileId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to delete file');
-      }
-      
-      setInspectionFiles(prev => prev.filter(file => file.id !== fileId));
+      // Refresh the files list after successful deletion
+      await fetchInspectionFiles();
       return { success: true };
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to delete file';
@@ -95,6 +120,11 @@ export const useInspectionFiles = (ownerId: string) => {
       return { success: false, error };
     }
   }, [ownerId]);
+
+  // Fetch files when the component mounts
+  useEffect(() => {
+    fetchInspectionFiles();
+  }, [fetchInspectionFiles]);
 
   return {
     inspectionFiles,

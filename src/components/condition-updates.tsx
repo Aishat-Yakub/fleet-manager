@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { Alert,AlertTitle,AlertDescription } from '@/components/ui/alert';
+import { fetchApi } from '@/lib/api';
+
 
 interface ConditionUpdate {
   id: number;
@@ -28,14 +30,8 @@ export function ConditionUpdates({ ownerId }: ConditionUpdatesProps) {
     const fetchConditionUpdates = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/owners/${ownerId}/condition-updates`);
-        
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status} - ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        setUpdates(data);
+        const data = await fetchApi(`/owners/${ownerId}/condition-updates`);
+        setUpdates(data as ConditionUpdate[]);
         setError(null);
       } catch (err) {
         console.error('Failed to fetch condition updates:', err);

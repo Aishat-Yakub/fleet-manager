@@ -20,6 +20,7 @@ import { InspectionFiles } from './components/InspectionFiles';
 
 // Types
 import { Vehicle, FuelRequest, MaintenanceRequest, InspectionFile } from './types';
+import { fetchApi } from '@/lib/api';
 
 // TODO: Replace with dynamic owner ID from authentication or URL parameters
 const OWNER_ID = '1';
@@ -44,16 +45,10 @@ export default function OwnerDashboard() {
   const handleConditionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/condition-updates', {
+      await fetchApi('/owners/' + ownerId + '/condition-updates', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newConditionUpdate),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit condition update');
-      }
-
       setNewConditionUpdate({ vehicleId: '', status: 'Good', notes: '' });
       // TODO: Show success toast
     } catch (error) {
@@ -136,14 +131,8 @@ export default function OwnerDashboard() {
   const fetchFuelRequests = useCallback(async () => {
     try {
       setIsLoadingFuelRequests(true);
-      const response = await fetch(`/api/owners/${ownerId}/fuel-requests`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch fuel requests');
-      }
-      
-      const data = await response.json();
-      setFuelRequests(data);
+  const data = await fetchApi(`/owners/${ownerId}/fuel-requests`);
+  setFuelRequests(data as FuelRequest[]);
     } catch (error) {
       console.error('Error fetching fuel requests:', error);
       // TODO: Show error toast to the user
@@ -159,29 +148,19 @@ export default function OwnerDashboard() {
     e.preventDefault();
     
     try {
-      const response = await fetch(`/api/owners/${ownerId}/fuel-requests`, {
+      await fetchApi(`/owners/${ownerId}/fuel-requests`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           vehicleId: newFuelRequest.vehicleId,
           amount: newFuelRequest.amount,
           notes: newFuelRequest.notes,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit fuel request');
-      }
-
       // Refresh the fuel requests list
       await fetchFuelRequests();
-      
       // Reset form and hide it
       setNewFuelRequest({ vehicleId: '', amount: '', notes: '' });
       setShowFuelRequestForm(false);
-      
       // TODO: Show success toast
     } catch (error) {
       console.error('Error submitting fuel request:', error);
@@ -195,14 +174,8 @@ export default function OwnerDashboard() {
   const fetchInspectionFiles = useCallback(async () => {
     try {
       setIsLoadingInspectionFiles(true);
-      const response = await fetch(`/api/owners/${ownerId}/inspection-files`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch inspection files');
-      }
-      
-      const data = await response.json();
-      setInspectionFiles(data);
+  const data = await fetchApi(`/owners/${ownerId}/inspection-files`);
+  setInspectionFiles(data as InspectionFile[]);
     } catch (error) {
       console.error('Error fetching inspection files:', error);
       // TODO: Show error toast to the user
@@ -237,40 +210,19 @@ export default function OwnerDashboard() {
     try {
       setIsUploading(true);
       setUploadProgress(0);
-      
-      const xhr = new XMLHttpRequest();
-      
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const progress = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(progress);
-        }
-      };
-      
-      await new Promise((resolve, reject) => {
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(xhr.response);
-          } else {
-            reject(new Error('File upload failed'));
-          }
-        };
-        
-        xhr.onerror = () => {
-          reject(new Error('File upload failed'));
-        };
-        
-        xhr.open('POST', `/api/owners/${ownerId}/inspection-files`, true);
-        xhr.send(formData);
+      const formData = new FormData();
+      if (selectedFile) {
+        formData.append('file', selectedFile);
+      }
+      await fetchApi(`/owners/${ownerId}/inspection-files`, {
+        method: 'POST',
+        body: formData,
       });
-      
       // Refresh the files list
       await fetchInspectionFiles();
-      
       // Reset form
       setSelectedFile(null);
       setUploadProgress(0);
-      
       // TODO: Show success toast
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -296,14 +248,8 @@ export default function OwnerDashboard() {
    */
   const fetchMaintenanceRequests = useCallback(async () => {
     try {
-      const response = await fetch(`/api/owners/${ownerId}/maintenance-requests`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch maintenance requests');
-      }
-      
-      const data = await response.json();
-      setMaintenanceRequests(data);
+  const data = await fetchApi(`/owners/${ownerId}/maintenance-requests`);
+  setMaintenanceRequests(data as MaintenanceRequest[]);
     } catch (error) {
       console.error('Error fetching maintenance requests:', error);
       // TODO: Show error toast to the user
@@ -317,31 +263,21 @@ export default function OwnerDashboard() {
     e.preventDefault();
     
     try {
-      const response = await fetch(`/api/owners/${ownerId}/maintenance-requests`, {
+      await fetchApi(`/owners/${ownerId}/maintenance-requests`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           ...newMaintenanceRequest,
           vehicleId: parseInt(newMaintenanceRequest.vehicleId, 10),
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit maintenance request');
-      }
-
       // Refresh the maintenance requests list
       await fetchMaintenanceRequests();
-      
       // Reset form
       setNewMaintenanceRequest({
         vehicleId: '',
         issue: '',
         priority: 'medium',
       });
-      
       // TODO: Show success toast
     } catch (error) {
       console.error('Error submitting maintenance request:', error);

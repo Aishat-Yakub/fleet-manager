@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { MaintenanceRequest } from '../types';
+import { fetchApi } from '@/lib/api';
 
 export const useMaintenanceRequests = (ownerId: string) => {
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
@@ -10,13 +11,8 @@ export const useMaintenanceRequests = (ownerId: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/owners/${ownerId}/maintenance-requests`);
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch maintenance requests');
-      }
-      
-      const data = await response.json();
+      const data = await fetchApi<MaintenanceRequest[]>(`/maintenance-requests?ownerId=${ownerId}`);
       setMaintenanceRequests(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -31,7 +27,7 @@ export const useMaintenanceRequests = (ownerId: string) => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/owners/${ownerId}/maintenance-requests`, {
+      const newRequest = await fetchApi<MaintenanceRequest>('/maintenance-requests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,14 +35,10 @@ export const useMaintenanceRequests = (ownerId: string) => {
         body: JSON.stringify({
           ...requestData,
           status: 'pending', // Default status for new requests
+          owner_id: ownerId,
         }),
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to create maintenance request');
-      }
-      
-      const newRequest = await response.json();
       setMaintenanceRequests(prev => [...prev, newRequest]);
       return { success: true, data: newRequest };
     } catch (err) {
@@ -64,19 +56,17 @@ export const useMaintenanceRequests = (ownerId: string) => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/owners/${ownerId}/maintenance-requests/${requestId}`, {
+      const updatedRequest = await fetchApi<MaintenanceRequest>(`/maintenance-requests/${requestId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ 
+          status,
+          owner_id: ownerId,
+        }),
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to update maintenance request status');
-      }
-      
-      const updatedRequest = await response.json();
       setMaintenanceRequests(prev => 
         prev.map(req => req.id === requestId ? updatedRequest : req)
       );
