@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Toast, ToastProvider, ToastViewport } from "@/components/ui/toast"
+import { ToastProvider, ToastViewport } from "@/components/ui/toast"
 
 export function Toaster() {
   return (

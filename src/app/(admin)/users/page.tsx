@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { userService } from "@/services/userService";
-import type { User, UsersResponse } from "@/types/user";
+import type { User } from "@/types/user";
 
 export default function UsersTable() {
   const [users, setUsers] = useState<User[]>([]);
@@ -28,20 +28,24 @@ export default function UsersTable() {
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    // Destructure name and value from the event target
     const { name, value } = e.target;
     
-    // Handle role and status as union types
+    // Handle form input changes based on the field name
     if (name === 'role') {
+      // Update role with type safety for allowed values
       setNewUser(prev => ({
         ...prev,
         role: value as 'admin' | 'user' | 'driver' | 'maintenance'
       }));
     } else if (name === 'status') {
+      // Update status with type safety for allowed values
       setNewUser(prev => ({
         ...prev,
         status: value as 'active' | 'inactive' | 'suspended'
       }));
     } else {
+      // For all other fields, update directly using the name attribute
       setNewUser(prev => ({
         ...prev,
         [name]: value
@@ -49,24 +53,37 @@ export default function UsersTable() {
     }
   };
 
+  // Fetch users when the component mounts
   useEffect(() => {
     const fetchUsers = async () => {
       try {
+        console.log('Fetching users...');
         setIsLoading(true);
+        // Make API call to get users
         const response = await userService.getUsers();
+        console.log('Users API Response:', response);
+        // Update users state with response data or empty array if no data
         setUsers(response.data || []);
+        console.log('Users state updated with:', response.data || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load users');
-        console.error('Error fetching users:', err);
+        // Handle and display any errors
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load users';
+        console.error('Error fetching users:', errorMessage, err);
+        setError(errorMessage);
       } finally {
+        // Always set loading to false when operation completes
         setIsLoading(false);
       }
     };
 
+    // Execute the fetch users function
     fetchUsers();
+    // Empty dependency array means this effect runs once on mount
   }, []);
 
+  // Handle adding a new user
   const handleAddUser = async () => {
+    // Validate required fields
     if (!newUser.firstName.trim() || !newUser.lastName.trim() || !newUser.email.trim()) {
       setError('First name, last name, and email are required');
       return;

@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { InspectionFile } from '../types';
 import { fetchApi } from '@/lib/api';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://lasu-fleet.free.nf/api';
+
 export const useInspectionFiles = (ownerId: string) => {
   const [inspectionFiles, setInspectionFiles] = useState<InspectionFile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -13,13 +15,24 @@ export const useInspectionFiles = (ownerId: string) => {
     try {
       setIsLoading(true);
       setError(null);
-      
-      const data = await fetchApi<any[]>(`/inspection-files?ownerId=${ownerId}`, {
+
+      // Define a type for the raw API response
+      type ApiInspectionFile = {
+        id: number;
+        filename: string;
+        file_url: string;
+        file_path: string;
+        created_at: string;
+        vehicle_id: number | null;
+        file_size: number;
+      };
+
+      const data = await fetchApi<ApiInspectionFile[]>(`/inspection-files?ownerId=${ownerId}`, {
         headers: {
           'Accept': 'application/json',
         },
       });
-      
+
       // Transform the response to match our frontend types if needed
       const formattedData = data.map((file) => ({
         id: file.id.toString(),
@@ -29,7 +42,7 @@ export const useInspectionFiles = (ownerId: string) => {
         vehicleId: file.vehicle_id?.toString() || '',
         size: file.file_size || 0
       }));
-      
+
       setInspectionFiles(formattedData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -63,7 +76,6 @@ export const useInspectionFiles = (ownerId: string) => {
         xhr.onload = async () => {
           try {
             if (xhr.status >= 200 && xhr.status < 300) {
-              const response = JSON.parse(xhr.response);
               // Refresh the files list after successful upload
               await fetchInspectionFiles();
               resolve({ success: true });
@@ -97,7 +109,7 @@ export const useInspectionFiles = (ownerId: string) => {
       setIsUploading(false);
       throw err;
     }
-  }, [ownerId]);
+  }, [ownerId, fetchInspectionFiles]);
 
   const deleteInspectionFile = useCallback(async (fileId: string) => {
     try {
@@ -119,7 +131,7 @@ export const useInspectionFiles = (ownerId: string) => {
       console.error('Error deleting file:', err);
       return { success: false, error };
     }
-  }, [ownerId]);
+  }, [fetchInspectionFiles]);
 
   // Fetch files when the component mounts
   useEffect(() => {

@@ -53,7 +53,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-left w-full">
             <h2 className="text-4xl md:text-6xl text-white font-bold mb-2">
-              Let's Get Started
+              Let&apos;s Get Started
             </h2>
             <p className="text-sm text-gray-300">
               Sign in to your LASU Fleet account

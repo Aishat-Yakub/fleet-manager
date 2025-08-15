@@ -6,16 +6,16 @@ import { ownerService, type Owner } from "@/services/ownerService";
 import { X, Plus, Loader2 } from "lucide-react";
 
 interface VehicleFormData extends Omit<CreateVehiclePayload, 'ownerId'> {
-  ownerId: string;
+  ownerId: string; // This will be converted to number for the API
 }
 
 export default function VehicleForm() {
   const [formData, setFormData] = useState<VehicleFormData>({
     plateNumber: "",
-    registrationDate: "",
+    registrationDate: new Date().toISOString().split('T')[0], // Default to today
     model: "",
     color: "",
-    condition: "",
+    condition: "Good", // Default condition
     ownerId: "",
   });
 
@@ -64,23 +64,34 @@ export default function VehicleForm() {
     setError(null);
     setSuccess(null);
 
-    // Basic client validation
+    // Client-side validation
     if (!formData.plateNumber.trim() || !formData.model.trim() || !formData.ownerId) {
-      setError("Plate number, model, and owner ID are required.");
+      setError("Plate number, model, and owner are required fields.");
+      return;
+    }
+
+    // Validate plate number format (basic validation)
+    const plateNumberRegex = /^[A-Z0-9-]+$/;
+    if (!plateNumberRegex.test(formData.plateNumber)) {
+      setError("Please enter a valid plate number (letters, numbers, and hyphens only)");
       return;
     }
 
     setLoading(true);
     try {
-      // Convert ownerId to number for the API
+      // Prepare payload with proper types for the API
       const payload: CreateVehiclePayload = {
-        ...formData,
-        ownerId: formData.ownerId,
+        plateNumber: formData.plateNumber.trim().toUpperCase(),
+        model: formData.model.trim(),
+        color: formData.color.trim(),
+        condition: formData.condition || 'Good', // Default to 'Good' if not provided
+        ownerId: formData.ownerId, // Ensure this is a number
+        registrationDate: formData.registrationDate || new Date().toISOString().split('T')[0], // Default to today if not provided
       };
 
       const vehicle = await vehicleService.createVehicle(payload);
       
-      setSuccess(`Vehicle created successfully with plate: ${vehicle.plateNumber}`);
+      setSuccess(`Vehicle ${vehicle.plateNumber} has been successfully registered!`);
       
       // Reset form
       setFormData({
@@ -97,7 +108,7 @@ export default function VehicleForm() {
       setError(
         err instanceof Error 
           ? err.message 
-          : "Failed to create vehicle. Please try again."
+          : "Failed to create vehicle. Please try again later."
       );
     } finally {
       setLoading(false);
@@ -132,7 +143,7 @@ export default function VehicleForm() {
   };
 
   return (
-    <div className="p-6 border border-sky-200 rounded-lg bg-white shadow-sm">
+    <div className="p-6 border border-sky-200 rounded-lg bg-white">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">Register New Vehicle</h2>
       
       {error && (
@@ -156,10 +167,10 @@ export default function VehicleForm() {
             <input
               type="text"
               name="plateNumber"
-              placeholder="e.g. ABC123"
+              placeholder="e.g. LASU-123"
               value={formData.plateNumber}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
               required
             />
           </div>
@@ -173,7 +184,7 @@ export default function VehicleForm() {
               name="registrationDate"
               value={formData.registrationDate}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
             />
           </div>
           
@@ -187,7 +198,7 @@ export default function VehicleForm() {
               placeholder="e.g. Toyota Camry"
               value={formData.model}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
               required
             />
           </div>
@@ -202,7 +213,7 @@ export default function VehicleForm() {
               placeholder="e.g. Red"
               value={formData.color}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
             />
           </div>
           
@@ -214,11 +225,10 @@ export default function VehicleForm() {
               name="condition"
               value={formData.condition}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
             >
-              <option value="">Select condition</option>
               <option value="Excellent">Excellent</option>
-              <option value="Good">Good</option>
+              <option value="Good" selected>Good</option>
               <option value="Fair">Fair</option>
               <option value="Poor">Poor</option>
               <option value="Needs Repair">Needs Repair</option>
@@ -249,7 +259,7 @@ export default function VehicleForm() {
                 name="ownerId"
                 value={formData.ownerId}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
                 required
               >
                 <option value="">Select an owner</option>
@@ -311,7 +321,7 @@ export default function VehicleForm() {
                     type="text"
                     value={newOwner.name}
                     onChange={(e) => setNewOwner({...newOwner, name: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
                     placeholder="John Doe"
                     required
                   />
@@ -325,7 +335,7 @@ export default function VehicleForm() {
                     type="email"
                     value={newOwner.email}
                     onChange={(e) => setNewOwner({...newOwner, email: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
                     placeholder="john@example.com"
                     required
                   />
@@ -339,7 +349,7 @@ export default function VehicleForm() {
                     type="tel"
                     value={newOwner.phone || ''}
                     onChange={(e) => setNewOwner({...newOwner, phone: e.target.value})}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
                     placeholder="+1234567890"
                   />
                 </div>

@@ -11,7 +11,7 @@ type AnimatedNavProps = {
 };
 
 export default function AnimatedNav({ isOpen, onClose }: AnimatedNavProps) {
-  const navRef = useRef<HTMLDivElement>(null);
+
   const overlayRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 

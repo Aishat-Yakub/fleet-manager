@@ -14,16 +14,16 @@ import { Textarea } from '@/components/ui/textarea';
 
 // Custom Components
 import { ConditionUpdates } from '@/components/condition-updates';
-import { FuelRequests } from './components/FuelRequests';
-import { MaintenanceRequests } from './components/MaintenanceRequests';
-import { InspectionFiles } from './components/InspectionFiles';
+
+
+
 
 // Types
-import { Vehicle, FuelRequest, MaintenanceRequest, InspectionFile } from './types';
+import { FuelRequest, MaintenanceRequest, InspectionFile } from './types';
 import { fetchApi } from '@/lib/api';
 
 // TODO: Replace with dynamic owner ID from authentication or URL parameters
-const OWNER_ID = '1';
+
 
 /**
  * OwnerDashboard Component
@@ -60,13 +60,7 @@ export default function OwnerDashboard() {
   /**
    * Handles file upload for condition updates
    */
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // TODO: Implement file upload functionality
-      console.log('Uploading file:', file.name);
-    }
-  };
+
 
   // TODO: Replace with dynamic owner ID from authentication or URL parameters
   // This should be retrieved from your authentication context or URL parameters
@@ -436,7 +430,7 @@ export default function OwnerDashboard() {
                   
                   <div className="pt-4">
                     <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-                      Submit Ufocuspdate
+                      Submit Update
                     </Button>
                   </div>
                 </form>

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Upload, FileIcon, Trash2, X } from 'lucide-react';
+import { Upload, FileIcon, X } from 'lucide-react';
 import { useInspectionFiles } from '../hooks/useInspectionFiles';
 import { InspectionFile } from '../types';
 
@@ -50,11 +50,7 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
     }
   };
 
-  const handleDelete = async (file: InspectionFile) => {
-    if (window.confirm('Are you sure you want to delete this file?')) {
-      await deleteInspectionFile(file.id);
-    }
-  };
+
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';

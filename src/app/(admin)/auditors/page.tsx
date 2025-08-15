@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchApi } from '@/lib/api';
 
 interface AuditLog {
@@ -21,11 +21,7 @@ export default function AuditorLogsTable() {
     to: "",
   });
 
-  useEffect(() => {
-    fetchLogs();
-  }, [filters]);
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     setErrorMsg("");
     try {
@@ -34,14 +30,19 @@ export default function AuditorLogsTable() {
       if (filters.from) params.append("from", filters.from);
       if (filters.to) params.append("to", filters.to);
 
-  const data = await fetchApi(`/auditor/logs?${params.toString()}`);
-  setLogs(data as AuditLog[]);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Error loading logs");
+      const data = await fetchApi(`/auditor/logs?${params.toString()}`);
+      setLogs(data as AuditLog[]);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setErrorMsg(error.message || "Error loading logs");
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

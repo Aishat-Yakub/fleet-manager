@@ -47,8 +47,9 @@ export default function CreateUserForm() {
         phone: '',
         password: '',
       });
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Something went wrong');
+    } catch (err: unknown) {
+      const error = err as Error;
+      setErrorMsg(error.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }

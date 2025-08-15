@@ -2,7 +2,7 @@
 
 import { navItems } from '@/constant';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+
 
 type MobileNavProps = {
   isOpen: boolean;
@@ -10,7 +10,7 @@ type MobileNavProps = {
 };
 
 export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
-  const pathname = usePathname();
+
 
   if (!isOpen) return null;
 

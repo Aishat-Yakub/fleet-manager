@@ -6,17 +6,10 @@ import {
   LayoutDashboard, 
   Users, 
   UserPlus,
-  UserCog, 
   Car, 
-  CarTaxiFront,
   Clock, 
   FileText, 
-  Settings, 
-  LogOut, 
-  List, 
-  UserX,
-  UserCheck,
-  ShieldCheck 
+  Settings
 } from 'lucide-react';
 
 type NavItem = {

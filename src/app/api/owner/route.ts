@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 // Base URL for the API
@@ -33,7 +33,9 @@ async function fetchOwnerData(
 }
 
 // Helper to handle authentication
-async function withAuth(handler: (request: Request, token: string) => Promise<Response>) {
+type AuthenticatedHandler = (request: Request, token: string) => Promise<Response>;
+
+function withAuth(handler: AuthenticatedHandler) {
   return async (request: Request) => {
     try {
       const session = await auth();
@@ -62,10 +64,7 @@ export const GET = withAuth(async (request: Request, token: string) => {
     const { searchParams } = new URL(request.url);
     const page = searchParams.get('page') || '1';
     const limit = searchParams.get('limit') || '10';
-    
-    // Extract ownerId from the URL
-    const url = new URL(request.url);
-    const ownerId = url.pathname.split('/').filter(Boolean).pop();
+    const ownerId = searchParams.get('ownerId');
     
     if (!ownerId) {
       return NextResponse.json(
@@ -92,9 +91,8 @@ export const GET = withAuth(async (request: Request, token: string) => {
 // POST /api/owners/{ownerId}/condition-updates
 export const POST = withAuth(async (request: Request, token: string) => {
   try {
-    // Extract ownerId from the URL
-    const url = new URL(request.url);
-    const ownerId = url.pathname.split('/').filter(Boolean).pop();
+    const { searchParams } = new URL(request.url);
+    const ownerId = searchParams.get('ownerId');
     
     if (!ownerId) {
       return NextResponse.json(

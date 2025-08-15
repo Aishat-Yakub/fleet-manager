@@ -104,7 +104,7 @@ export default function DashboardPage() {
     <div className="w-full max-w-screen-xl xl:max-w-screen-2xl mx-auto px-4">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening with your fleet.</p>
+        <p className="text-gray-600">Welcome back! Here&apos;s what&apos;s happening with your fleet.</p>
       </div>
   
       {/* Stats Grid */}
