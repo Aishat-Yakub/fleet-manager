@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
   },
   { 
     name: 'Manage Status', 
-    href: '/admin/vehicles/status', 
+    href: '/manager', 
     icon: <Clock className="w-5 h-5" />,
     group: 'Vehicle Management'
   },

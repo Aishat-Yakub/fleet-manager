@@ -24,12 +24,3 @@ export type MaintenanceRequest = {
   updatedAt: string;
   vehicle?: Vehicle;
 };
-
-export type InspectionFile = {
-  id: string;
-  name: string;
-  url: string;
-  uploadedAt: string;
-  vehicleId: string;
-  size: number;
-};
