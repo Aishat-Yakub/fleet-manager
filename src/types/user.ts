@@ -1,19 +1,26 @@
+// src/types/user.ts
 export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
+  id: number; 
+  name: string;
   email: string;
-  role: 'admin' | 'user' | 'driver' | 'maintenance';
-  status: 'active' | 'inactive' | 'suspended';
-  phoneNumber?: string;
-  createdAt: string;
-  updatedAt: string;
+  username: string;
+  role: string;
+  status: string;
+  created_at: string;
 }
 
-export interface UsersResponse {
-  data: User[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
 }
+
+export type UserPayload = {
+  name: string;
+  email: string;
+  username: string;
+  password?: string;
+  role: 'admin' | 'manager' | 'owner' | 'auditor';
+  status: 'active' | 'inactive' | 'suspended';
+};

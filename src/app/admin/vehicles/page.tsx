@@ -1,21 +1,26 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { vehicleService, type CreateVehiclePayload } from "@/services/vehicleService";
-import { ownerService, type Owner } from "@/services/ownerService";
+import { vehicleService, type CreateVehiclePayload } from "../../../services/vehicleService";
+import { ownerService, type Owner } from "../../../services/ownerService";
 import { X, Plus, Loader2 } from "lucide-react";
 
-interface VehicleFormData extends Omit<CreateVehiclePayload, 'ownerId'> {
-  ownerId: string; // This will be converted to number for the API
+interface VehicleFormData {
+  plate_number: string;
+  registration_date: string;
+  model: string;
+  color: string;
+  condition: string;
+  ownerId: string;
 }
 
 export default function VehicleForm() {
   const [formData, setFormData] = useState<VehicleFormData>({
-    plateNumber: "",
-    registrationDate: new Date().toISOString().split('T')[0], // Default to today
+    plate_number: "",
+    registration_date: new Date().toISOString().split('T')[0],
     model: "",
     color: "",
-    condition: "Good", // Default condition
+    condition: "Good",
     ownerId: "",
   });
 
@@ -25,10 +30,11 @@ export default function VehicleForm() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showOwnerModal, setShowOwnerModal] = useState(false);
-  const [newOwner, setNewOwner] = useState<Omit<Owner, 'id' | 'createdAt' | 'updatedAt'>>({ 
-    name: '', 
-    email: '', 
-    phone: '' 
+  const [newOwner, setNewOwner] = useState<Omit<Owner, 'id' | 'created_at'>>({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
   });
 
   // Fetch owners on component mount
@@ -65,14 +71,14 @@ export default function VehicleForm() {
     setSuccess(null);
 
     // Client-side validation
-    if (!formData.plateNumber.trim() || !formData.model.trim() || !formData.ownerId) {
+    if (!formData.plate_number.trim() || !formData.model.trim() || !formData.ownerId) {
       setError("Plate number, model, and owner are required fields.");
       return;
     }
 
     // Validate plate number format (basic validation)
     const plateNumberRegex = /^[A-Z0-9-]+$/;
-    if (!plateNumberRegex.test(formData.plateNumber)) {
+    if (!plateNumberRegex.test(formData.plate_number)) {
       setError("Please enter a valid plate number (letters, numbers, and hyphens only)");
       return;
     }
@@ -81,22 +87,23 @@ export default function VehicleForm() {
     try {
       // Prepare payload with proper types for the API
       const payload: CreateVehiclePayload = {
-        plateNumber: formData.plateNumber.trim().toUpperCase(),
+        plate_number: formData.plate_number.trim().toUpperCase(),
         model: formData.model.trim(),
         color: formData.color.trim(),
-        condition: formData.condition || 'Good', // Default to 'Good' if not provided
-        ownerId: formData.ownerId, // Ensure this is a number
-        registrationDate: formData.registrationDate || new Date().toISOString().split('T')[0], // Default to today if not provided
+        condition: formData.condition || 'Good',
+        owner_id: formData.ownerId,
+        registration_date: formData.registration_date || new Date().toISOString().split('T')[0],
+        status: 'active', // Default status for new vehicles
       };
 
       const vehicle = await vehicleService.createVehicle(payload);
       
-      setSuccess(`Vehicle ${vehicle.plateNumber} has been successfully registered!`);
+      setSuccess(`Vehicle ${vehicle.plate_number} has been successfully registered!`);
       
       // Reset form
       setFormData({
-        plateNumber: "",
-        registrationDate: "",
+        plate_number: "",
+        registration_date: "",
         model: "",
         color: "",
         condition: "",
@@ -123,15 +130,12 @@ export default function VehicleForm() {
     }
 
     try {
-      const createdOwner = await ownerService.createOwner({
-        ...newOwner,
-        address: newOwner.phone || '',
-      });
+      const createdOwner = await ownerService.createOwner(newOwner);
       
       setOwners(prev => [...prev, createdOwner]);
       setFormData(prev => ({ ...prev, ownerId: createdOwner.id }));
       setShowOwnerModal(false);
-      setNewOwner({ name: '', email: '', phone: '' });
+      setNewOwner({ name: '', email: '', phone: '', address: '' });
       setSuccess('Owner added successfully!');
       
       // Clear success message after 3 seconds
@@ -166,9 +170,10 @@ export default function VehicleForm() {
             </label>
             <input
               type="text"
-              name="plateNumber"
+              id="plate_number"
+              name="plate_number"
               placeholder="e.g. LASU-123"
-              value={formData.plateNumber}
+              value={formData.plate_number}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
               required
@@ -181,8 +186,9 @@ export default function VehicleForm() {
             </label>
             <input
               type="date"
-              name="registrationDate"
-              value={formData.registrationDate}
+              id="registration_date"
+              name="registration_date"
+              value={formData.registration_date}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
             />
@@ -304,7 +310,7 @@ export default function VehicleForm() {
                   type="button"
                   onClick={() => {
                     setShowOwnerModal(false);
-                    setNewOwner({ name: '', email: '', phone: '' });
+                    setNewOwner({ name: '', email: '', phone: '', address: '' });
                   }}
                   className="text-gray-400 hover:text-gray-500"
                 >
@@ -351,6 +357,19 @@ export default function VehicleForm() {
                     onChange={(e) => setNewOwner({...newOwner, phone: e.target.value})}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
                     placeholder="+1234567890"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={newOwner.address || ''}
+                    onChange={(e) => setNewOwner({...newOwner, address: e.target.value})}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-sky-500 focus:border-transparent text-black"
+                    placeholder="123 Main St, Anytown"
                   />
                 </div>
                 

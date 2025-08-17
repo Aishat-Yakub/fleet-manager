@@ -2,50 +2,56 @@
 
 import { useState, useEffect } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { managerService } from '@/services/managerService';
-
-import { FuelRequest } from '../types';
+import { Button } from '../../../components/ui/button';
+import { managerService, type FuelRequest } from '../../../services/managerService';
 
 export function FuelRequests() {
-  const [requests] = useState<FuelRequest[]>([]);
+  const [requests, setRequests] = useState<FuelRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await managerService.getFuelRequests();
+      setRequests(data);
+    } catch (err) {
+      console.error('Error fetching fuel requests:', err);
+      setError('Failed to load fuel requests. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        // Replace with actual API call when available
-        // const data = await managerService.getFuelRequests();
-        // setRequests(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching fuel requests:', error);
-        setLoading(false);
-      }
-    };
-
     fetchRequests();
   }, []);
 
   const handleApprove = async (requestId: string) => {
     try {
       await managerService.updateFuelRequest(requestId, 'approved');
-      // Refresh requests
-      // const updatedRequests = await managerService.getFuelRequests();
-      // setRequests(updatedRequests);
+      fetchRequests(); // Refresh the list
     } catch (error) {
       console.error('Error approving request:', error);
+      setError('Failed to approve the request.');
     }
   };
 
   const handleReject = async (requestId: string) => {
+    const reason = prompt('Please provide a reason for rejection:');
+    if (reason === null) return; // User cancelled the prompt
+    if (!reason.trim()) {
+      setError('A rejection reason is required.');
+      return;
+    }
+
     try {
-      await managerService.updateFuelRequest(requestId, 'rejected', 'Insufficient funds');
-      // Refresh requests
-      // const updatedRequests = await managerService.getFuelRequests();
-      // setRequests(updatedRequests);
+      await managerService.updateFuelRequest(requestId, 'rejected', reason);
+      fetchRequests(); // Refresh the list
     } catch (error) {
       console.error('Error rejecting request:', error);
+      setError('Failed to reject the request.');
     }
   };
 
@@ -72,9 +78,11 @@ export function FuelRequests() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="space-y-1">
-                    <h3 className="font-medium text-sky-900">{request.vehicleMake} {request.vehicleModel}</h3>
+                    <h3 className="font-medium text-sky-900">
+                      {request.vehicles?.model || 'Unknown Vehicle'} ({request.vehicles?.plate_number})
+                    </h3>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                      <span className="text-gray-600">Requested by: <span className="text-sky-800">{request.requestedBy}</span></span>
+                      <span className="text-gray-600">Requested by: <span className="text-sky-800">{request.drivers?.full_name || 'Unknown Driver'}</span></span>
                       <span className="text-gray-600">Amount: <span className="font-medium text-sky-900">{request.amount} L</span></span>
                       <span className="flex items-center">
                         Status: 
@@ -87,7 +95,7 @@ export function FuelRequests() {
                         </span>
                       </span>
                       <span className="text-xs text-gray-500">
-                        {new Date(request.requestedAt).toLocaleString()}
+                        {new Date(request.request_date).toLocaleString()}
                       </span>
                     </div>
                   </div>
