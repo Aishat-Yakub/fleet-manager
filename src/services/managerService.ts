@@ -1,19 +1,23 @@
 import { supabase } from '../lib/supabase';
 
+type Vehicle = {
+  plate_number: string;
+  model: string;
+};
+
+type Driver = {
+  full_name: string;
+  avatar_url?: string;
+};
+
 export type FuelRequest = {
   id: string;
   amount: number;
   status: 'pending' | 'approved' | 'rejected';
   request_date: string;
   rejection_reason?: string;
-  vehicles: {
-    plate_number: string;
-    model: string;
-  } | null;
-  drivers: {
-    full_name: string;
-    avatar_url?: string;
-  } | null;
+  vehicles: Vehicle[];
+  drivers: Driver[];
 };
 
 export const managerService = {

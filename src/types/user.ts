@@ -1,4 +1,3 @@
-// src/types/user.ts
 export interface User {
   id: number; 
   name: string;
@@ -7,6 +6,8 @@ export interface User {
   role: string;
   status: string;
   created_at: string;
+  password?: string;
+  last_login?: string | null;
 }
 
 
@@ -19,7 +20,7 @@ export interface LoginCredentials {
 export type UserPayload = {
   name: string;
   email: string;
-  username: string;
+username: string;
   password?: string;
   role: 'admin' | 'manager' | 'owner' | 'auditor';
   status: 'active' | 'inactive' | 'suspended';

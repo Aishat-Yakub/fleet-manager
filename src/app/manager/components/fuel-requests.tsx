@@ -79,10 +79,10 @@ export function FuelRequests() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="space-y-1">
                     <h3 className="font-medium text-sky-900">
-                      {request.vehicles?.model || 'Unknown Vehicle'} ({request.vehicles?.plate_number})
+                      {(Array.isArray(request.vehicles) ? request.vehicles[0]?.model : request.vehicles?.model) || 'Unknown Vehicle'} ({(Array.isArray(request.vehicles) ? request.vehicles[0]?.plate_number : request.vehicles?.plate_number) || 'N/A'})
                     </h3>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                      <span className="text-gray-600">Requested by: <span className="text-sky-800">{request.drivers?.full_name || 'Unknown Driver'}</span></span>
+                      <span className="text-gray-600">Requested by: <span className="text-sky-800">{(Array.isArray(request.drivers) ? request.drivers[0]?.full_name : request.drivers?.full_name) || 'Unknown Driver'}</span></span>
                       <span className="text-gray-600">Amount: <span className="font-medium text-sky-900">{request.amount} L</span></span>
                       <span className="flex items-center">
                         Status: 

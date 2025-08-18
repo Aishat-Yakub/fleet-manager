@@ -1,14 +1,16 @@
 import { supabase } from '../lib/supabase';
 
+export type Profile = {
+  full_name: string;
+  avatar_url?: string;
+};
+
 export type AuditLog = {
   id: string;
   action: string;
   details: Record<string, any>;
   created_at: string;
-  profiles: {
-    full_name: string;
-    avatar_url?: string;
-  } | null;
+  profiles: Profile[];
 };
 
 export const auditorService = {

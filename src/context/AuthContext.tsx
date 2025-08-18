@@ -1,20 +1,13 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  username: string;
-  role: string;
-  status: string;
-  created_at: string;
-};
+import { authService } from '@/services/authService';
+import { LoginCredentials, User } from '@/types/user';
+import { useRouter } from 'next/navigation';
 
 type AuthContextType = {
   user: User | null;
-  login: (credentials: { username: string; password: string }) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
   error: string | null;
@@ -26,32 +19,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const login = async ({ username, password }: { username: string; password: string }) => {
+  const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // TODO: Replace with real API call
-      const fakeUser: User = {
-        id: "1", // 🔹 keep as string to match type
-        name: "John Doe",
-        email: "john@example.com",
-        username,
-        role: "admin",
-        status: "active",
-        created_at: new Date().toISOString(),
-      };
+      const loggedInUser = await authService.login(credentials);
+      setUser(loggedInUser);
 
-      setUser(fakeUser);
-    } catch (err) {
-      setError("Invalid credentials");
+      // Role-based redirect
+      switch (loggedInUser.role) {
+        case 'admin':
+          router.push('/admin/dashboard');
+          break;
+        case 'manager':
+          router.push('/manager');
+          break;
+        case 'owner':
+          router.push('/owners');
+          break;
+        case 'auditor':
+          router.push('/auditor');
+          break;
+        default:
+          router.push('/');
+      }
+
+    } catch (err: any) {
+      console.error('Login failed:', err);
+      setError(err.message || 'Login failed. Check your credentials.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = () => setUser(null);
+  const logout = () => {
+    setUser(null);
+    router.push('/login');
+  };
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading, error }}>
@@ -60,7 +67,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// ✅ Exported hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within AuthProvider");

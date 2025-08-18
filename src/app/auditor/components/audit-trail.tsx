@@ -63,7 +63,7 @@ export function AuditTrail() {
               logs.map((log) => (
                 <tr key={log.id} className="bg-white border-b hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
-                  <td className="px-6 py-4 font-medium text-gray-900">{log.profiles?.full_name || 'System'}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900">{Array.isArray(log.profiles) ? log.profiles[0]?.full_name || 'System' : log.profiles?.full_name || 'System'}</td>
                   <td className="px-6 py-4"><span className="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">{log.action}</span></td>
                   <td className="px-6 py-4 text-xs font-mono text-gray-700">{JSON.stringify(log.details)}</td>
                 </tr>
