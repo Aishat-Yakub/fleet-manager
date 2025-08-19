@@ -91,7 +91,7 @@ const OwnerDashboard = () => {
         >
           {/* tab-section */}
           <TabsList 
-            className="border border-sky-950 font-bold rounded-lg grid w-full grid-cols-2 sm:grid-cols-3 gap-0 mb-8 p-1 hover:text-sky-950"
+            className="border border-sky-950 font-bold rounded-lg grid w-full grid-cols-2 sm:grid-cols-4 gap-0 mb-8 p-1 hover:text-sky-950"
             aria-label="Vehicle management sections"
           >
             <TabsTrigger 
@@ -111,6 +111,12 @@ const OwnerDashboard = () => {
               className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
             >
               Maintenance
+            </TabsTrigger>
+            <TabsTrigger 
+              value="inspections" 
+              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
+            >
+              Inspections
             </TabsTrigger>
           </TabsList>
 
@@ -523,6 +529,48 @@ const OwnerDashboard = () => {
                       </p>
                     </div>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Inspections Tab Content */}
+          <TabsContent value="inspections" className="space-y-6 text-sky-950">
+            <Card>
+              <CardHeader>
+                <CardTitle>Vehicle Inspections</CardTitle>
+                <CardDescription>View and manage vehicle inspection reports</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-end mb-6">
+                  <Button 
+                    className="bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                    onClick={() => {
+                      // TODO: Implement new inspection functionality
+                      console.log('New inspection clicked');
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Schedule New Inspection
+                  </Button>
+                </div>
+                
+                <div className="border rounded-lg overflow-hidden">
+                  <div className="min-w-full divide-y divide-gray-200">
+                    <div className="bg-gray-50">
+                      <div className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Inspections
+                      </div>
+                    </div>
+                    <div className="bg-white divide-y divide-gray-200">
+                      <div className="px-6 py-12 text-center">
+                        <div className="text-sm text-gray-500">No inspection reports available</div>
+                        <p className="mt-1 text-sm text-gray-400">
+                          Schedule a new inspection to get started
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

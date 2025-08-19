@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { authService } from '@/services/authService';
 import { LoginCredentials, User } from '@/types/user';
 import { useRouter } from 'next/navigation';
 
@@ -24,31 +23,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     setError(null);
-
+    
     try {
-      const loggedInUser = await authService.login(credentials);
-      setUser(loggedInUser);
-
-      // Role-based redirect
-      switch (loggedInUser.role) {
-        case 'admin':
-          router.push('/admin/dashboard');
-          break;
-        case 'manager':
-          router.push('/manager');
-          break;
-        case 'owner':
-          router.push('/owners');
-          break;
-        case 'auditor':
-          router.push('/auditor');
-          break;
-        default:
-          router.push('/');
-      }
-
-    } catch (err: any) {
-      console.error('Login failed:', err);
+      // Mock user data - replace with your actual authentication logic
+      const mockUser: User = {
+        id: '1',
+        name: 'Admin User',
+        email: 'admin@example.com',
+        role: 'admin',
+        status: 'active',
+        created_at: new Date().toISOString()
+      };
+      
+      setUser(mockUser);
+      router.push('/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+      throw err;
       setError(err.message || 'Login failed. Check your credentials.');
     } finally {
       setIsLoading(false);

@@ -3,10 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users, Car, Clock, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { userService } from '@/services/userService';
-import { vehicleService } from '@/services/vehicleService';
-import { fuelRequestService } from '@/services/fuelRequestService';
-import { maintenanceRequestService } from '@/services/maintenanceRequestService';
 import { User } from '@/types/user';
 import { Vehicle } from '@/types/vehicle';
 
@@ -24,36 +20,30 @@ const StatCard = ({ title, value, icon }: StatCardProps) => (
   </div>
 );
 
-export default function DashboardPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [pendingRequests, setPendingRequests] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function AdminDashboard() {
+  const [users] = useState<User[]>([]);
+  const [vehicles] = useState<Vehicle[]>([]);
+  const [pendingFuelRequests] = useState(0);
+  const [pendingMaintenanceRequests] = useState(0);
+  const [isLoading] = useState(false);
+  const [error] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const [usersData, vehiclesData, fuelRequestsData, maintenanceRequestsData] = await Promise.all([
-          userService.getUsers(),
-          vehicleService.getVehicles(),
-          fuelRequestService.getFuelRequests(),
-          maintenanceRequestService.getMaintenanceRequests(),
-        ]);
-        setUsers(usersData);
-        setVehicles(vehiclesData);
-        const pendingFuel = fuelRequestsData.filter(r => r.status === 'pending').length;
-        const pendingMaintenance = maintenanceRequestsData.filter(r => r.status === 'pending').length;
-        setPendingRequests(pendingFuel + pendingMaintenance);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch dashboard data.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  // Mock data - replace with actual data fetching logic
+  const mockUsers: User[] = [
+    { id: '1', name: 'Admin User', email: 'admin@example.com', role: 'admin', status: 'active', created_at: new Date().toISOString() },
+  ];
+
+  const mockVehicles: Vehicle[] = [
+    { id: '1', make: 'Toyota', model: 'Camry', year: 2022, plateNumber: 'ABC123', status: 'available', created_at: new Date().toISOString() },
+  ];
+
+  // Use mock data
+  const dashboardData = {
+    users: mockUsers,
+    vehicles: mockVehicles,
+    pendingFuelRequests: 0,
+    pendingMaintenanceRequests: 0,
+  };
 
   if (isLoading) {
     return <div className="text-center p-8">Loading dashboard...</div>;
@@ -72,10 +62,7 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full max-w-screen-xl xl:max-w-screen-2xl mx-auto px-4">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-600">Welcome back! Here's what's happening with your fleet.</p>
-      </div>
+     
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => (

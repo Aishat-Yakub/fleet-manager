@@ -2,7 +2,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Vehicle } from '../types';
 
-export const columns = (onStatusUpdate: (id: string, status: string) => void): ColumnDef<Vehicle>[] => [
+export const columns = (): ColumnDef<Vehicle>[] => [
   {
     accessorKey: 'id',
     header: 'ID',
@@ -34,21 +34,23 @@ export const columns = (onStatusUpdate: (id: string, status: string) => void): C
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
-      const vehicle = row.original;
-      const isActive = vehicle.status === 'active';
-      
-      return (
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onStatusUpdate(vehicle.id, isActive ? 'inactive' : 'active')}
-          >
-            {isActive ? 'Deactivate' : 'Activate'}
-          </Button>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          disabled={row.original.status === 'active'}
+        >
+          Set Active
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm"
+          disabled={row.original.status === 'inactive'}
+        >
+          Set Inactive
+        </Button>
+      </div>
+    ),
   },
 ];
