@@ -22,21 +22,21 @@ type NavItem = {
 const navItems: NavItem[] = [
   { 
     name: 'Dashboard', 
-    href: '/dashboard', 
+    href: '/admin/dashboard', 
     icon: <LayoutDashboard className="w-5 h-5" />,
     group: 'Overview'
   },
   
-  // User Management
+  // User   
   { 
     name: 'All Users', 
-    href: '/users', 
+    href: '/admin/users', 
     icon: <Users className="w-5 h-5" />,
     group: 'User Management'
   },
   { 
     name: 'Add User', 
-    href: '/users/create', 
+    href: '/admin/users/create', 
     icon: <UserPlus className="w-5 h-5" />,
     group: 'User Management'
   },
@@ -50,13 +50,13 @@ const navItems: NavItem[] = [
   // Vehicle Management
   { 
     name: 'Vehicles', 
-    href: '/vehicles', 
+    href: '/admin/vehicles', 
     icon: <Car className="w-5 h-5" />,
     group: 'Vehicle Management'
   },
   { 
     name: 'Manage Status', 
-    href: '/manager', 
+    href: '/admin/manager', 
     icon: <Clock className="w-5 h-5" />,
     group: 'Vehicle Management'
   },

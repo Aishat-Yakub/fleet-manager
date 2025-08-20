@@ -3,7 +3,6 @@
 import React from 'react';
 import Sidebar from '@/components/admin/Sidebar';
 import NotificationSidebar from '@/components/admin/NotificationSidebar';
-import ProtectedRoute from '@/components/auth/ProtectedRoute';
 
 export default function AdminLayout({
   children,
@@ -11,7 +10,6 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ProtectedRoute requiredRole="admin">
       <div className="min-h-screen bg-gray-50">
         <div className="flex h-screen overflow-hidden">
           {/* Sidebar */}
@@ -30,6 +28,5 @@ export default function AdminLayout({
           </div>
         </div>
       </div>
-    </ProtectedRoute>
   );
 }

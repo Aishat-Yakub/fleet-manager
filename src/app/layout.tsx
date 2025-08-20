@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./fonts.css";
-import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: "LASU Fleet Manager",
@@ -19,9 +18,7 @@ export default function RootLayout({
         className="antialiased"
         data-gptw=""
       >
-        <AuthProvider>
           {children}
-        </AuthProvider>
       </body>
     </html>
   );

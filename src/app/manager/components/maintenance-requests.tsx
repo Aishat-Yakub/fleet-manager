@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { managerService } from '@/services/managerService';
-
 import { MaintenanceRequest } from '../types';
 
 export function MaintenanceRequests() {
@@ -30,29 +28,7 @@ export function MaintenanceRequests() {
     fetchRequests();
   }, []); 
 
-  const handleApprove = async (requestId: string) => {
-    try {
-      await managerService.updateMaintenanceRequest(requestId, 'approved');
-      // Refresh requests
-      // const updatedRequests = await managerService.getMaintenanceRequests();
-      // setRequests(updatedRequests);
-    } catch (error) {
-      console.error('Error approving request:', error);
-    }
-  };
-
-  const handleReject = async (requestId: string) => {
-    try {
-      await managerService.updateMaintenanceRequest(requestId, 'rejected', 'Not approved');
-      // Refresh requests
-      // const updatedRequests = await managerService.getMaintenanceRequests();
-      // setRequests(updatedRequests);
-    } catch (error) {
-      console.error('Error rejecting request:', error);
-    }
-  };
-
-
+  
 
   const handleEstimateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,7 +112,6 @@ export function MaintenanceRequests() {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleApprove(request.id)}
                           className="border-sky-200 text-sky-700 hover:bg-sky-50 hover:border-sky-300"
                         >
                           Approve
@@ -144,7 +119,6 @@ export function MaintenanceRequests() {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleReject(request.id)}
                           className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
                         >
                           Reject
