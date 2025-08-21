@@ -16,19 +16,19 @@ const AuditorPage = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 text-sky-950">
       <Card>
         <CardHeader>
-          <CardTitle>Audit Logs</CardTitle>
+          <CardTitle className="text-sky-950">Audit Logs</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-sky-950">User</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-sky-950">Action</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-sky-950">Date</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">

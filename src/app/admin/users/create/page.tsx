@@ -32,7 +32,7 @@ const CreateUserPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 text-sky-950">
       <Card>
         <CardHeader>
           <CardTitle>Create New User</CardTitle>
@@ -46,6 +46,7 @@ const CreateUserPage = () => {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
+                className='bg-white border border-sky-950/30'
                 required
               />
             </div>
@@ -57,6 +58,7 @@ const CreateUserPage = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
+                className='bg-white border border-sky-950/30'
                 required
               />
             </div>
@@ -68,6 +70,7 @@ const CreateUserPage = () => {
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
+                className='bg-white border border-sky-950/30'
                 required
               />
             </div>
@@ -84,11 +87,11 @@ const CreateUserPage = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={() => router.back()}>
+            <div className="flex justify-end space-x-4 text-white">
+              <Button type="button" className='bg-blue-700' variant="outline" onClick={() => router.back()}>
                 Cancel
               </Button>
-              <Button type="submit">Create User</Button>
+              <Button type="submit" className='text-sky-950'>Create User</Button>
             </div>
           </form>
         </CardContent>

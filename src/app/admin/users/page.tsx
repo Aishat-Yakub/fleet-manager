@@ -60,7 +60,7 @@ export default function UsersPage() {
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">User Management</h1>
+        <h1 className="text-3xl text-sky-950 font-bold">User Management</h1>
         <button
           onClick={() => handleOpenModal()}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"

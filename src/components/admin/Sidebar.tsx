@@ -64,17 +64,9 @@ const navItems: NavItem[] = [
   // Audit & Logs
   { 
     name: 'Audit Logs', 
-    href: '/auditors', 
+    href: '/admin/auditors', 
     icon: <FileText className="w-5 h-5" />,
     group: 'Audit & Monitoring'
-  },
-  
-  // Manager
-  { 
-    name: 'Settings', 
-    href: '/admin/settings', 
-    icon: <Settings className="w-5 h-5" />,
-    group: 'System Settings'
   },
 ];
 
@@ -149,9 +141,11 @@ export default function Sidebar() {
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium text-gray-700">Admin User</p>
-              <button className="text-xs font-medium text-gray-500 hover:text-gray-700">
-                Sign out
-              </button>
+              <Link href="/">
+                <button className="text-xs font-medium text-gray-500 hover:text-gray-700">
+                  Sign out
+                </button>
+              </Link>
             </div>
           </div>
         </div>

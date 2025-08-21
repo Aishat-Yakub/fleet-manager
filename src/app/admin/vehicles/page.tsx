@@ -56,14 +56,14 @@ export default function VehiclesPage() {
       case 'inactive':
         return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 tepxt-gray-800';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Vehicle Management</h1>
+        <h1 className="text-3xl text-sky-950 font-bold">Vehicle Management</h1>
         <button 
           onClick={handleAddVehicle}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
