@@ -34,12 +34,7 @@ const navItems: NavItem[] = [
     icon: <Users className="w-5 h-5" />,
     group: 'User Management'
   },
-  { 
-    name: 'Add User', 
-    href: '/admin/users/create', 
-    icon: <UserPlus className="w-5 h-5" />,
-    group: 'User Management'
-  },
+
   // { 
   //   name: 'Manage Admins', 
   //   href: '/admin', 
