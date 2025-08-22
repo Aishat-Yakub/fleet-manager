@@ -1,67 +1,97 @@
 import { NextResponse } from 'next/server';
-import { getAuditLogs, getEntityAuditLogs, getUserActivityLogs } from '@/services/auditService';
+import { getAuditLogs, getAuditLogsByType, getAuditLogsByUser } from '@/services/auditService';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const offset = parseInt(searchParams.get('offset') || '0');
-    const entityType = searchParams.get('entity_type') || undefined;
-    const action = searchParams.get('action') || undefined;
-    const userId = searchParams.get('user_id') || undefined;
-    const entityId = searchParams.get('entity_id');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 100);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const type = searchParams.get('type') || undefined;
+    const changedBy = searchParams.get('changed_by') || undefined;
     
-    // Get logs for a specific entity
-    if (entityType && entityId) {
-      const logs = await getEntityAuditLogs(entityType, entityId);
-      return NextResponse.json(logs);
-    }
-    
-    // Get activity logs for a specific user
-    if (userId) {
-      const logs = await getUserActivityLogs(userId);
-      return NextResponse.json(logs);
-    }
-    
-    // Get all logs with optional filters
-    const { data, count } = await getAuditLogs({
-      limit,
-      offset,
-      entity_type: entityType,
-      action,
-      user_id: userId
-    });
-    
-    return NextResponse.json({
-      data,
-      pagination: {
-        total: count,
+    try {
+      // Get logs by type
+      if (type) {
+        const logs = await getAuditLogsByType(type);
+        return NextResponse.json(logs);
+      }
+      
+      // Get logs by user
+      if (changedBy) {
+        const logs = await getAuditLogsByUser(changedBy);
+        return NextResponse.json(logs);
+      }
+      
+      // Get all logs with optional filters
+      const { data, count } = await getAuditLogs({
         limit,
         offset,
-        hasMore: offset + limit < (count || 0)
-      }
-    });
+        type,
+        changed_by: changedBy
+      });
+      
+      return NextResponse.json({
+        data,
+        pagination: {
+          total: count,
+          limit,
+          offset,
+          hasMore: offset + limit < (count || 0)
+        }
+      });
+    } catch (error: any) {
+      console.error('Error in audit GET handler:', error);
+      throw error;
+    }
     
   } catch (error: any) {
+    console.error('Audit API Error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch audit logs' },
+      { 
+        error: 'Failed to fetch audit logs',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
 }
 
-// Create a new audit log (typically used internally, not directly by the frontend)
 export async function POST(request: Request) {
   try {
     const logData = await request.json();
+    
+    // Basic validation
+    if (!logData.type || !logData.changed_by) {
+      return NextResponse.json(
+        { error: 'Missing required fields (type, changed_by)' },
+        { status: 400 }
+      );
+    }
+    
     const { createAuditLog } = await import('@/services/auditService');
-    const log = await createAuditLog(logData);
+    
+    // Ensure Last Maintenance is set to current time if not provided
+    const logEntry = {
+      ...logData,
+      'Last Maintenance': logData['Last Maintenance'] || new Date().toISOString(),
+      request_id: logData.request_id || null
+    };
+    
+    const log = await createAuditLog(logEntry);
+    
     return NextResponse.json(log, { status: 201 });
+    
   } catch (error: any) {
+    console.error('Error creating audit log:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to create audit log' },
+      { 
+        error: 'Failed to create audit log',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     );
   }
 }
+
+export const dynamic = 'force-dynamic';

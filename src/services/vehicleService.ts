@@ -1,31 +1,34 @@
+import VehiclesPage from "@/app/admin/vehicles/page";
 import { supabase } from "../lib/supabaseClient";
 
 export interface Vehicle {
   id: number;
   plate_number: string;
-  registration_date: string; // Date string
+  registration_date: string;
   model: string;
   color: string;
-  condition: 'excellent' | 'good' | 'fair' | 'poor' | 'damaged';
+  condition: 'Good' | 'Fair' | 'Poor';  // Only these three values are allowed
   owner_id: number;
-  status: 'created' | 'available' | 'in_use' | 'maintenance' | 'out_of_service';
+  status: 'active' | 'inactive' | 'created';  // Only these three statuses are allowed
   created_at: string;
 }
-
 // Fetch all vehicles
-export async function getVehicles() {
-  try {
-    const { data, error } = await supabase
-      .from('vehicles')
-      .select('*')
-      .order('created_at', { ascending: false });
+export async function getVehicles(): Promise<Vehicle[]> {
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data as Vehicle[];
-  } catch (error) {
+  if (error) {
     console.error('Error fetching vehicles:', error);
-    throw new Error(error instanceof Error ? error.message : 'Failed to fetch vehicles');
+    throw new Error(error.message);
   }
+
+  if (!data) {
+    throw new Error('No data returned from vehicles table');
+  }
+
+  return data as Vehicle[];
 }
 
 // Get a single vehicle by ID

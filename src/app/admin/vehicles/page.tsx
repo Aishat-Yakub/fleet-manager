@@ -2,18 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit, Car, Search, AlertCircle, Check, X } from 'lucide-react';
+import { Vehicle } from '@/services/vehicleService';
 
-type Vehicle = {
-  id: number;
-  plate_number: string;
-  registration_date: string;
-  model: string;
-  color: string;
-  condition: 'excellent' | 'good' | 'fair' | 'poor' | 'damaged';
-  owner_id: number;
-  status: 'created' | 'available' | 'in_use' | 'maintenance' | 'out_of_service';
-  created_at: string;
-};
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -61,16 +51,19 @@ export default function VehiclesPage() {
     };
 
     try {
-      const url = editingVehicle ? `/api/vehicles` : '/api/vehicles';
+      const url = editingVehicle ? `/api/vehicles?id=${editingVehicle.id}` : '/api/vehicles';
       const method = editingVehicle ? 'PUT' : 'POST';
       
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingVehicle ? { id: editingVehicle.id, ...vehicleData } : vehicleData),
+        body: JSON.stringify(editingVehicle ? { ...vehicleData, id: editingVehicle.id } : vehicleData),
       });
 
-      if (!response.ok) throw new Error('Failed to save vehicle');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save vehicle');
+      }
       
       await fetchVehicles();
       handleCloseModal();
@@ -128,10 +121,8 @@ export default function VehiclesPage() {
   // Status badge component
   const StatusBadge = ({ status }: { status: Vehicle['status'] }) => {
     const statusConfig = {
-      available: { text: 'Available', color: 'bg-green-100 text-green-800' },
-      in_use: { text: 'In Use', color: 'bg-blue-100 text-blue-800' },
-      maintenance: { text: 'Maintenance', color: 'bg-yellow-100 text-yellow-800' },
-      out_of_service: { text: 'Out of Service', color: 'bg-red-100 text-red-800' },
+      active: { text: 'Active', color: 'bg-green-100 text-green-800' },
+      inactive: { text: 'Inactive', color: 'bg-red-100 text-red-800' },
       created: { text: 'Created', color: 'bg-gray-100 text-gray-800' },
     };
 
@@ -145,11 +136,9 @@ export default function VehiclesPage() {
   // Condition badge component
   const ConditionBadge = ({ condition }: { condition: Vehicle['condition'] }) => {
     const conditionConfig = {
-      excellent: { text: 'Excellent', color: 'bg-green-100 text-green-800' },
-      good: { text: 'Good', color: 'bg-blue-100 text-blue-800' },
-      fair: { text: 'Fair', color: 'bg-yellow-100 text-yellow-800' },
-      poor: { text: 'Poor', color: 'bg-orange-100 text-orange-800' },
-      damaged: { text: 'Damaged', color: 'bg-red-100 text-red-800' },
+      Good: { text: 'Good', color: 'bg-blue-100 text-blue-800' },
+      Fair: { text: 'Fair', color: 'bg-yellow-100 text-yellow-800' },
+      Poor: { text: 'Poor', color: 'bg-orange-100 text-orange-800' },
     };
 
     return (
@@ -194,29 +183,25 @@ export default function VehiclesPage() {
           </div>
           
           <select
-            className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
             <option value="created">Created</option>
-            <option value="available">Available</option>
-            <option value="in_use">In Use</option>
-            <option value="maintenance">Maintenance</option>
-            <option value="out_of_service">Out of Service</option>
           </select>
           
           <select
-            className="p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={filters.condition}
             onChange={(e) => setFilters({ ...filters, condition: e.target.value })}
+            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Conditions</option>
-            <option value="excellent">Excellent</option>
-            <option value="good">Good</option>
-            <option value="fair">Fair</option>
-            <option value="poor">Poor</option>
-            <option value="damaged">Damaged</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
           </select>
         </div>
       </div>
@@ -411,15 +396,13 @@ export default function VehiclesPage() {
                   </label>
                   <select
                     name="condition"
-                    defaultValue={editingVehicle?.condition || 'good'}
+                    defaultValue={editingVehicle?.condition || 'Good'}
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
-                    <option value="excellent">Excellent</option>
-                    <option value="good">Good</option>
-                    <option value="fair">Fair</option>
-                    <option value="poor">Poor</option>
-                    <option value="damaged">Damaged</option>
+                    <option value="Good">Good</option>
+                    <option value="Fair">Fair</option>
+                    <option value="Poor">Poor</option>
                   </select>
                 </div>
 
@@ -429,15 +412,13 @@ export default function VehiclesPage() {
                   </label>
                   <select
                     name="status"
-                    defaultValue={editingVehicle?.status || 'available'}
+                    defaultValue={editingVehicle?.status || 'active'}
                     className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   >
                     <option value="created">Created</option>
-                    <option value="available">Available</option>
-                    <option value="in_use">In Use</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="out_of_service">Out of Service</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
                   </select>
                 </div>
               </div>

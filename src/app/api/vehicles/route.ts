@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const id = searchParams.get('id');
     
     if (id) {
-      const vehicle = await getVehicleById(id);
+      const vehicle = await getVehicleById(Number(id));
       return NextResponse.json(vehicle);
     }
     
@@ -36,21 +36,24 @@ export async function POST(request: Request) {
       );
     }
 
-    // Format condition to match database (Title Case)
-    const formatCondition = (condition: string) => {
-      return condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
+    // Format condition to match the expected type
+    const formatCondition = (condition: string): 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Damaged' => {
+      const normalized = condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
+      if (['Excellent', 'Good', 'Fair', 'Poor', 'Damaged'].includes(normalized)) {
+        return normalized as 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Damaged';
+      }
+      return 'Good'; // Default value if invalid
     };
 
     // Prepare vehicle data matching Supabase schema
     const vehicleData = {
       plate_number: requestData.plate_number.toUpperCase().trim(),
       model: requestData.model.trim(),
-      color: requestData.color.trim().toUpperCase(),
+      color: requestData.color.trim(),
       condition: formatCondition(requestData.condition),
       registration_date: requestData.registration_date,
-      status: requestData.status || 'active',
-      owner_id: 1, // TODO: Get from session
-      created_at: new Date().toISOString()
+      status: requestData.status || 'active', // Default to 'active' if not provided
+      owner_id: requestData.owner_id || 1, // Default owner or get from auth
     };
 
     // Create the vehicle
@@ -84,6 +87,12 @@ export async function PUT(request: Request) {
         { status: 400 }
       );
     }
+    
+    // Format condition if it's being updated
+    if (updates.condition) {
+      updates.condition = updates.condition.toLowerCase();
+    }
+    
     const vehicle = await updateVehicle(Number(id), updates);
     return NextResponse.json(vehicle);
   } catch (error: any) {
@@ -104,7 +113,7 @@ export async function DELETE(request: Request) {
       );
     }
     await deleteVehicle(Number(id));
-    return NextResponse.json({ success: true });vehicleData
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Failed to delete vehicle' },
@@ -112,3 +121,5 @@ export async function DELETE(request: Request) {
     );
   }
 }
+
+export const dynamic = 'force-dynamic'; // Ensure dynamic route handling
