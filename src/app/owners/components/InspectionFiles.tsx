@@ -5,8 +5,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Upload, FileIcon, X } from 'lucide-react';
 import { useInspectionFiles } from '../hooks/useInspectionFiles';
-import { InspectionFile } from '../types';
-
 interface InspectionFilesProps {
   ownerId: string;
 }
@@ -60,12 +58,6 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  // Add proper type for the file parameter in the delete handler
-  const handleDeleteClick = async (file: InspectionFile) => {
-    if (window.confirm('Are you sure you want to delete this file?')) {
-      await deleteInspectionFile(file.id);
-    }
-  };
 
   return (
     <Card className="w-full">
@@ -230,7 +222,6 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
                           View
                         </a>
                         <button
-                          onClick={() => handleDeleteClick(file)}
                           className="text-red-600 hover:text-red-800 font-medium hover:underline"
                         >
                           Delete
