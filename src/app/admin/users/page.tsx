@@ -99,7 +99,7 @@ export default function UsersPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold flex items-center">
+        <h1 className="text-2xl font-bold flex items-center text-sky-950">
           <Users className="mr-2" /> Users Management
         </h1>
         <button
