@@ -1,5 +1,55 @@
+export async function updateVehicleStatus(id: string, status: 'active' | 'inactive' | 'created'): Promise<Vehicle> {
+	const { data, error } = await supabase
+		.from('vehicles')
+		.update({ status })
+		.eq('id', id)
+		.select()
+		.single();
+	if (error) throw new Error(error.message);
+	return {
+		id: data.id,
+		plateNumber: data.plate_number,
+		registrationDate: data.registration_date,
+		model: data.model,
+		color: data.color,
+		condition: data.condition,
+		ownerId: data.owner_id,
+		status: data.status,
+		createdAt: data.created_at,
+		make: data.Make ?? '',
+	};
+}
 import { supabase } from '../lib/supabaseClient';
-import { MaintenanceRequest, FuelRequest } from '@/app/manager_page/types';
+import { MaintenanceRequest, FuelRequest, Vehicle } from '@/app/manager_page/types';
+export async function getVehicles(): Promise<Vehicle[]> {
+	const { data, error } = await supabase
+		.from('vehicles')
+		.select(`
+			id,
+			plate_number,
+			registration_date,
+			model,
+			color,
+			condition,
+			owner_id,
+			status,
+			created_at,
+			Make
+		`);
+	if (error) throw new Error(error.message);
+	return (data || []).map((v: any) => ({
+		id: v.id,
+		plateNumber: v.plate_number,
+		registrationDate: v.registration_date,
+		model: v.model,
+		color: v.color,
+		condition: v.condition,
+		ownerId: v.owner_id,
+		status: v.status,
+		createdAt: v.created_at,
+		make: v.Make ?? '',
+	}));
+}
 export async function getFuelRequests(): Promise<FuelRequest[]> {
 	const { data, error } = await supabase
 		.from('fuel_requests')

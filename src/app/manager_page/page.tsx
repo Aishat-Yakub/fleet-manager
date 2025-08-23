@@ -1,33 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataTable, columns, FuelRequests, MaintenanceRequests } from './components';
 
 import { Vehicle } from './types';
+import { getVehicles } from '@/services/managerService';
 
 export default function ManagerDashboard() {
 
-  const [vehicles] = useState<Vehicle[]>(() => [
-    {
-      id: '1',
-      make: 'Toyota',
-      model: 'Camry',
-      year: 2022,
-      plateNumber: 'ABC123',
-      status: 'available',
-      assignedTo: '1',
-      currentMileage: 15000,
-      lastServiceDate: '2023-10-15',
-      nextServiceDue: '2024-04-15',
-      fuelType: 'Petrol',
-      fuelEfficiency: 14.5,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ]);
-  const [loading] = useState(false);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const data = await getVehicles();
+        setVehicles(data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching vehicles:', error);
+        setLoading(false);
+      }
+    };
+    fetchVehicles();
+  }, []);
 
   return (
     <div className="min-h-screen bg-sky-50 py-8">
@@ -66,7 +64,17 @@ export default function ManagerDashboard() {
                 <div className="text-sky-600">Loading vehicles...</div>
               ) : (
                 <DataTable 
-                  columns={columns()} 
+                  columns={columns(async () => {
+                    setLoading(true);
+                    try {
+                      const data = await getVehicles();
+                      setVehicles(data);
+                    } catch (error) {
+                      console.error('Error fetching vehicles:', error);
+                    } finally {
+                      setLoading(false);
+                    }
+                  })} 
                   data={vehicles} 
                 />
               )}
