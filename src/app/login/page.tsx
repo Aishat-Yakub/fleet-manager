@@ -37,7 +37,7 @@ export default function LoginPage() {
           router.push('/owners');
           break;
         case 'manager':
-          router.push('/manager');
+          router.push('/manager_page');
           break;
         case 'auditor':
           router.push('/admin/auditors');
