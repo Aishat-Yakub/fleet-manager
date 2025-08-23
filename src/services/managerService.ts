@@ -1,5 +1,54 @@
 import { supabase } from '../lib/supabaseClient';
-import { MaintenanceRequest } from '@/app/manager_page/types';
+import { MaintenanceRequest, FuelRequest } from '@/app/manager_page/types';
+export async function getFuelRequests(): Promise<FuelRequest[]> {
+	const { data, error } = await supabase
+		.from('fuel_requests')
+		.select(`
+			id,
+			vehicle_id,
+			owner_id,
+			litres,
+			reason,
+			status,
+			created_at
+		`);
+	if (error) throw new Error(error.message);
+	return (data || []).map((req: any) => ({
+		id: req.id,
+		vehicleId: req.vehicle_id,
+		requestedBy: req.owner_id?.toString() ?? '',
+		amount: req.litres,
+		status: req.status,
+		requestedAt: req.created_at,
+		vehicleMake: req.vehicle_make ?? '',
+		vehicleModel: req.vehicle_model ?? '',
+		reason: req.reason,
+	}));
+}
+
+export async function updateFuelRequestStatus(
+	id: string,
+	status: 'approved' | 'rejected'
+): Promise<FuelRequest> {
+	const { data, error } = await supabase
+		.from('fuel_requests')
+		.update({ status })
+		.eq('id', id)
+		.select()
+		.single();
+	if (error) throw new Error(error.message);
+	return {
+		id: data.id,
+		vehicleId: data.vehicle_id,
+		requestedBy: data.owner_id?.toString() ?? '',
+		amount: data.litres,
+		status: data.status,
+		requestedAt: data.created_at,
+		vehicleMake: data.vehicle_make ?? '',
+		vehicleModel: data.vehicle_model ?? '',
+		reason: data.reason,
+	};
+}
 
 export async function getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
 	const { data, error } = await supabase
