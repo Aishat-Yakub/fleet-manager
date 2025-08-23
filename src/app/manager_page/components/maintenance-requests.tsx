@@ -1,53 +1,39 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getMaintenanceRequests, updateMaintenanceRequest } from '@/services/managerService';
 
 import { Button } from '@/components/ui/button';
 import { MaintenanceRequest } from '../types';
 
 export function MaintenanceRequests() {
-  const [requests] = useState<MaintenanceRequest[]>([]);
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
-  const [showDetails, setShowDetails] = useState(false);
-  const [estimatedCost, setEstimatedCost] = useState('');
+  // Removed Add Cost modal state
 
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        // Replace with actual API call when available
-        // const data = await managerService.getMaintenanceRequests();
-        // setRequests(data);
+        const data = await getMaintenanceRequests();
+        setRequests(data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching maintenance requests:', error);
         setLoading(false);
       }
     };
-
     fetchRequests();
-  }, []); 
+  }, []);
 
   
 
-  const handleEstimateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedRequest) return;
-
+  const handleStatusChange = async (id: number, status: 'approved' | 'rejected') => {
     try {
-      // Here you would typically update the maintenance request with the estimated cost
-      // await managerService.updateMaintenanceRequest(selectedRequest.id, 'in_progress', {
-      //   estimatedCost: parseFloat(estimatedCost)
-      // });
-      
-      // Refresh requests
-      // const updatedRequests = await managerService.getMaintenanceRequests();
-      // setRequests(updatedRequests);
-      
-      setShowDetails(false);
-      setEstimatedCost('');
+      await updateMaintenanceRequest(id, status, {});
+      const updatedRequests = await getMaintenanceRequests();
+      setRequests(updatedRequests);
     } catch (error) {
-      console.error('Error submitting estimate:', error);
+      console.error(`Error updating status to ${status}:`, error);
     }
   };
 
@@ -113,6 +99,7 @@ export function MaintenanceRequests() {
                           variant="outline" 
                           size="sm"
                           className="border-sky-200 text-sky-700 hover:bg-sky-50 hover:border-sky-300"
+                          onClick={() => handleStatusChange(request.id, 'approved')}
                         >
                           Approve
                         </Button>
@@ -120,34 +107,11 @@ export function MaintenanceRequests() {
                           variant="outline" 
                           size="sm"
                           className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+                          onClick={() => handleStatusChange(request.id, 'rejected')}
                         >
                           Reject
                         </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => {
-                            setSelectedRequest(request);
-                            setShowDetails(true);
-                          }}
-                          className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
-                        >
-                          Add Cost
-                        </Button>
                       </>
-                    )}
-                    {request.status === 'approved' && !request.estimatedCost && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRequest(request);
-                          setShowDetails(true);
-                        }}
-                        className="border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300"
-                      >
-                        Add Cost
-                      </Button>
                     )}
                   </div>
                 </div>
@@ -157,46 +121,7 @@ export function MaintenanceRequests() {
         )}
       </div>
 
-      {/* Estimate Modal */}
-      {showDetails && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-lg font-medium mb-4">Add Estimated Cost</h3>
-            <form onSubmit={handleEstimateSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Estimated Cost ($)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  className="w-full p-2 border rounded"
-                  value={estimatedCost}
-                  onChange={(e) => setEstimatedCost(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowDetails(false)}
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit"
-                  className="bg-sky-600 hover:bg-sky-700 text-white"
-                >
-                  Submit Estimate
-                </Button>
-              </div>
-            </form>
-            </div>
-          </div>
-        )}
+  {/* Removed Add Cost modal */}
     </div>
   );
 }
