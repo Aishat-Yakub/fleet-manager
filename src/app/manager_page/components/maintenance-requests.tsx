@@ -99,7 +99,7 @@ export function MaintenanceRequests() {
                           variant="outline" 
                           size="sm"
                           className="border-sky-200 text-sky-700 hover:bg-sky-50 hover:border-sky-300"
-                          onClick={() => handleStatusChange(request.id, 'approved')}
+                          onClick={() => handleStatusChange(Number(request.id), 'approved')}
                         >
                           Approve
                         </Button>
@@ -107,7 +107,7 @@ export function MaintenanceRequests() {
                           variant="outline" 
                           size="sm"
                           className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
-                          onClick={() => handleStatusChange(request.id, 'rejected')}
+                          onClick={() => handleStatusChange(Number(request.id), 'rejected')}
                         >
                           Reject
                         </Button>

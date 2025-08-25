@@ -7,8 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { MaintenanceRequest } from '../types';
 
 type MaintenanceRequestFormProps = {
-  newMaintenanceRequest: MaintenanceRequest;
-  onUpdate: (update: MaintenanceRequest) => void;
+  newMaintenanceRequest: Omit<MaintenanceRequest, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'vehicle'>;
+  onUpdate: (update: Omit<MaintenanceRequest, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'vehicle'>) => void;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
 };
@@ -24,11 +24,13 @@ export function MaintenanceRequestForm({ newMaintenanceRequest, onUpdate, onSubm
           </Label>
           <Input
             id="maintenance-vehicle-id"
-            type="text"
-            value={newMaintenanceRequest.vehicle_id || ''}
-            onChange={(e) => onUpdate({ ...newMaintenanceRequest, vehicle_id: e.target.value, vehicleId: e.target.value })}
+            type="number"
+            value={newMaintenanceRequest.vehicleId || ''}
+            onChange={(e) => onUpdate({ ...newMaintenanceRequest, vehicleId: Number(e.target.value) })}
             className="mt-1 block w-full border border-sky-900 bg-transparent text-sky-950 focus:border-sky-500 focus:ring-sky-500 sm:text-sm rounded-md"
             required
+            min="1"
+            step="1"
           />
         </div>
 
@@ -50,14 +52,20 @@ export function MaintenanceRequestForm({ newMaintenanceRequest, onUpdate, onSubm
           <Label htmlFor="priority" className="block text-sm font-medium text-sky-950 mb-1">
             Priority
           </Label>
-          <Textarea
+          <select
             id="maintenance-priority"
-            rows={1}
             value={newMaintenanceRequest.priority || 'medium'}
-            onChange={(e) => onUpdate({ ...newMaintenanceRequest, priority: e.target.value as 'low' | 'medium' | 'high' })}
+            onChange={(e) => onUpdate({ 
+              ...newMaintenanceRequest, 
+              priority: e.target.value as 'low' | 'medium' | 'high' 
+            })}
             className="mt-1 block w-full border border-sky-900 bg-transparent text-sky-950 py-2 pl-3 pr-10 text-base focus:border-sky-500 focus:outline-none focus:ring-sky-500 sm:text-sm rounded-md"
             required
-          />
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
         </div>
       </div>
 

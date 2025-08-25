@@ -99,6 +99,7 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
                   onChange={(e) => setVehicleId(e.target.value)}
                   placeholder="Enter vehicle ID"
                   required
+                  className="bg-transparent"
                 />
               </div>
               
@@ -110,7 +111,7 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileChange}
-                    className="cursor-pointer"
+                    className="cursor-pointer bg-transparent"
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
                     required
                   />
@@ -144,7 +145,7 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
                 <Button 
                   type="submit" 
                   disabled={!selectedFile || !vehicleId || isUploading}
-                  className="text-sky-950 hover:text-sky-900"
+                  className="bg-blue-600 text-white hover:bg-blue-700"
                 >
                   {isUploading ? 'Uploading...' : 'Upload File'}
                 </Button>
@@ -200,21 +201,22 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
                       <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-sky-950 sm:pl-6">
                         <div className="flex items-center">
                           <FileIcon className="h-5 w-5 flex-shrink-0 text-sky-700 mr-2" />
-                          <span>{file.name}</span>
+                          <span>{file.file_url ? file.file_url.split('/').pop() : 'File'}</span>
                         </div>
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-900">
-                        {file.vehicleId ? `Vehicle #${file.vehicleId}` : 'N/A'}
+                        {file.vehicle_id ? `Vehicle #${file.vehicle_id}` : 'N/A'}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-900">
-                        {new Date(file.uploadedAt).toLocaleDateString()}
+                        {file.created_at ? new Date(file.created_at).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-900">
-                        {formatFileSize(file.size)}
+                        {/* Size is not available from backend, so show N/A or blank */}
+                        N/A
                       </td>
                       <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <a 
-                          href={file.url} 
+                          href={file.file_url} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-sky-700 hover:text-sky-900 mr-4 font-medium hover:underline"

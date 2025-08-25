@@ -4,6 +4,12 @@ export type Vehicle = {
   model: string;
   year: number;
   status: string;
+  registration_date?: string;
+  color?: string;
+  condition?: string;
+  owner_id?: string;
+  created_at?: string;
+  Make?: string;
 };
 
 export type FuelRequest = {
@@ -15,6 +21,7 @@ export type FuelRequest = {
   amount: number;
   status: 'pending' | 'approved' | 'rejected';
   requestedAt: string;
+  reason?: string;
 };
 
 export type MaintenanceRequest = {

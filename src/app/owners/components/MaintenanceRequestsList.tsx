@@ -5,17 +5,65 @@ import { MaintenanceRequest } from '../types';
 
 type MaintenanceRequestsListProps = {
   maintenanceRequests: MaintenanceRequest[];
+  isLoading?: boolean;
 };
 
-export function MaintenanceRequestsList({ maintenanceRequests }: MaintenanceRequestsListProps) {
+export function MaintenanceRequestsList({ maintenanceRequests, isLoading = false }: MaintenanceRequestsListProps) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-600"></div>
+      </div>
+    );
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { bg: string; text: string; label: string }> = {
+      'pending': { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending' },
+      'in-progress': { bg: 'bg-blue-100', text: 'text-blue-800', label: 'In Progress' },
+      'completed': { bg: 'bg-green-100', text: 'text-green-800', label: 'Completed' },
+      'rejected': { bg: 'bg-red-100', text: 'text-red-800', label: 'Rejected' },
+    };
+
+    const statusInfo = statusMap[status] || { bg: 'bg-gray-100', text: 'text-gray-800', label: status };
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.bg} ${statusInfo.text}`}>
+        {statusInfo.label}
+      </span>
+    );
+  };
+
+  const getPriorityBadge = (priority: string) => {
+    const priorityMap: Record<string, { bg: string; text: string }> = {
+      high: { bg: 'bg-red-100', text: 'text-red-800' },
+      medium: { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+      low: { bg: 'bg-green-100', text: 'text-green-800' },
+    };
+
+    const priorityInfo = priorityMap[priority.toLowerCase()] || { bg: 'bg-gray-100', text: 'text-gray-800' };
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityInfo.bg} ${priorityInfo.text}`}>
+        {priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase()}
+      </span>
+    );
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold text-sky-950">Maintenance Requests</h2>
-      </div>
-
-      {maintenanceRequests.length > 0 ? (
-        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+      <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-300">
             <thead className="bg-sky-50">
               <tr>
@@ -42,44 +90,26 @@ export function MaintenanceRequestsList({ maintenanceRequests }: MaintenanceRequ
                   <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-sky-950 sm:pl-6">
                     {request.vehicle?.name || `Vehicle #${request.vehicleId}`}
                   </td>
-                  <td className="px-3 py-4 text-sm text-sky-900 max-w-xs truncate">
+                  <td className="px-3 py-4 text-sm text-sky-900 max-w-xs break-words">
                     {request.issue}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      request.priority === 'high' 
-                        ? 'bg-red-100 text-red-800' 
-                        : request.priority === 'medium'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
-                    }`}>
-                      {request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
-                    </span>
+                    {getPriorityBadge(request.priority)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      request.status === 'completed' 
-                        ? 'bg-green-100 text-green-800' 
-                        : request.status === 'rejected' 
-                          ? 'bg-red-100 text-red-800' 
-                          : request.status === 'in-progress' 
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {request.status.split('-').map(word => 
-                        word.charAt(0).toUpperCase() + word.slice(1)
-                      ).join(' ')}
-                    </span>
+                    {getStatusBadge(request.status)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-950">
-                    {new Date(request.createdAt).toLocaleDateString()}
+                    {request.createdAt ? formatDate(request.createdAt) : 'N/A'}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      ) : (
+      </div>
+
+      {maintenanceRequests.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
           <Wrench className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No maintenance requests</h3>

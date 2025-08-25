@@ -8,15 +8,16 @@ export async function updateVehicleStatus(id: string, status: 'active' | 'inacti
 	if (error) throw new Error(error.message);
 	return {
 		id: data.id,
-		plateNumber: data.plate_number,
-		registrationDate: data.registration_date,
+		make: data.Make ?? '',
 		model: data.model,
+		year: new Date(data.registration_date).getFullYear() || new Date().getFullYear(),
+		status: data.status,
+		registration_date: data.registration_date,
 		color: data.color,
 		condition: data.condition,
-		ownerId: data.owner_id,
-		status: data.status,
-		createdAt: data.created_at,
-		make: data.Make ?? '',
+		owner_id: data.owner_id,
+		created_at: data.created_at,
+		Make: data.Make ?? '',
 	};
 }
 import { supabase } from '../lib/supabaseClient';
@@ -39,15 +40,10 @@ export async function getVehicles(): Promise<Vehicle[]> {
 	if (error) throw new Error(error.message);
 	return (data || []).map((v: any) => ({
 		id: v.id,
-		plateNumber: v.plate_number,
-		registrationDate: v.registration_date,
-		model: v.model,
-		color: v.color,
-		condition: v.condition,
-		ownerId: v.owner_id,
-		status: v.status,
-		createdAt: v.created_at,
 		make: v.Make ?? '',
+		model: v.model,
+		year: v.year ?? 0,
+		status: v.status,
 	}));
 }
 export async function getFuelRequests(): Promise<FuelRequest[]> {

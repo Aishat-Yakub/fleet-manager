@@ -8,61 +8,175 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, UploadCloud, File as FileIcon, X, Wrench, ArrowLeft } from 'lucide-react';
+import { InspectionFiles } from './components/InspectionFiles';
 import { ConditionUpdates } from '@/components/condition-updates';
 import { FuelRequest, MaintenanceRequest } from './types';
+import { ConditionUpdate } from './types';
+
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('condition');
-  const [newConditionUpdate, setNewConditionUpdate] = useState({ vehicleId: '', status: 'Good', notes: '' });
   const [fuelRequests, setFuelRequests] = useState<FuelRequest[]>([]);
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [showFuelRequestForm, setShowFuelRequestForm] = useState(false);
-  const [newFuelRequest, setNewFuelRequest] = useState({ vehicleId: '', amount: '', notes: '' });
+  const [newFuelRequest, setNewFuelRequest] = useState({
+    vehicle_id: '',
+    litres: '',
+    reason: '',
+  });
   const [newMaintenanceRequest, setNewMaintenanceRequest] = useState({
-    vehicleId: '',
+    vehicle_id: '',
     issue: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
   });
+  const [conditionUpdates, setConditionUpdates] = useState<ConditionUpdate[]>([]);
+  const [newConditionUpdate, setNewConditionUpdate] = useState({ vehicle_id: '', condition: 'Good', notes: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isFuelLoading, setIsFuelLoading] = useState(false);
+  const [fuelError, setFuelError] = useState<string | null>(null);
+  const [isConditionLoading, setIsConditionLoading] = useState(false);
+  const [conditionError, setConditionError] = useState<string | null>(null);
 
-  const handleConditionSubmit = (e: React.FormEvent) => {
+  // Replace with actual ownerId from auth/session if available
+  const owner_id = 1;
+
+  // Fetch maintenance requests from API/Supabase
+  const fetchMaintenanceRequests = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/owners?ownerId=${owner_id}`);
+      if (!response.ok) throw new Error('Failed to fetch maintenance requests');
+      const data = await response.json();
+      setMaintenanceRequests(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [owner_id]);
+
+  // Fetch fuel requests
+  const fetchFuelRequests = useCallback(async () => {
+    setIsFuelLoading(true);
+    setFuelError(null);
+    try {
+      const response = await fetch(`/api/owners?ownerId=${owner_id}&type=fuel`);
+      if (!response.ok) throw new Error('Failed to fetch fuel requests');
+      const data = await response.json();
+      setFuelRequests(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setFuelError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsFuelLoading(false);
+    }
+  }, [owner_id]);
+
+  // Fetch condition updates
+  const fetchConditionUpdates = useCallback(async () => {
+    setIsConditionLoading(true);
+    setConditionError(null);
+    try {
+      const response = await fetch(`/api/owners?ownerId=${owner_id}&type=condition`);
+      if (!response.ok) throw new Error('Failed to fetch condition updates');
+      const data = await response.json();
+      setConditionUpdates(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setConditionError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setIsConditionLoading(false);
+    }
+  }, [owner_id]);
+
+  useEffect(() => {
+    fetchMaintenanceRequests();
+    fetchFuelRequests();
+    fetchConditionUpdates();
+  }, [fetchMaintenanceRequests, fetchFuelRequests, fetchConditionUpdates]);
+
+  const handleFuelRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setNewConditionUpdate({ vehicleId: '', status: 'Good', notes: '' });
+    setIsFuelLoading(true);
+    setFuelError(null);
+    try {
+      const response = await fetch('/api/owners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vehicle_id: Number(newFuelRequest.vehicle_id),
+          owner_id: owner_id,
+          litres: Number(newFuelRequest.litres),
+          reason: newFuelRequest.reason,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit fuel request');
+      }
+      await fetchFuelRequests();
+      setNewFuelRequest({ vehicle_id: '', litres: '', reason: '' });
+    } catch (err) {
+      setFuelError(err instanceof Error ? err.message : 'Failed to submit fuel request');
+    } finally {
+      setIsFuelLoading(false);
+    }
   };
 
-  const handleFuelRequestSubmit = (e: React.FormEvent) => {
+  const handleMaintenanceRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newRequest = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      status: 'Pending',
-      vehicleId: newFuelRequest.vehicleId,
-      amount: newFuelRequest.amount,
-      notes: newFuelRequest.notes,
-      vehicle: '',
-    };
-    setFuelRequests(prev => [...prev, newRequest]);
-    setNewFuelRequest({ vehicleId: '', amount: '', notes: '' });
-    setShowFuelRequestForm(false);
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Import the service dynamically to avoid SSR issues
+      const { submitMaintenanceRequest } = await import('@/services/ownerService');
+      const requestData = {
+        vehicleId: Number(newMaintenanceRequest.vehicle_id),
+        ownerId: owner_id,
+        issue: newMaintenanceRequest.issue,
+        priority: newMaintenanceRequest.priority,
+      };
+      await submitMaintenanceRequest(requestData);
+      // Refresh list from API
+      await fetchMaintenanceRequests();
+      setNewMaintenanceRequest({
+        vehicle_id: '',
+        issue: '',
+        priority: 'medium',
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit request');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleMaintenanceRequestSubmit = (e: React.FormEvent) => {
+  const handleConditionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newRequest = {
-      id: Date.now(),
-      vehicleId: parseInt(newMaintenanceRequest.vehicleId, 10),
-      issue: newMaintenanceRequest.issue,
-      priority: newMaintenanceRequest.priority,
-      status: 'pending' as 'pending' | 'in-progress' | 'completed' | 'rejected',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      vehicle: undefined,
-    };
-    setMaintenanceRequests(prev => [...prev, newRequest]);
-    setNewMaintenanceRequest({
-      vehicleId: '',
-      issue: '',
-      priority: 'medium',
-    });
+    setIsConditionLoading(true);
+    setConditionError(null);
+    try {
+      const response = await fetch('/api/owners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          vehicle_id: Number(newConditionUpdate.vehicle_id),
+          owner_id: owner_id,
+          condition: newConditionUpdate.condition,
+          notes: newConditionUpdate.notes,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit condition update');
+      }
+      await fetchConditionUpdates();
+      setNewConditionUpdate({ vehicle_id: '', condition: 'Good', notes: '' });
+    } catch (err) {
+      setConditionError(err instanceof Error ? err.message : 'Failed to submit condition update');
+    } finally {
+      setIsConditionLoading(false);
+    }
   };
 
   const handleTabChange = (value: string) => {
@@ -96,25 +210,33 @@ const OwnerDashboard = () => {
           >
             <TabsTrigger 
               value="condition" 
-              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
+              className={
+                `transition-colors text-sky-950 hover:bg-sky-50 hover:text-sky-950 ${activeTab === 'condition' ? 'bg-blue-600 text-white' : ''}`
+              }
             >
               Condition Updates
             </TabsTrigger>
             <TabsTrigger 
               value="fuel" 
-              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
+              className={
+                `transition-colors text-sky-950 hover:bg-sky-50 hover:text-sky-950 ${activeTab === 'fuel' ? 'bg-blue-600 text-white' : ''}`
+              }
             >
               Fuel Requests
             </TabsTrigger>
             <TabsTrigger 
               value="maintenance" 
-              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
+              className={
+                `transition-colors text-sky-950 hover:bg-sky-50 hover:text-sky-950 ${activeTab === 'maintenance' ? 'bg-blue-600 text-white' : ''}`
+              }
             >
               Maintenance
             </TabsTrigger>
             <TabsTrigger 
               value="inspections" 
-              className="hover:bg-sky-50 hover:text-sky-950 transition-colors text-sky-950"
+              className={
+                `transition-colors text-sky-950 hover:bg-sky-50 hover:text-sky-950 ${activeTab === 'inspections' ? 'bg-blue-600 text-white' : ''}`
+              }
             >
               Inspections
             </TabsTrigger>
@@ -130,32 +252,24 @@ const OwnerDashboard = () => {
                 <form onSubmit={handleConditionSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="vehicleId">Vehicle ID</Label>
+                      <Label htmlFor="condition-vehicle-id">Vehicle ID</Label>
                       <Input
-                        id="vehicleId"
-                        value={newConditionUpdate.vehicleId}
-                        onChange={(e) =>
-                          setNewConditionUpdate({
-                            ...newConditionUpdate,
-                            vehicleId: e.target.value,
-                          })
-                        }
+                        id="condition-vehicle-id"
+                        type="number"
+                        min="1"
+                        value={newConditionUpdate.vehicle_id}
+                        onChange={(e) => setNewConditionUpdate({ ...newConditionUpdate, vehicle_id: e.target.value })}
                         className='text-sky-950 bg-transparent'
                         placeholder="Enter vehicle ID"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="status">Condition Status</Label>
+                      <Label htmlFor="condition-status">Condition Status</Label>
                       <select
-                        id="status"
-                        value={newConditionUpdate.status}
-                        onChange={(e) =>
-                          setNewConditionUpdate({
-                            ...newConditionUpdate,
-                            status: e.target.value as 'Good' | 'Fair' | 'Poor',
-                          })
-                        }
+                        id="condition-status"
+                        value={newConditionUpdate.condition}
+                        onChange={(e) => setNewConditionUpdate({ ...newConditionUpdate, condition: e.target.value })}
                         className="flex h-10 w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-sky-950"
                         required
                       >
@@ -166,51 +280,53 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Notes</Label>
+                    <Label htmlFor="condition-notes">Notes</Label>
                     <Textarea
-                      id="notes"
+                      id="condition-notes"
                       value={newConditionUpdate.notes}
-                      onChange={(e) =>
-                        setNewConditionUpdate({
-                          ...newConditionUpdate,
-                          notes: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setNewConditionUpdate({ ...newConditionUpdate, notes: e.target.value })}
                       className="min-h-[80px] bg-transparent border-sky-200 focus-visible:ring-sky-500"
                       placeholder="Add any additional notes about the vehicle's condition..."
                       rows={3}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="file">Upload Images (Optional)</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        id="file"
-                        type="file"
-                        accept="image/*"
-                        className="border-sky-200 bg-transparent focus-visible:ring-sky-500 focus-visible:ring-0"
-                        onChange={(e) => {
-                          // Handle file upload
-                          if (e.target.files && e.target.files[0]) {
-                            // TODO: Implement file upload logic
-                            console.log('File selected:', e.target.files[0]);
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                  
                   <div className="pt-4">
-                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={isConditionLoading}>
                       Submit Update
                     </Button>
                   </div>
+                  {conditionError && <div className="text-red-500 mt-2">{conditionError}</div>}
                 </form>
                 
                 {/* Recent Updates Section */}
                 <div className="mt-8">
                   <h2 className="text-lg text-sky-950 font-medium mb-4">Recent Updates</h2>
-                  <ConditionUpdates />
+                  {isConditionLoading ? (
+                    <div className="text-center py-8">Loading...</div>
+                  ) : conditionUpdates.length > 0 ? (
+                    conditionUpdates.map((update) => (
+                      <div key={update.id} className="border border-sky-950 rounded-lg p-4 bg-white mb-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <div>
+                            <p className="font-medium">Vehicle #{update.vehicle_id}</p>
+                            <p className="text-sm text-gray-500">
+                              Condition: {update.condition} • {new Date(update.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                              })}
+                              {update.notes && (
+                                <span className="block mt-1 text-gray-600">{update.notes}</span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 border rounded-lg bg-sky-50">
+                      <p className="text-gray-500">No condition updates found</p>
+                      <p className="text-sm text-gray-400 mt-1">Fill out the form above to create your first update</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -224,131 +340,88 @@ const OwnerDashboard = () => {
               </CardHeader>
               <CardContent>
                 {/* New Fuel Request Form */}
-                {showFuelRequestForm ? (
-                  <form onSubmit={handleFuelRequestSubmit} className="space-y-4 mb-6 p-4 border rounded-lg bg-sky-50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Vehicle ID Input */}
-                      <div>
-                        <Label htmlFor="fuel-vehicle-id" className="text-sky-950">
-                          Vehicle ID <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="fuel-vehicle-id"
-                          value={newFuelRequest.vehicleId}
-                          onChange={(e) =>
-                            setNewFuelRequest({ ...newFuelRequest, vehicleId: e.target.value })
-                          }
-                          className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
-                          required
-                          placeholder="Enter vehicle ID"
-                        />
-                      </div>
-                      
-                      {/* Amount Input */}
-                      <div>
-                        <Label htmlFor="fuel-amount" className="text-sky-950">
-                          Amount (Liters) <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                          id="fuel-amount"
-                          type="number"
-                          min="1"
-                          step="0.1"
-                          value={newFuelRequest.amount}
-                          onChange={(e) =>
-                            setNewFuelRequest({ ...newFuelRequest, amount: e.target.value })
-                          }
-                          className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
-                          required
-                          placeholder="e.g., 20.5"
-                        />
-                      </div>
-                      
-                      {/* Notes Textarea */}
-                      <div className="md:col-span-2">
-                        <Label htmlFor="fuel-notes" className="text-sky-950">
-                          Notes (Optional)
-                        </Label>
-                        <Textarea
-                          id="fuel-notes"
-                          value={newFuelRequest.notes}
-                          onChange={(e) =>
-                            setNewFuelRequest({ ...newFuelRequest, notes: e.target.value })
-                          }
-                          className="min-h-[80px] bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
-                          placeholder="Any additional information about this request"
-                        />
-                      </div>
+                <form onSubmit={handleFuelRequestSubmit} className="space-y-4 mb-6 p-4 border rounded-lg bg-sky-50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="fuel-vehicle-id" className="text-sky-950">
+                        Vehicle ID <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="fuel-vehicle-id"
+                        type="number"
+                        min="1"
+                        value={newFuelRequest.vehicle_id}
+                        onChange={(e) => setNewFuelRequest({ ...newFuelRequest, vehicle_id: e.target.value })}
+                        className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
+                        required
+                        placeholder="Enter vehicle ID"
+                      />
                     </div>
-                    
-                    {/* Form Actions */}
-                    <div className="flex justify-end space-x-3 pt-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setShowFuelRequestForm(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        type="submit" 
-                        className="bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                        disabled={!newFuelRequest.vehicleId || !newFuelRequest.amount}
-                      >
-                        Submit Request
-                      </Button>
+                    <div>
+                      <Label htmlFor="fuel-litres" className="text-sky-950">
+                        Litres <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="fuel-litres"
+                        type="number"
+                        min="1"
+                        value={newFuelRequest.litres}
+                        onChange={(e) => setNewFuelRequest({ ...newFuelRequest, litres: e.target.value })}
+                        className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
+                        required
+                        placeholder="Enter litres"
+                      />
                     </div>
-                  </form>
-                ) : (
-                  <div className="flex justify-end mb-6">
-                    <Button 
-                      className="bg-blue-600 text-blacks hover:bg-blue-700 transition-colors"
-                      onClick={() => setShowFuelRequestForm(true)}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      New Fuel Request
+                    <div className="md:col-span-2">
+                      <Label htmlFor="fuel-reason" className="text-sky-950">
+                        Reason <span className="text-red-500">*</span>
+                      </Label>
+                      <Textarea
+                        id="fuel-reason"
+                        value={newFuelRequest.reason}
+                        onChange={(e) => setNewFuelRequest({ ...newFuelRequest, reason: e.target.value })}
+                        className="min-h-[80px] bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
+                        required
+                        placeholder="Reason for fuel request"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-2">
+                    <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 transition-colors" disabled={isFuelLoading}>
+                      Submit Request
                     </Button>
                   </div>
-                )}
-                
+                  {fuelError && <div className="text-red-500 mt-2">{fuelError}</div>}
+                </form>
+
                 {/* Fuel Requests List */}
                 <div className="space-y-4 border border-">
                   <h3 className="text-lg font-medium text-sky-950">Recent Fuel Requests</h3>
-                  
-                  {fuelRequests.length > 0 ? (
+                  {isFuelLoading ? (
+                    <div className="text-center py-8">Loading...</div>
+                  ) : fuelRequests.length > 0 ? (
                     fuelRequests.map((request) => (
                       <div key={request.id} className="border border-sky-950 rounded-lg p-4 bg-white">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <div>
-                            <p className="font-medium">
-                              {request.vehicle || `Vehicle ID: ${request.vehicleId}`}
-                            </p>
+                            <p className="font-medium">Vehicle #{request.vehicle_id}</p>
                             <p className="text-sm text-gray-500">
-                              {request.amount}L • {new Date(request.date).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
+                              {request.litres}L • {new Date(request.created_at).toLocaleDateString('en-US', {
+                                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                               })}
-                              {request.notes && (
-                                <span className="block mt-1 text-gray-600">
-                                  {request.notes}
-                                </span>
+                              {request.reason && (
+                                <span className="block mt-1 text-gray-600">{request.reason}</span>
                               )}
                             </p>
                           </div>
-                          <span 
-                            className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-                              request.status === 'Approved' 
-                                ? 'bg-green-100 text-green-800' 
-                                : request.status === 'Rejected'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                            }`}
-                            aria-label={`Request status: ${request.status}`}
-                          >
-                            {request.status}
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                            request.status === 'approved'
+                              ? 'bg-green-100 text-green-800'
+                              : request.status === 'rejected'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                          }`} aria-label={`Request status: ${request.status}`}>
+                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                           </span>
                         </div>
                       </div>
@@ -356,9 +429,7 @@ const OwnerDashboard = () => {
                   ) : (
                     <div className="text-center py-8 border rounded-lg bg-sky-50">
                       <p className="text-gray-500">No fuel requests found</p>
-                      <p className="text-sm text-gray-400 mt-1">
-                        {showFuelRequestForm ? 'Fill out the form above to create your first request' : 'Click "New Fuel Request" to get started'}
-                      </p>
+                      <p className="text-sm text-gray-400 mt-1">Fill out the form above to create your first request</p>
                     </div>
                   )}
                 </div>
@@ -388,9 +459,9 @@ const OwnerDashboard = () => {
                         id="maintenance-vehicle-id"
                         type="number"
                         min="1"
-                        value={newMaintenanceRequest.vehicleId}
+                        value={newMaintenanceRequest.vehicle_id}
                         onChange={(e) =>
-                          setNewMaintenanceRequest({ ...newMaintenanceRequest, vehicleId: e.target.value })
+                          setNewMaintenanceRequest({ ...newMaintenanceRequest, vehicle_id: e.target.value })
                         }
                         className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
                         required
@@ -481,39 +552,37 @@ const OwnerDashboard = () => {
                           {maintenanceRequests.map((request) => (
                             <tr key={request.id} className="hover:bg-sky-50">
                               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-sky-950 sm:pl-6">
-                                {request.vehicle?.name || `Vehicle #${request.vehicleId}`}
+                                {`Vehicle #${request.vehicle_id}`}
                               </td>
                               <td className="px-3 py-4 text-sm text-sky-900 max-w-xs truncate">
                                 {request.issue}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  request.priority === 'high' 
+                                  request.priority.trim() === 'high' 
                                     ? 'bg-red-100 text-red-800' 
-                                    : request.priority === 'medium'
+                                    : request.priority.trim() === 'medium'
                                       ? 'bg-yellow-100 text-yellow-800'
                                       : 'bg-green-100 text-green-800'
                                 }`}>
-                                  {request.priority.charAt(0).toUpperCase() + request.priority.slice(1)}
+                                  {request.priority.trim().charAt(0).toUpperCase() + request.priority.trim().slice(1)}
                                 </span>
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                   request.status === 'completed'
                                     ? 'bg-green-100 text-green-800'
-                                    : request.status === 'in-progress'
+                                    : request.status === 'approved'
                                       ? 'bg-blue-100 text-blue-800'
                                       : request.status === 'rejected'
                                         ? 'bg-red-100 text-red-800'
                                         : 'bg-yellow-100 text-yellow-800'
                                 }`}>
-                                  {request.status.split('-').map(word => 
-                                    word.charAt(0).toUpperCase() + word.slice(1)
-                                  ).join(' ')}
+                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                                 </span>
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-950">
-                                  {new Date(request.createdAt).toLocaleDateString()}
+                <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-950">
+                  {new Date(request.created_at).toLocaleDateString()}
                                 </td>
                             </tr>
                           ))}
@@ -536,44 +605,7 @@ const OwnerDashboard = () => {
 
           {/* Inspections Tab Content */}
           <TabsContent value="inspections" className="space-y-6 text-sky-950">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vehicle Inspections</CardTitle>
-                <CardDescription>View and manage vehicle inspection reports</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-end mb-6">
-                  <Button 
-                    className="bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                    onClick={() => {
-                      // TODO: Implement new inspection functionality
-                      console.log('New inspection clicked');
-                    }}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Schedule New Inspection
-                  </Button>
-                </div>
-                
-                <div className="border rounded-lg overflow-hidden">
-                  <div className="min-w-full divide-y divide-gray-200">
-                    <div className="bg-gray-50">
-                      <div className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Inspections
-                      </div>
-                    </div>
-                    <div className="bg-white divide-y divide-gray-200">
-                      <div className="px-6 py-12 text-center">
-                        <div className="text-sm text-gray-500">No inspection reports available</div>
-                        <p className="mt-1 text-sm text-gray-400">
-                          Schedule a new inspection to get started
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <InspectionFiles ownerId={owner_id.toString()} />
           </TabsContent>
         </Tabs>
       </div>
