@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
+import Logo from '@/app/assets/logo/Logo.jpg'
 import { 
   LayoutDashboard, 
   Users, 
@@ -50,7 +52,7 @@ const navItems: NavItem[] = [
     group: 'Vehicle Management'
   },
   { 
-    name: 'Manage Status', 
+    name: 'Manage', 
     href: '/admin/manager', 
     icon: <Clock className="w-5 h-5" />,
     group: 'Vehicle Management'
@@ -73,7 +75,16 @@ export default function Sidebar() {
       <div className="flex flex-col w-64 border-r border-gray-200 bg-white">
         {/* Logo */}
         <div className="flex items-center h-16 flex-shrink-0 px-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">Fleet Manager</h1>
+          <h1 className="text-xl flex justify-center items-center gap-2 font-bold text-gray-900">
+            <Image
+              src={Logo}
+              alt="Fleet Manager Logo"
+              width={80}
+              height={80}
+              className='h-10 w-auto rounded-full object-cover'
+            />
+            <span className='font-bold'>LASU Fleet</span>
+          </h1>
         </div>
         
         {/* Navigation */}

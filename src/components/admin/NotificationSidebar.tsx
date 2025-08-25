@@ -33,6 +33,7 @@ export default function AdSidebar() {
             width={200}
             height={200}
             className="h-64 w-64 rounded-full mx-auto"
+            priority
           />
         </div>
         <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">

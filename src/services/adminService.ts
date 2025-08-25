@@ -1,5 +1,8 @@
 import { supabase } from "../lib/supabaseClient";
 import { User, UserWithRole, Role } from "@/types/type";
+import { NextResponse } from 'next/server';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 /* ---------------- USERS CRUD ---------------- */
 
@@ -84,4 +87,13 @@ export async function deleteRole(id: number) {
   const { error } = await supabase.from("roles").delete().eq("id", id);
   if (error) throw new Error(error.message);
   return true;
+}
+
+export async function GET() {
+  const supabase = createRouteHandlerClient({ cookies });
+  const { data, error } = await supabase.from('users').select('*');
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json(data, { status: 200 });
 }

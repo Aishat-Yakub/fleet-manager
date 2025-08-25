@@ -152,10 +152,10 @@ export default function VehiclesPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold flex items-center">
-            <Car className="mr-2" /> Vehicle Fleet
+          <h1 className="font-bold flex items-center text-2xl text-sky-950">
+            <Car className="mr-2 h-10 w-auto text-sky-950" /> Vehicle Fleet
           </h1>
-          <p className="text-gray-600 mt-1">Manage your fleet of vehicles</p>
+          <p className="mt-1 text-sky-950">Manage your fleet of vehicles</p>
         </div>
         
         <div className="mt-4 md:mt-0">
@@ -169,14 +169,14 @@ export default function VehiclesPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className=" rounded-lg p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search vehicles..."
-              className="pl-10 pr-4 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="pl-10 pr-4 py-2 border text-sky-950 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -185,7 +185,7 @@ export default function VehiclesPage() {
           <select
             value={filters.status}
             onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border rounded-lg text-sky-950 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Statuses</option>
             <option value="active">Active</option>
@@ -196,7 +196,7 @@ export default function VehiclesPage() {
           <select
             value={filters.condition}
             onChange={(e) => setFilters({ ...filters, condition: e.target.value })}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border rounded-lg text-sky-950 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">All Conditions</option>
             <option value="Good">Good</option>
@@ -207,11 +207,11 @@ export default function VehiclesPage() {
       </div>
 
       {/* Vehicles Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className=" rounded-lg overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-gray-500">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-            <p>Loading vehicles...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 text-sky-950 border-blue-500 mx-auto mb-2"></div>
+            <p className='text-2xl'>Loading vehicles...</p>
           </div>
         ) : error ? (
           <div className="p-8 text-center text-red-500">
@@ -239,7 +239,7 @@ export default function VehiclesPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -262,7 +262,7 @@ export default function VehiclesPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="">
                 {filteredVehicles.map((vehicle) => (
                   <tr key={vehicle.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">

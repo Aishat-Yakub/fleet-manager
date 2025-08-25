@@ -25,8 +25,8 @@ export function MaintenanceRequestForm({ newMaintenanceRequest, onUpdate, onSubm
           <Input
             id="maintenance-vehicle-id"
             type="number"
-            value={newMaintenanceRequest.vehicleId || ''}
-            onChange={(e) => onUpdate({ ...newMaintenanceRequest, vehicleId: Number(e.target.value) })}
+            value={newMaintenanceRequest.vehicle_id || ''}
+            onChange={(e) => onUpdate({ ...newMaintenanceRequest, vehicle_id: Number(e.target.value) })}
             className="mt-1 block w-full border border-sky-900 bg-transparent text-sky-950 focus:border-sky-500 focus:ring-sky-500 sm:text-sm rounded-md"
             required
             min="1"

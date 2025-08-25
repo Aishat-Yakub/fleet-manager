@@ -24,7 +24,7 @@ export default function UsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('/api/users');
+        const response = await fetch(`/api/owners?type=users`);
         if (!response.ok) throw new Error('Failed to fetch users');
         const data = await response.json();
         setUsers(data);
@@ -51,7 +51,7 @@ export default function UsersPage() {
   const handleSaveUser = async (userData: Omit<User, 'id'> & { password?: string }) => {
     try {
       const method = editingUser ? 'PUT' : 'POST';
-      const url = editingUser ? `/api/users` : '/api/users';
+      const url = editingUser ? `/api/owners?type=users` : '/api/owners?type=users';
       
       const response = await fetch(url, {
         method,
@@ -64,7 +64,7 @@ export default function UsersPage() {
       if (!response.ok) throw new Error('Failed to save user');
       
       // Refresh users list
-      const updatedUsers = await fetch('/api/users').then(res => res.json());
+      const updatedUsers = await fetch('/api/owners?type=users').then(res => res.json());
       setUsers(updatedUsers);
       handleCloseModal();
     } catch (err) {
@@ -76,7 +76,7 @@ export default function UsersPage() {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
     try {
-      const response = await fetch('/api/users', {
+      const response = await fetch('/api/owners?type=users', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -93,14 +93,14 @@ export default function UsersPage() {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (isLoading) return <div className='text-sky-950 text-2xl'>Loading...</div>;
+  if (error) return <div className='text-red-600 text-2xl'>Error: {error}</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold flex items-center text-sky-950">
-          <Users className="mr-2" /> Users Management
+          <Users className="mr-2 text-sky-950" /> Users Management
         </h1>
         <button
           onClick={() => handleOpenModal()}
@@ -110,7 +110,7 @@ export default function UsersPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white/30 rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -128,7 +128,7 @@ export default function UsersPage() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-transparent divide-y divide-gray-200">
             {users.map((user) => (
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -165,9 +165,9 @@ export default function UsersPage() {
 
       {/* User Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-sky-950/30 backdrop-blur-lg bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
+            <h2 className="text-xl font-bold mb-4 text-sky-950">
               {editingUser ? 'Edit User' : 'Add New User'}
             </h2>
             
@@ -181,34 +181,34 @@ export default function UsersPage() {
               });
             }}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-sky-950 mb-1">Email</label>
                 <input
                   type="email"
                   name="email"
                   defaultValue={editingUser?.email || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sky-950"
                   required
                 />
               </div>
               
               {!editingUser && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-sky-950 mb-1">Password</label>
                   <input
                     type="password"
                     name="password"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    className="w-full px-3 py-2 border border-gray-300 text-sky-950 rounded-md"
                     required={!editingUser}
                   />
                 </div>
               )}
               
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label className="block text-sm font-medium text-sky-950 mb-1">Role</label>
                 <select
                   name="role_id"
                   defaultValue={editingUser?.role_id || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  className="w-full px-3 py-2 border border-gray-300 text-sky-950 rounded-md"
                   required
                 >
                   <option value="">Select a role</option>

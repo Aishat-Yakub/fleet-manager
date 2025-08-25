@@ -90,13 +90,13 @@ export default function AuditorsPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl text-sky-950 font-bold">Audit Logs</h1>
+        <h1 className="text-2xl text-sky-950 font-bold">Auditors Logs</h1>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search logs..."
-            className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="pl-10 pr-4 py-2 border text-sky-950 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -105,9 +105,9 @@ export default function AuditorsPage() {
 
       <div className="flex space-x-4 mb-6">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Type</label>
+          <label className="block text-sm font-medium text-sky-950 mb-1">Filter by Type</label>
           <select
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg text-sky-950"
             value={filters.type || ''}
             onChange={(e) => setFilters({ ...filters, type: e.target.value || undefined })}
           >
@@ -120,9 +120,9 @@ export default function AuditorsPage() {
           </select>
         </div>
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Filter by User</label>
+          <label className="block text-sm font-medium text-sky-950 mb-1">Filter by User</label>
           <select
-            className="w-full p-2 border rounded-lg"
+            className="w-full p-2 border rounded-lg text-sky-950"
             value={filters.changed_by || ''}
             onChange={(e) => setFilters({ ...filters, changed_by: e.target.value || undefined })}
           >
@@ -136,9 +136,9 @@ export default function AuditorsPage() {
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className=" overflow-hidden sm:rounded-lg">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50 text-sky-950">
+          <thead className=" text-sky-950">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Type
