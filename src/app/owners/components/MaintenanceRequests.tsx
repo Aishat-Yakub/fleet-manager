@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MaintenanceRequest } from '../types';
@@ -12,13 +12,20 @@ type MaintenanceRequestsProps = {
   ownerId: string;
 };
 
+type MaintenanceRequestFormData = {
+  vehicle_id: number;
+  issue: string;
+  priority: 'low' | 'medium' | 'high';
+  owner_id: number;
+};
+
 export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
   const [showForm, setShowForm] = useState(false);
-  const [newRequest, setNewRequest] = useState<Omit<MaintenanceRequest, 'id' | 'status' | 'created_at' | 'updated_at' | 'vehicle'>>({
+  const [newRequest, setNewRequest] = useState<MaintenanceRequestFormData>({
     vehicle_id: 0,  
     issue: '',
     priority: 'medium',
-    owner_id: 0, 
+    owner_id: Number(ownerId),
   });
 
   const {
@@ -39,19 +46,21 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
     }
   
     try {
-      await createMaintenanceRequest({
+      const requestData = {
         vehicle_id: Number(newRequest.vehicle_id),
-        owner_id: Number(ownerId),  // Convert ownerId to number to match DB
+        owner_id: Number(ownerId),
         issue: newRequest.issue,
         priority: newRequest.priority,
-        status: 'pending',  // Default status
-      });
+      };
+      
+      await createMaintenanceRequest(requestData);
       
       // Reset form and hide it
       setNewRequest({
         vehicle_id: 0,
         issue: '',
         priority: 'medium',
+        owner_id: Number(ownerId),
       });
       setShowForm(false);
       

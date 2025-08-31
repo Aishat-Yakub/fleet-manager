@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createUser, getUsers, updateUserRole, deleteUser } from '@/services/authService';
+import { createMaintenanceRequest } from '@/services/maintenanceService';
 import { User } from '@/types/type';
 
 export async function GET() {
@@ -16,12 +17,39 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { email, password, role_id } = await request.json();
-    const user = await createUser(email, password, role_id);
-    return NextResponse.json(user, { status: 201 });
+    const url = new URL(request.url);
+    const type = url.searchParams.get('type');
+    const body = await request.json();
+    
+    if (type === 'users' || body.type === 'user') {
+      const { email, password, role_id } = body;
+      if (!email || !password || role_id === undefined) {
+        return NextResponse.json(
+          { error: 'Missing required user fields: email, password, and role_id are required' },
+          { status: 400 }
+        );
+      }
+      const user = await createUser(email, password, Number(role_id));
+      return NextResponse.json(user, { status: 201 });
+    } else if (type === 'maintenance' || body.type === 'maintenance') {
+      const { vehicle_id, owner_id, issue, priority } = body;
+      if (!vehicle_id || !owner_id || !issue || !priority) {
+        return NextResponse.json(
+          { error: 'Missing required maintenance fields' },
+          { status: 400 }
+        );
+      }
+      const maintenance = await createMaintenanceRequest({ vehicle_id, owner_id, issue, priority });
+      return NextResponse.json(maintenance, { status: 201 });
+    } else {
+      return NextResponse.json(
+        { error: 'Invalid type specified' },
+        { status: 400 }
+      );
+    }
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to create user' },
+      { error: error.message || 'Failed to process request' },
       { status: 500 }
     );
   }

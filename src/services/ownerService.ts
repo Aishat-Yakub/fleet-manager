@@ -11,6 +11,7 @@ export async function submitMaintenanceRequest(requestData: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        type: 'maintenance',
         vehicle_id: requestData.vehicleId,
         owner_id: Number(requestData.ownerId),
         issue: requestData.issue,

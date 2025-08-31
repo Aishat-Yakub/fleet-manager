@@ -52,7 +52,7 @@ export function MaintenanceRequests() {
             {requests.map((request) => (
               <div 
                 key={request.id} 
-                className="bg-white rounded-lg border border-gray-200 p-5 transition-shadow"
+                className=" rounded-lg border border-sky-950/40 p-5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="space-y-2 flex-1">

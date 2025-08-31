@@ -28,7 +28,7 @@ export default function ManagerDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen py-8">
+    <div className="min-h-screen py-8 bg-white/60 backdrop-blur-lg">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl md:text-4xl font-bold mb-8 text-sky-950">Vehicle Management Dashboard</h1>
         

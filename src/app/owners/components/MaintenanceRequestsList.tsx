@@ -17,14 +17,22 @@ export function MaintenanceRequestsList({ maintenanceRequests, isLoading = false
     );
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const formatDate = (dateString: string | Date) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      console.error('Error formatting date:', dateString, error);
+      return 'Invalid date';
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -88,7 +96,7 @@ export function MaintenanceRequestsList({ maintenanceRequests, isLoading = false
               {maintenanceRequests.map((request) => (
                 <tr key={request.id} className="hover:bg-sky-50">
                   <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-sky-950 sm:pl-6">
-                    {request.vehicle?.name || `Vehicle #${request.vehicleId}`}
+                    {request.vehicle ? `${request.vehicle.make} ${request.vehicle.model} (${request.vehicle.year})` : `Vehicle #${request.vehicle_id}`}
                   </td>
                   <td className="px-3 py-4 text-sm text-sky-900 max-w-xs break-words">
                     {request.issue}
@@ -97,10 +105,10 @@ export function MaintenanceRequestsList({ maintenanceRequests, isLoading = false
                     {getPriorityBadge(request.priority)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-4 text-sm">
-                    {getStatusBadge(request.status)}
+                    {request.status ? getStatusBadge(request.status) : 'N/A'}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-950">
-                    {request.createdAt ? formatDate(request.createdAt) : 'N/A'}
+                  <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    {request.created_at ? formatDate(request.created_at) : 'N/A'}
                   </td>
                 </tr>
               ))}

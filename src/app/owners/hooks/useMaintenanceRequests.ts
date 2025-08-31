@@ -13,12 +13,33 @@ export const useMaintenanceRequests = (ownerId: string) => {
     setError(null);
     
     try {
-      const response = await fetch(`/api/owners?ownerId=${ownerId}`);
+      const response = await fetch(`/api/maintenance?ownerId=${ownerId}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch maintenance requests');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch maintenance requests');
       }
+      
       const data = await response.json();
-      setMaintenanceRequests(Array.isArray(data) ? data : []);
+      
+      // Ensure we have an array of requests with proper formatting
+      const formattedData = Array.isArray(data) 
+        ? data.map((req: any) => ({
+            ...req,
+            created_at: req.created_at || new Date().toISOString(),
+            status: req.status || 'pending',
+            priority: req.priority || 'medium',
+            // Ensure vehicle data is properly formatted
+            vehicle: req.vehicle ? {
+              id: req.vehicle.id,
+              make: req.vehicle.make || 'Unknown',
+              model: req.vehicle.model || 'Unknown',
+              year: req.vehicle.year || new Date().getFullYear(),
+              license_plate: req.vehicle.license_plate || ''
+            } : undefined
+          }))
+        : [];
+        
+      setMaintenanceRequests(formattedData);
     } catch (err) {
       console.error('Error fetching maintenance requests:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -27,21 +48,25 @@ export const useMaintenanceRequests = (ownerId: string) => {
     }
   }, [ownerId]);
 
-  const createMaintenanceRequest = useCallback(async (requestData: Omit<MaintenanceRequest, 'id' | 'status' | 'created_at'>) => {
+  const createMaintenanceRequest = useCallback(async (requestData: Omit<MaintenanceRequest, 'id' | 'status' | 'created_at' | 'updated_at' | 'vehicle'>) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await fetch('/api/owners', {
+      const response = await fetch('/api/maintenance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify({
+          ...requestData,
+          status: 'pending' // Set default status
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create maintenance request');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create maintenance request');
       }
 
       const data = await response.json();

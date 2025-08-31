@@ -104,6 +104,7 @@ const OwnerDashboard = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          type: 'fuel',
           vehicle_id: Number(newFuelRequest.vehicle_id),
           owner_id: owner_id,
           litres: Number(newFuelRequest.litres),
@@ -310,9 +311,9 @@ const OwnerDashboard = () => {
                           <div>
                             <p className="font-medium">Vehicle #{update.vehicle_id}</p>
                             <p className="text-sm text-gray-500">
-                              Condition: {update.condition} • {new Date(update.created_at).toLocaleDateString('en-US', {
+                              Condition: {update.condition} • {update.created_at ? new Date(update.created_at.replace(' ', 'T')).toLocaleDateString('en-US', {
                                 year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                              })}
+                              }) : ''}
                               {update.notes && (
                                 <span className="block mt-1 text-gray-600">{update.notes}</span>
                               )}
@@ -421,7 +422,7 @@ const OwnerDashboard = () => {
                                 ? 'bg-red-100 text-red-800'
                                 : 'bg-yellow-100 text-yellow-800'
                           }`} aria-label={`Request status: ${request.status}`}>
-                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                            {request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : ''}
                           </span>
                         </div>
                       </div>
@@ -559,13 +560,13 @@ const OwnerDashboard = () => {
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                  request.priority.trim() === 'high' 
+                                  (request.priority?.trim() === 'high')
                                     ? 'bg-red-100 text-red-800' 
-                                    : request.priority.trim() === 'medium'
+                                    : (request.priority?.trim() === 'medium')
                                       ? 'bg-yellow-100 text-yellow-800'
                                       : 'bg-green-100 text-green-800'
                                 }`}>
-                                  {request.priority.trim().charAt(0).toUpperCase() + request.priority.trim().slice(1)}
+                                  {request.priority ? (request.priority.trim().length > 0 ? request.priority.trim().charAt(0).toUpperCase() + request.priority.trim().slice(1) : '') : ''}
                                 </span>
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm">
@@ -578,15 +579,15 @@ const OwnerDashboard = () => {
                                         ? 'bg-red-100 text-red-800'
                                         : 'bg-yellow-100 text-yellow-800'
                                 }`}>
-                                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                                  {request.status ? (request.status.length > 0 ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : '') : ''}
                                 </span>
                               </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-950">
-                  {new Date(request.created_at).toLocaleDateString()}
-                                </td>
-                            </tr>
-                          ))}
-                        </tbody>
+                           <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-950">
+                              {new Date(request.created_at).toLocaleDateString()}
+                                  </td>
+                              </tr>
+                            ))}
+                          </tbody>
                       </table>
                     </div>
                   ) : (

@@ -65,13 +65,27 @@ export async function POST(request: Request) {
 
     return NextResponse.json(vehicle, { status: 201 });
   } catch (error: any) {
-    console.error('Error in POST /api/vehicles:', error);
+    const errorDetails = {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    };
+    
+    console.error('Error in POST /api/vehicles:', errorDetails);
+    
+    const errorMessage = error.message || 'Failed to create vehicle';
+    const isDuplicate = error.details?.includes('already exists') || 
+                       error.message?.includes('duplicate key');
+    
     return NextResponse.json(
       { 
-        error: error.message.includes('duplicate key') 
+        error: isDuplicate 
           ? 'A vehicle with this plate number already exists'
-          : 'Failed to create vehicle',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+          : errorMessage,
+        details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
       },
       { status: 500 }
     );

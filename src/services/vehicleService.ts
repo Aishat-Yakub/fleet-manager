@@ -1,16 +1,16 @@
-import VehiclesPage from "@/app/admin/vehicles/page";
 import { supabase } from "../lib/supabaseClient";
 
 export interface Vehicle {
-  id: number;
+  id: string;
   plate_number: string;
   registration_date: string;
   model: string;
   color: string;
-  condition: 'Good' | 'Fair' | 'Poor';  // Only these three values are allowed
+  condition: 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Damaged';
   owner_id: number;
-  status: 'active' | 'inactive' | 'created';  // Only these three statuses are allowed
+  status: 'active' | 'inactive' | 'created';
   created_at: string;
+  Make?: string | null;
 }
 // Fetch all vehicles
 export async function getVehicles(): Promise<Vehicle[]> {
@@ -51,16 +51,36 @@ export async function getVehicleById(id: number) {
 // Create a new vehicle
 export async function createVehicle(vehicleData: Omit<Vehicle, 'id' | 'created_at'>) {
   try {
+    // Generate a unique ID (LASU + 5 random alphanumeric characters)
+    const generateId = () => {
+      const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+      let result = 'LASU';
+      for (let i = 0; i < 4; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result.toUpperCase();
+    };
+
+    const vehicleWithId = {
+      ...vehicleData,
+      id: generateId(),
+      created_at: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
       .from('vehicles')
-      .insert([vehicleData])
+      .insert([vehicleWithId])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error details:', error);
+      throw error;
+    }
+
     return data as Vehicle;
   } catch (error) {
-    console.error('Error creating vehicle:', error);
+    console.error('Error in createVehicle:', error);
     throw new Error(error instanceof Error ? error.message : 'Failed to create vehicle');
   }
 }

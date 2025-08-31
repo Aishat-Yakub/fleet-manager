@@ -73,7 +73,7 @@ export default function VehiclesPage() {
   };
 
   // Handle delete
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this vehicle?')) return;
     
     try {
@@ -134,11 +134,13 @@ export default function VehiclesPage() {
   };
 
   // Condition badge component
-  const ConditionBadge = ({ condition }: { condition: Vehicle['condition'] }) => {
+  const renderCondition = (condition: Vehicle['condition']) => {
     const conditionConfig = {
-      Good: { text: 'Good', color: 'bg-blue-100 text-blue-800' },
+      Excellent: { text: 'Excellent', color: 'bg-blue-100 text-blue-800' },
+      Good: { text: 'Good', color: 'bg-green-100 text-green-800' },
       Fair: { text: 'Fair', color: 'bg-yellow-100 text-yellow-800' },
       Poor: { text: 'Poor', color: 'bg-orange-100 text-orange-800' },
+      Damaged: { text: 'Damaged', color: 'bg-red-100 text-red-800' },
     };
 
     return (
@@ -280,7 +282,7 @@ export default function VehiclesPage() {
                       <div className="text-sm text-gray-900">{vehicle.color}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <ConditionBadge condition={vehicle.condition} />
+                      {renderCondition(vehicle.condition)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <StatusBadge status={vehicle.status} />
@@ -309,10 +311,10 @@ export default function VehiclesPage() {
 
       {/* Add/Edit Vehicle Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-sky-50/30 backdrop-blur-lg bg-opacity-40 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-xl font-bold text-sky-950">
                 {editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle'}
               </h2>
               <button
@@ -337,9 +339,9 @@ export default function VehiclesPage() {
             )}
 
             <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sky-950">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1">
                     Plate Number <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -352,7 +354,7 @@ export default function VehiclesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1">
                     Model <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -365,7 +367,7 @@ export default function VehiclesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1">
                     Color <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -378,7 +380,7 @@ export default function VehiclesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1">
                     Registration Date <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -391,7 +393,7 @@ export default function VehiclesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1">
                     Condition <span className="text-red-500">*</span>
                   </label>
                   <select
@@ -407,7 +409,7 @@ export default function VehiclesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-1">
                     Status <span className="text-red-500">*</span>
                   </label>
                   <select

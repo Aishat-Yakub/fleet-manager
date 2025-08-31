@@ -1,4 +1,4 @@
-no# LASU Fleet Manager
+# LASU Fleet Manager
 
 ![Project Banner](./public/image.png)
 
@@ -27,7 +27,6 @@ An advanced fleet management system designed to streamline vehicle operations, e
 - **Maintenance Management**: Schedule, track, and manage all vehicle maintenance activities to prevent breakdowns and minimize downtime.
 - **Expense Monitoring**: Keep a detailed log of all expenses related to fuel and repairs with transparent audit trails.
 - **Role-Based Access Control**: Secure access for different user roles (Owner, Manager, Auditor, Admin) with specific permissions.
-- **Automated Alerts**: Receive automated notifications for maintenance needs, policy violations, and other critical events.
 - **Fuel Log Management**: Accurately track fuel consumption to identify inefficiencies and prevent fraud.
 
 ## 🛠️ Tech Stack
@@ -90,6 +89,121 @@ Follow these instructions to get a copy of the project up and running on your lo
   npm run start
   ```
 
+## 👥 User Roles and Access Levels
+
+### 1. Administrator (Admin)
+- **Access Level**: Full system access
+- **Key Permissions**:
+  - User account management
+  - System configuration
+  - Full data access and modification
+  - Role assignment
+  - Activity monitoring
+- **Access Points**:
+  - `/admin/*` - Full admin dashboard
+  - `/api/*` - All API endpoints
+  - `/manager` - Manager dashboard access
+
+### 2. Manager
+- **Access Level**: Operational management
+- **Key Permissions**:
+  - Vehicle assignment and tracking
+  - Maintenance request approval
+  - Fleet operation oversight
+  - Report generation
+- **Access Points**:
+  - `/manager` - Manager dashboard
+  - `/api/manager/*` - Manager-specific APIs
+  - Limited access to admin features
+
+### 3. Auditor
+- **Access Level**: Read-only
+- **Key Permissions**:
+  - View system activities
+  - Access audit logs
+  - Generate compliance reports
+  - No data modification rights
+- **Access Points**:
+  - `/audit` - Audit dashboard
+  - Read-only access to relevant sections
+
+### 4. Owner
+- **Access Level**: Vehicle ownership
+- **Key Permissions**:
+  - View owned vehicles
+  - Track maintenance history
+  - Monitor vehicle status
+  - Limited modification rights
+- **Access Points**:
+  - `/owners` - Owner dashboard
+  - Vehicle-specific endpoints
+
+### 5. Standard User
+- **Access Level**: Basic
+- **Key Permissions**:
+  - Submit maintenance requests
+  - Log fuel consumption
+  - View assigned vehicles
+  - Check schedules
+- **Access Points**:
+  - Limited to personal dashboard
+  - Restricted API access
+
+## 📋 User Manual
+
+### Account Setup
+1. **First-Time Login**
+   - Use the credentials provided by your administrator
+   - Change your password on first login
+   - Set up two-factor authentication (recommended)
+
+2. **Dashboard Overview**
+   - Quick view of assigned vehicles
+   - Pending approvals
+   - Maintenance alerts
+   - Recent activities
+
+### Vehicle Management
+1. **Adding a Vehicle**
+   - Navigate to Vehicles > Add New
+   - Fill in vehicle details (VIN, make, model, year)
+   - Upload necessary documents
+   - Assign to appropriate department/owner
+
+2. **Scheduling Maintenance**
+   - Select vehicle from dashboard
+   - Click "Schedule Maintenance"
+   - Choose maintenance type (routine, repair, inspection)
+   - Set priority and estimated completion date
+
+### Reporting Issues
+1. **Creating a Maintenance Request**
+   - Go to Maintenance > New Request
+   - Select vehicle and issue type
+   - Provide detailed description
+   - Attach photos if available
+   - Submit for approval
+
+2. **Fuel Logging**
+   - Access Fuel Logs > New Entry
+   - Select vehicle and driver
+   - Enter odometer reading and fuel amount
+   - Upload receipt (required for reimbursement)
+   - Submit for verification
+
+## 🔒 Security Guidelines
+
+### Account Security
+- Use strong, unique passwords
+- Never share login credentials
+- Log out after each session
+
+### Data Privacy
+- Access only the data necessary for your role
+- Do not download or share sensitive information
+- Follow company data handling policies
+- Report any data breaches immediately
+
 ## 📜 Available Scripts
 
 In the project directory, you can run:
@@ -125,8 +239,60 @@ The project follows the Next.js App Router structure. Here are the main routes a
 
 ### API Routes
 
-- `GET /api/owner`: Fetches condition updates for a specific owner.
-- `POST /api/owner`: Creates a new condition update for a specific owner.
+#### Audit Endpoints
+- `GET /api/audit`
+  - Fetches audit logs
+  - Query params: `type`, `userId`, `startDate`, `endDate`
+- `POST /api/audit`
+  - Creates a new audit log entry
+  - Required body: `{ action: string, entity: string, entityId: string, details?: object }`
+
+#### Maintenance Endpoints
+- `GET /api/maintenance`
+  - Fetches maintenance requests
+  - Query params: `ownerId`, `status`, `vehicleId`
+- `POST /api/maintenance`
+  - Creates a new maintenance request
+  - Required body: `{ vehicle_id: string, owner_id: string, issue: string, priority: 'low' | 'medium' | 'high' }`
+- `PATCH /api/maintenance?id=<id>`
+  - Updates a maintenance request
+  - Query param: `id` - Maintenance request ID
+  - Body: Update fields
+
+#### Manager Endpoints
+- `GET /api/manager`
+  - Fetches manager dashboard data
+- `POST /api/manager`
+  - Performs manager-specific actions
+  - Body: Action-specific data
+
+#### Owner Endpoints
+- `GET /api/owners`
+  - Fetches all owners or a specific owner's data
+  - Query params: `id`, `email`
+- `POST /api/owners`
+  - Creates a new owner
+  - Required body: Owner details
+- `PUT /api/owners`
+  - Updates owner role
+  - Required body: `{ id: string, role_id: number }`
+- `DELETE /api/owners`
+  - Deletes an owner
+  - Required body: `{ id: string }`
+
+#### Vehicle Endpoints
+- `GET /api/vehicles`
+  - Fetches vehicles
+  - Query params: `id`, `status`, `ownerId`
+- `POST /api/vehicles`
+  - Creates a new vehicle
+  - Required body: Vehicle details
+- `PUT /api/vehicles`
+  - Updates a vehicle
+  - Required body: `{ id: string, ...updates }`
+- `DELETE /api/vehicles`
+  - Deletes a vehicle
+  - Required body: `{ id: string }`
 
 
 ## 📄 License
