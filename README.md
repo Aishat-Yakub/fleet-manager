@@ -158,7 +158,7 @@ Follow these instructions to get a copy of the project up and running on your lo
    - Set up two-factor authentication (recommended)
 
 2. **Dashboard Overview**
-   - Quick view of assigned vehicles
+   - Quick view of assigned vehiclesmanager_page
    - Pending approvals
    - Maintenance alerts
    - Recent activities

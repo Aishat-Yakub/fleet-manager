@@ -38,7 +38,7 @@ export function MaintenanceRequests() {
   };
 
   if (loading) {
-    return <div>Loading maintenance requests...</div>;
+    return <div className='text-sky-600'>Loading maintenance requests...</div>;
   }
 
   return (

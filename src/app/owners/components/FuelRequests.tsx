@@ -18,6 +18,7 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
     vehicleId: '',
     amount: '',
     notes: '',
+    account_details: '',
   });
 
   const { fuelRequests, isLoading, error, createFuelRequest } = useFuelRequests(ownerId);
@@ -31,11 +32,12 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
       vehicle: vehicleName,
       vehicleId: formData.vehicleId,
       amount: formData.amount,
-      notes: formData.notes
+      notes: formData.notes,
+      account_details: formData.account_details
     });
     
     if (result.success) {
-      setFormData({ vehicleId: '', amount: '', notes: '' });
+      setFormData({ vehicleId: '', amount: '', notes: '', account_details: '' });
       setShowForm(false);
     }
   };
@@ -108,9 +110,21 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
                 value={formData.notes}
                 onChange={handleChange}
                 placeholder="Any additional information..."
-                rows={3}
+                rows={2}
                 className='text-black placeholder:text-gray-500'
                 />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="account_details">Account Details <span className="text-red-500">*</span></Label>
+              <Input
+                id="account_details"
+                name="account_details"
+                value={formData.account_details}
+                onChange={handleChange}
+                placeholder="Bank account details for reimbursement"
+                required
+                className='text-black placeholder:text-gray-500'
+              />
             </div>
             <div className="flex justify-end gap-2">
               <Button
@@ -167,7 +181,7 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
                   {fuelRequests.map((request: FuelRequest) => (
                     <tr key={request.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(request.date).toLocaleDateString()}
+                        {new Date(request.date || request.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {request.vehicle}

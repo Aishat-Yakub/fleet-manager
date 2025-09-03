@@ -34,7 +34,7 @@ export function FuelRequests() {
   };
 
   if (loading) {
-    return <div>Loading fuel requests...</div>;
+    return <div className='text-sky-600'>Loading fuel requests...</div>;
   }
 
   return (
@@ -77,7 +77,7 @@ export function FuelRequests() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-sky-200 text-sky-700 hover:bg-sky-50 hover:border-sky-300"
+                        className="bg-blue-600 text-white hover:bg-blue-700 hover:border-blue-700"
                         onClick={() => handleStatusChange(request.id, 'approved')}
                       >
                         Approve
@@ -85,7 +85,7 @@ export function FuelRequests() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+                        className="bg-red-600 text-white hover:bg-red-700 hover:border-red-700"
                         onClick={() => handleStatusChange(request.id, 'rejected')}
                       >
                         Reject

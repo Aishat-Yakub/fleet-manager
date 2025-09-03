@@ -7,6 +7,8 @@ import { DataTable, columns, FuelRequests, MaintenanceRequests } from './compone
 
 import { Vehicle } from './types';
 import { getVehicles } from '@/services/managerService';
+import Logo from '@/app/assets/logo/Logo.jpg'
+import Image from 'next/image';
 
 export default function ManagerDashboard() {
 
@@ -30,9 +32,20 @@ export default function ManagerDashboard() {
   return (
     <div className="min-h-screen bg-sky-50 py-8">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8 text-sky-950">Vehicle Management Dashboard</h1>
+      <div className="flex items-center h-16 flex-shrink-0 px-6 border-b border-gray-200">
+          <h1 className="text-2xl flex justify-center items-center gap-2 font-bold text-gray-900">
+            <Image
+              src={Logo}
+              alt="Fleet Manager Logo"
+              width={80}
+              height={80}
+              className='h-16 w-auto rounded-full object-cover'
+            />
+            <span>Vehicle Management Dashboard</span>
+          </h1>
+        </div>
         
-        <Tabs defaultValue="vehicles" className="w-full">
+        <Tabs defaultValue="vehicles" className="w-full mt-8">
           <TabsList className="grid w-full grid-cols-3 max-w-md mb-8 bg-blue-300 p-1.5 rounded-full">
             <TabsTrigger 
               value="vehicles" 

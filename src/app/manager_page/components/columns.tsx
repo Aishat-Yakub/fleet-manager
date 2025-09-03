@@ -56,6 +56,7 @@ export const columns = (refreshVehicles?: () => void): ColumnDef<Vehicle>[] => [
             size="sm"
             disabled={row.original.status === 'active' || loading}
             onClick={() => handleStatusChange('active')}
+            className={`bg-sky-950 text-white hover:bg-sky-800 hover:border-blue-800/20 ${row.original.status === 'active' ? 'bg-blue-800/30' : ''}`}
           >
             Set Active
           </Button>
@@ -64,6 +65,7 @@ export const columns = (refreshVehicles?: () => void): ColumnDef<Vehicle>[] => [
             size="sm"
             disabled={row.original.status === 'inactive' || loading}
             onClick={() => handleStatusChange('inactive')}
+            className={`bg-red-600 text-white hover:bg-red-700 hover:border-red-700/20 ${row.original.status === 'inactive' ? 'bg-red-800/30' : ''}`}
           >
             Set Inactive
           </Button>

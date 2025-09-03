@@ -45,7 +45,7 @@ export function FuelRequests() {
           <div className="text-center py-8 text-sky-600">No fuel requests found.</div>
         ) : (
           requests.map((request) => (
-            <div key={request.id} className="bg-white rounded-lg border border-gray-200 p-5 transition-shadow">
+            <div key={request.id} className="bg-white text-sky-950 rounded-lg border border-gray-200 p-5 transition-shadow">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="space-y-1">
                   <h3 className="font-medium text-sky-900">
@@ -58,7 +58,7 @@ export function FuelRequests() {
                     <span className="text-gray-600">
                       Amount: <span className="font-medium text-sky-900">{request.amount} L</span>
                     </span>
-                    <span className="flex items-center">
+                    <span className="flex items-center text-sky-950">
                       Status:
                       <span className={`ml-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         request.status === 'approved' ? 'bg-green-50 text-green-700' :
@@ -67,7 +67,7 @@ export function FuelRequests() {
                       }`}>
                         {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                       </span>
-                    </span>
+                    </span> 
                     <span className="text-xs text-gray-500">{new Date(request.requestedAt).toLocaleString()}</span>
                   </div>
                 </div>
@@ -85,7 +85,7 @@ export function FuelRequests() {
                       <Button
                         // variant="outline"
                         size="sm"
-                        className=''
+                        className='bg-red-600 text-white'
                         onClick={() => handleStatusChange(request.id, 'rejected')}
                       >
                         Reject

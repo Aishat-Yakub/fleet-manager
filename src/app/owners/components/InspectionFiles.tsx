@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Upload, FileIcon, X } from 'lucide-react';
-import { useInspectionFiles } from '../hooks/useInspectionFiles';
+import { useInspectionFiles} from '../hooks/useInspectionFiles';
 interface InspectionFilesProps {
   ownerId: string;
 }

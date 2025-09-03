@@ -54,7 +54,7 @@ export const columns = (refreshVehicles?: () => void): ColumnDef<Vehicle>[] => [
           <Button 
             variant="outline" 
             size="sm"
-            className='bg-blue-600 hover:bgblue text-white'
+            className={`bg-blue-600 hover:bgblue text-white ${row.original.status === 'active' ? 'bg-blue-800/50' : ''}`}
             disabled={row.original.status === 'active' || loading}
             onClick={() => handleStatusChange('active')}
           >
@@ -63,7 +63,7 @@ export const columns = (refreshVehicles?: () => void): ColumnDef<Vehicle>[] => [
           <Button 
             variant="outline" 
             size="sm"
-            className='text-white bg-sky-800 hover:bg-sky-900'
+            className={`text-white bg-red-600 hover:bg-red-700 ${row.original.status === 'inactive' ? 'bg-red-800/50 backdrop-blur-lg text-black border-none' : ''}`}
             disabled={row.original.status === 'inactive' || loading}
             onClick={() => handleStatusChange('inactive')}
           >

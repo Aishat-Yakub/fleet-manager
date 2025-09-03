@@ -1,17 +1,12 @@
 import { useState, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-type InspectionFile = {
-  id: number;
-  vehicle_id: string;
-  owner_id: number;
+interface InspectionFile {
+  id: string;
   file_url: string;
+  vehicle_id: string | null;
   created_at: string;
-};
+  [key: string]: any; // For any additional properties
+}
 
 export const useInspectionFiles = (ownerId: string) => {
   const [inspectionFiles, setInspectionFiles] = useState<InspectionFile[]>([]);
@@ -20,16 +15,19 @@ export const useInspectionFiles = (ownerId: string) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  // Mock implementation - replace with actual API calls
   const fetchInspectionFiles = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/owners?ownerId=${ownerId}&type=inspection`);
-      if (!res.ok) throw new Error('Failed to fetch inspection files');
-      const data = await res.json();
-      setInspectionFiles(data);
-    } catch (err: any) {
-      setError(err.message || 'Unknown error');
+      // Replace with actual API call
+      // const response = await fetch(`/api/owners/${ownerId}/inspection-files`);
+      // const data = await response.json();
+      // setInspectionFiles(data);
+      return [];
+    } catch (err) {
+      setError('Failed to fetch inspection files');
+      return [];
     } finally {
       setIsLoading(false);
     }
@@ -37,48 +35,60 @@ export const useInspectionFiles = (ownerId: string) => {
 
   const uploadInspectionFile = useCallback(async (file: File, vehicleId: string) => {
     setIsUploading(true);
-    setError(null);
     setUploadProgress(0);
+    setError(null);
+    
     try {
-      // Upload file to Supabase storage (public bucket 'inspection-files')
-      const fileName = `${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage.from('inspection-files').upload(fileName, file, { upsert: false });
-      if (error) {
-        console.error('Supabase upload error:', error.message, error);
-        throw error;
-      }
-      setUploadProgress(50);
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('inspection-files')
-        .getPublicUrl(fileName);
-      const file_url = urlData?.publicUrl || '';
-      // Save file metadata to DB
-      const res = await fetch('/api/owners', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          vehicle_id: vehicleId,
-          owner_id: ownerId,
-          file_url,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to save inspection file');
-      setUploadProgress(100);
-      await fetchInspectionFiles();
+      // Simulate file upload progress
+      const simulateProgress = (progress: number) => {
+        setUploadProgress(progress);
+        if (progress < 100) {
+          setTimeout(() => simulateProgress(progress + 10), 100);
+        }
+      };
+      simulateProgress(0);
+
+      // Replace with actual file upload logic
+      // const formData = new FormData();
+      // formData.append('file', file);
+      // formData.append('vehicleId', vehicleId);
+      // 
+      // const response = await fetch(`/api/owners/${ownerId}/inspection-files/upload`, {
+      //   method: 'POST',
+      //   body: formData,
+      //   onUploadProgress: (progressEvent) => {
+      //     const progress = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+      //     setUploadProgress(progress);
+      //   },
+      // });
+      // 
+      // const data = await response.json();
+      // setInspectionFiles(prev => [...prev, data]);
+      
       return { success: true };
-    } catch (err: any) {
-      setError(err.message || 'Unknown error');
-      return { success: false };
+    } catch (err) {
+      setError('Failed to upload file');
+      throw err;
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
-  }, [ownerId, fetchInspectionFiles]);
+  }, [ownerId]);
 
   const deleteInspectionFile = useCallback(async (fileId: string) => {
-    // TODO: Implement delete logic if needed
-    return { success: true };
-  }, []);
+    try {
+      // Replace with actual delete API call
+      // await fetch(`/api/owners/${ownerId}/inspection-files/${fileId}`, {
+      //   method: 'DELETE',
+      // });
+      
+      setInspectionFiles(prev => prev.filter(file => file.id !== fileId));
+      return { success: true };
+    } catch (err) {
+      setError('Failed to delete file');
+      throw err;
+    }
+  }, [ownerId]);
 
   return {
     inspectionFiles,

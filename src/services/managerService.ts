@@ -23,28 +23,24 @@ export async function updateVehicleStatus(id: string, status: 'active' | 'inacti
 import { supabase } from '../lib/supabaseClient';
 import { MaintenanceRequest, FuelRequest, Vehicle } from '@/app/manager_page/types';
 export async function getVehicles(): Promise<Vehicle[]> {
-	const { data, error } = await supabase
-		.from('vehicles')
-		.select(`
-			id,
-			plate_number,
-			registration_date,
-			model,
-			color,
-			condition,
-			owner_id,
-			status,
-			created_at,
-			Make
-		`);
-	if (error) throw new Error(error.message);
-	return (data || []).map((v: any) => ({
-		id: v.id,
-		make: v.Make ?? '',
-		model: v.model,
-		year: v.year ?? 0,
-		status: v.status,
-	}));
+  const { data, error } = await supabase
+    .from('vehicles')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  
+  return (data || []).map((v) => ({
+    id: v.id,
+    make: v.model.split(' ')[0], // Extract make from model string
+    model: v.model,
+    year: v.registration_date ? new Date(v.registration_date).getFullYear() : new Date().getFullYear(),
+    status: v.status,
+    registration_date: v.registration_date,
+    color: v.color,
+    condition: v.condition,
+    created_at: v.created_at
+  }));
 }
 export async function getFuelRequests(): Promise<FuelRequest[]> {
 	const { data, error } = await supabase

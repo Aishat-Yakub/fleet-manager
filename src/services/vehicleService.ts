@@ -6,12 +6,11 @@ export interface Vehicle {
   registration_date: string;
   model: string;
   color: string;
-  condition: 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Damaged';
-  owner_id: number;
-  status: 'active' | 'inactive' | 'created';
+  condition: 'Good' | 'Fair' | 'Poor';
+  status: 'active' | 'inactive';
   created_at: string;
-  Make?: string | null;
 }
+
 // Fetch all vehicles
 export async function getVehicles(): Promise<Vehicle[]> {
   const { data, error } = await supabase
@@ -32,7 +31,7 @@ export async function getVehicles(): Promise<Vehicle[]> {
 }
 
 // Get a single vehicle by ID
-export async function getVehicleById(id: number) {
+export async function getVehicleById(id: string) {
   try {
     const { data, error } = await supabase
       .from('vehicles')

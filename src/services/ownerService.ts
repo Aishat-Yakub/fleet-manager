@@ -13,7 +13,6 @@ export async function submitMaintenanceRequest(requestData: {
       body: JSON.stringify({
         type: 'maintenance',
         vehicle_id: requestData.vehicleId,
-        owner_id: Number(requestData.ownerId),
         issue: requestData.issue,
         priority: requestData.priority,
       }),

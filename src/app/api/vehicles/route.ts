@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const id = searchParams.get('id');
     
     if (id) {
-      const vehicle = await getVehicleById(Number(id));
+      const vehicle = await getVehicleById(id);
       return NextResponse.json(vehicle);
     }
     
@@ -37,12 +37,12 @@ export async function POST(request: Request) {
     }
 
     // Format condition to match the expected type
-    const formatCondition = (condition: string): 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Damaged' => {
-      const normalized = condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
-      if (['Excellent', 'Good', 'Fair', 'Poor', 'Damaged'].includes(normalized)) {
-        return normalized as 'Excellent' | 'Good' | 'Fair' | 'Poor' | 'Damaged';
-      }
-      return 'Good'; // Default value if invalid
+    const formatCondition = (condition: string): 'Good' | 'Fair' | 'Poor' => {
+      const validConditions = ['Good', 'Fair', 'Poor'] as const;
+      const normalizedCondition = condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
+      return validConditions.includes(normalizedCondition as any) ? 
+        normalizedCondition as 'Good' | 'Fair' | 'Poor' : 
+        'Good'; // Default to 'Good' if invalid
     };
 
     // Prepare vehicle data matching Supabase schema
@@ -52,8 +52,7 @@ export async function POST(request: Request) {
       color: requestData.color.trim(),
       condition: formatCondition(requestData.condition),
       registration_date: requestData.registration_date,
-      status: requestData.status || 'active', // Default to 'active' if not provided
-      owner_id: requestData.owner_id || 1, // Default owner or get from auth
+      status: requestData.status || 'active' // Default to 'active' if not provided
     };
 
     // Create the vehicle

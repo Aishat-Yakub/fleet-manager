@@ -7,11 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, UploadCloud, File as FileIcon, X, Wrench, ArrowLeft } from 'lucide-react';
+import {  File, Wrench, ArrowLeft } from 'lucide-react';
 import { InspectionFiles } from './components/InspectionFiles';
-import { ConditionUpdates } from '@/components/condition-updates';
 import { FuelRequest, MaintenanceRequest } from './types';
 import { ConditionUpdate } from './types';
+import Logo from '@/app/assets/logo/Logo.jpg'
+import Image from 'next/image'
 
 
 const OwnerDashboard = () => {
@@ -185,28 +186,40 @@ const OwnerDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-sky-50 flex flex-col items-center pt-20">
-      <div className="w-full max-w-7xl p-6 sm:p-8 md:border md:border-black rounded-lg mt-4">
-        <div className="flex items-center mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-sky-600 hover:bg-sky-100"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-3xl font-bold text-sky-950">Vehicle Management Dashboard</h1>
-        </div>
+    <div className="min-h-screen bg-sky-50 flex flex-col items-center pt-4 sm:pt-6 md:pt-8 px-2 sm:px-4 md:px-6">
+      <div className="w-full max-w-7xl p-2 sm:p-4 md:p-6 lg:p-8 rounded-lg border border-gray-100">
+          <div className="flex items-center h-16 flex-shrink-0 px-2 sm:px-6 border-b border-gray-200">
+            <h1 className="text-lg sm:text-2xl flex flex-col sm:flex-row items-center gap-2 font-bold text-gray-900">
+              <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-sky-600 hover:bg-sky-100 p-1 sm:p-2 -ml-2"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Back</span>
+                </Button>
+                <Image
+                  src={Logo}
+                  alt="Fleet Manager Logo"
+                  width={80}
+                  height={80}
+                  className='h-12 w-12 sm:h-16 sm:w-16 rounded-full object-cover'
+                />
+              </div>
+              <span className="text-center sm:text-left">Vehicle Management</span>
+            </h1>     
+          </div>
 
         <Tabs 
           value={activeTab} 
           onValueChange={handleTabChange} 
-          className="w-full"
+          className="w-full pt-2 sm:pt-4"
+          defaultValue="condition"
         >
           {/* tab-section */}
           <TabsList 
-            className="border border-sky-950 font-bold rounded-lg grid w-full grid-cols-2 sm:grid-cols-4 gap-0 mb-8 p-1 hover:text-sky-950"
+            className="border border-sky-200 bg-sky-50 font-medium rounded-lg grid w-full grid-cols-2 sm:grid-cols-4 gap-1 mb-4 sm:mb-6 md:mb-8 p-0.5 text-xs sm:text-sm md:text-base"
             aria-label="Vehicle management sections"
           >
             <TabsTrigger 
@@ -250,8 +263,8 @@ const OwnerDashboard = () => {
                 <CardTitle>Vehicle Condition Updates</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleConditionSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleConditionSubmit} className="space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="condition-vehicle-id">Vehicle ID</Label>
                       <Input
@@ -341,8 +354,8 @@ const OwnerDashboard = () => {
               </CardHeader>
               <CardContent>
                 {/* New Fuel Request Form */}
-                <form onSubmit={handleFuelRequestSubmit} className="space-y-4 mb-6 p-4 border rounded-lg bg-sky-50">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleFuelRequestSubmit} className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 p-3 sm:p-4 border border-gray-200 rounded-lg bg-sky-50">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <Label htmlFor="fuel-vehicle-id" className="text-sky-950">
                         Vehicle ID <span className="text-red-500">*</span>
@@ -387,7 +400,7 @@ const OwnerDashboard = () => {
                       />
                     </div>
                   </div>
-                  <div className="flex justify-end space-x-3 pt-2">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
                     <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 transition-colors" disabled={isFuelLoading}>
                       Submit Request
                     </Button>
@@ -396,25 +409,31 @@ const OwnerDashboard = () => {
                 </form>
 
                 {/* Fuel Requests List */}
-                <div className="space-y-4 border border-">
+                <div className="space-y-4">
                   <h3 className="text-lg font-medium text-sky-950">Recent Fuel Requests</h3>
                   {isFuelLoading ? (
                     <div className="text-center py-8">Loading...</div>
                   ) : fuelRequests.length > 0 ? (
                     fuelRequests.map((request) => (
-                      <div key={request.id} className="border border-sky-950 rounded-lg p-4 bg-white">
+                      <div key={request.id} className="border border-sky-200 rounded-lg p-3 sm:p-4 bg-white shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <div>
-                            <p className="font-medium">Vehicle #{request.vehicle_id}</p>
-                            <p className="text-sm text-gray-500">
-                              {request.litres}L • {new Date(request.created_at).toLocaleDateString('en-US', {
-                                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                              })}
+                            <div className="w-full">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-medium text-sm sm:text-base">Vehicle #{request.vehicle_id}</p>
+                                <span className="text-xs text-gray-500 sm:ml-2">
+                                  {request.litres}L • {new Date(request.created_at).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  })}
+                                </span>
+                              </div>
                               {request.reason && (
-                                <span className="block mt-1 text-gray-600">{request.reason}</span>
+                                <p className="text-xs sm:text-sm text-gray-600 mt-1">{request.reason}</p>
                               )}
-                            </p>
-                          </div>
+                            </div>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                             request.status === 'approved'
                               ? 'bg-green-100 text-green-800'
@@ -449,8 +468,8 @@ const OwnerDashboard = () => {
               </CardHeader>
               <CardContent>
                 {/* New Maintenance Request Form */}
-                <form onSubmit={handleMaintenanceRequestSubmit} className="space-y-4 mb-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form onSubmit={handleMaintenanceRequestSubmit} className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     {/* Vehicle ID Input */}
                     <div>
                       <Label htmlFor="maintenance-vehicle-id" className="text-sky-950">
@@ -511,7 +530,7 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                     <Button
                       type="submit"
                       className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -528,23 +547,24 @@ const OwnerDashboard = () => {
                   </h3>
 
                   {maintenanceRequests.length > 0 ? (
-                    <div className="overflow-hidden ring-1 ring-black ring-opacity-5 rounded-lg">
+                    <div className="overflow-x-auto">
+                    <div className="inline-block min-w-full align-middle">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-sky-50">
                           <tr>
-                            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-sky-950 sm:pl-6">
+                            <th scope="col" className="py-3 pl-3 pr-1 sm:pl-4 sm:pr-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
                               Vehicle
                             </th>
-                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
+                            <th scope="col" className="px-1 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden sm:table-cell">
                               Issue
                             </th>
-                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
+                            <th scope="col" className="px-1 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
                               Priority
                             </th>
-                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
+                            <th scope="col" className="px-1 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
                               Status
                             </th>
-                            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-sky-950">
+                            <th scope="col" className="px-1 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden xs:table-cell">
                               Date
                             </th>
                           </tr>
@@ -552,14 +572,22 @@ const OwnerDashboard = () => {
                         <tbody className="divide-y divide-gray-200 bg-white">
                           {maintenanceRequests.map((request) => (
                             <tr key={request.id} className="hover:bg-sky-50">
-                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-sky-950 sm:pl-6">
-                                {`Vehicle #${request.vehicle_id}`}
+                              <td className="py-3 pl-3 pr-1 sm:pl-4 sm:pr-3 text-sm font-medium text-sky-950">
+                                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+                                  <span className="sm:hidden mr-2 text-xs text-gray-500">Vehicle:</span>
+                                  {`#${request.vehicle_id}`}
+                                </div>
+                                <div className="sm:hidden text-xs text-gray-600 mt-1 line-clamp-2">
+                                  {request.issue}
+                                </div>
                               </td>
-                              <td className="px-3 py-4 text-sm text-sky-900 max-w-xs truncate">
-                                {request.issue}
+                              <td className="hidden sm:table-cell px-1 sm:px-3 py-3 text-sm text-sky-900 max-w-xs">
+                                <div className="line-clamp-2">
+                                  {request.issue}
+                                </div>
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              <td className="whitespace-nowrap px-1 sm:px-3 py-3 text-sm">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                                   (request.priority?.trim() === 'high')
                                     ? 'bg-red-100 text-red-800' 
                                     : (request.priority?.trim() === 'medium')
@@ -569,8 +597,8 @@ const OwnerDashboard = () => {
                                   {request.priority ? (request.priority.trim().length > 0 ? request.priority.trim().charAt(0).toUpperCase() + request.priority.trim().slice(1) : '') : ''}
                                 </span>
                               </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              <td className="whitespace-nowrap px-1 sm:px-3 py-3 text-sm">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                                   request.status === 'completed'
                                     ? 'bg-green-100 text-green-800'
                                     : request.status === 'approved'
@@ -582,15 +610,20 @@ const OwnerDashboard = () => {
                                   {request.status ? (request.status.length > 0 ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : '') : ''}
                                 </span>
                               </td>
-                           <td className="whitespace-nowrap px-3 py-4 text-sm text-sky-950">
-                              {new Date(request.created_at).toLocaleDateString()}
-                                  </td>
-                              </tr>
-                            ))}
-                          </tbody>
+                              <td className="whitespace-nowrap px-1 sm:px-3 py-3 text-xs sm:text-sm text-sky-950 hidden xs:table-cell">
+                                {request.created_at ? new Date(request.created_at).toLocaleDateString(undefined, {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                }) : "—"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
                       </table>
                     </div>
-                  ) : (
+                  </div>
+                ) : (
                     <div className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
                       <Wrench className="mx-auto h-12 w-12 text-gray-400" />
                       <h3 className="mt-2 text-sm font-medium text-gray-900">No maintenance requests</h3>

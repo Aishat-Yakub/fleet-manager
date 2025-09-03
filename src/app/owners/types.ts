@@ -6,12 +6,17 @@ export type Vehicle = {
 
 export type FuelRequest = {
   id: number;
-  vehicle_id: number;
-  owner_id: number;
-  litres: number;
+  vehicle_id: string | number;
+  vehicle?: string;  // For display name
+  owner_id: string | number;
+  litres: number | string;
+  amount?: number | string;  // Alias for litres for compatibility
   reason: string;
-  status: string;
+  notes?: string;  // Alias for reason for compatibility
+  status: 'pending' | 'approved' | 'rejected' | 'completed';
+  account_details: string;
   created_at: string;
+  date?: string;  // Alias for created_at for display
 };
 
 export interface MaintenanceRequest {
