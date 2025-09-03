@@ -22,6 +22,8 @@ export type FuelRequest = {
   status: 'pending' | 'approved' | 'rejected';
   requestedAt: string;
   reason?: string;
+  bank: string;
+  account: number | string;
 };
 
 export type MaintenanceRequest = {

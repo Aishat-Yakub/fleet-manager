@@ -58,6 +58,12 @@ export function FuelRequests() {
                     <span className="text-gray-600">
                       Amount: <span className="font-medium text-sky-900">{request.amount} L</span>
                     </span>
+                    <span className="text-gray-600">
+                      Bank: <span className="font-medium text-sky-900">{request.bank}</span>
+                    </span>
+                    <span className="text-gray-600">
+                      Account: <span className="font-mono text-sky-900">{request.account}</span>
+                    </span>
                     <span className="flex items-center text-sky-950">
                       Status:
                       <span className={`ml-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${

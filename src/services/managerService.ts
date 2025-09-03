@@ -52,7 +52,9 @@ export async function getFuelRequests(): Promise<FuelRequest[]> {
 			litres,
 			reason,
 			status,
-			created_at
+			created_at,
+			bank,
+			account
 		`);
 	if (error) throw new Error(error.message);
 	return (data || []).map((req: any) => ({
@@ -65,6 +67,8 @@ export async function getFuelRequests(): Promise<FuelRequest[]> {
 		vehicleMake: req.vehicle_make ?? '',
 		vehicleModel: req.vehicle_model ?? '',
 		reason: req.reason,
+		bank: req.bank ?? '',
+		account: req.account ?? ''
 	}));
 }
 
@@ -89,6 +93,8 @@ export async function updateFuelRequestStatus(
 		vehicleMake: data.vehicle_make ?? '',
 		vehicleModel: data.vehicle_model ?? '',
 		reason: data.reason,
+		bank: data.bank ?? '',
+		account: data.account ?? ''
 	};
 }
 
