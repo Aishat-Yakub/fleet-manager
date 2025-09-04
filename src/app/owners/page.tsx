@@ -1,30 +1,47 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {  File, Wrench, ArrowLeft } from 'lucide-react';
 import { InspectionFiles } from './components/InspectionFiles';
 import { FuelRequest, MaintenanceRequest } from './types';
 import { ConditionUpdate } from './types';
+import { useFuelRequests } from './hooks/useFuelRequests';
 import Logo from '@/app/assets/logo/Logo.jpg'
 import { addConditionUpdate } from '@/services/ownerService'; 
 import Image from 'next/image'
-
+import {  File, Wrench, ArrowLeft } from 'lucide-react';
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('condition');
-  const [fuelRequests, setFuelRequests] = useState<FuelRequest[]>([]);
+  // Initialize state at the top of the component
+  const [ownerId] = useState<string>('1'); // Get from auth context in a real app
+  const ownerIdNum = Number(ownerId); // Convert to number once for API calls
+  
+  // Use the useFuelRequests hook
+  const { 
+    fuelRequests, 
+    isLoading: isFuelLoading, 
+    error: fuelError,
+    createFuelRequest,
+    fetchFuelRequests 
+  } = useFuelRequests(ownerId);
+  
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [showFuelRequestForm, setShowFuelRequestForm] = useState(false);
+  const [isSubmittingFuel, setIsSubmittingFuel] = useState(false);
   const [newFuelRequest, setNewFuelRequest] = useState({
     vehicle_id: '',
     litres: '',
     reason: '',
+    bank: '',
+    account: ''
   });
   const [newMaintenanceRequest, setNewMaintenanceRequest] = useState({
     vehicle_id: '',
@@ -32,24 +49,31 @@ const OwnerDashboard = () => {
     priority: 'medium' as 'low' | 'medium' | 'high',
   });
   const [conditionUpdates, setConditionUpdates] = useState<ConditionUpdate[]>([]);
-  const [newConditionUpdate, setNewConditionUpdate] = useState({ vehicle_id: '', condition: 'Good', notes: '' });
+  const [newConditionUpdate, setNewConditionUpdate] = useState({
+    vehicle_id: '',
+    plate_number: '',
+    model: '',
+    color: '',
+    registration_date: '',
+    condition: 'Good', 
+    notes: ''
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isFuelLoading, setIsFuelLoading] = useState(false);
-  const [fuelError, setFuelError] = useState<string | null>(null);
   const [isConditionLoading, setIsConditionLoading] = useState(false);
   const [conditionError, setConditionError] = useState<string | null>(null);
 
-  // Replace with actual ownerId from auth/session if available
-  const owner_id = 1;
+  // ownerId is now managed by the state above
 
-  // Fetch maintenance requests from API/Supabase
+  // Fetch maintenance requests from API
   const fetchMaintenanceRequests = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/owners?ownerId=${owner_id}`);
-      if (!response.ok) throw new Error('Failed to fetch maintenance requests');
+      const response = await fetch(`/api/owners?type=maintenance&ownerId=${ownerId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch maintenance requests');
+      }
       const data = await response.json();
       setMaintenanceRequests(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -57,34 +81,30 @@ const OwnerDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [owner_id]);
+  }, [ownerId]);
 
-  // Fetch fuel requests
-  const fetchFuelRequests = useCallback(async () => {
-    setIsFuelLoading(true);
-    setFuelError(null);
-    try {
-      const response = await fetch(`/api/owners?ownerId=${owner_id}&type=fuel`);
-      if (!response.ok) throw new Error('Failed to fetch fuel requests');
-      const data = await response.json();
-      setFuelRequests(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setFuelError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsFuelLoading(false);
-    }
-  }, [owner_id]);
-
-  // Fetch condition updates
+  // Fetch vehicle conditions
   const fetchConditionUpdates = useCallback(async () => {
     setIsConditionLoading(true);
     setConditionError(null);
     try {
       const response = await fetch(`/api/owners?type=condition`);
-      if (!response.ok) throw new Error('Failed to fetch condition updates');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch vehicle conditions');
+      }
       const data = await response.json();
-      setConditionUpdates(Array.isArray(data) ? data : []);
+      // Map the response to match the expected format with an id field
+      const formattedData = Array.isArray(data) 
+        ? data.map(item => ({
+            ...item,
+            id: item.vehicle_id, // Use vehicle_id as id for React keys
+            created_at: item.created_at || new Date().toISOString()
+          }))
+        : [];
+      setConditionUpdates(formattedData);
     } catch (err) {
+      console.error('Error fetching vehicle conditions:', err);
       setConditionError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsConditionLoading(false);
@@ -99,93 +119,90 @@ const OwnerDashboard = () => {
 
   const handleFuelRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsFuelLoading(true);
-    setFuelError(null);
-    try {
-      const response = await fetch('/api/owners', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'fuel',
-          vehicle_id: Number(newFuelRequest.vehicle_id),
-          owner_id: owner_id,
-          litres: Number(newFuelRequest.litres),
-          reason: newFuelRequest.reason,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit fuel request');
-      }
-      await fetchFuelRequests();
-      setNewFuelRequest({ vehicle_id: '', litres: '', reason: '' });
-    } catch (err) {
-      setFuelError(err instanceof Error ? err.message : 'Failed to submit fuel request');
-    } finally {
-      setIsFuelLoading(false);
-    }
-  };
-
-  const handleConditionUpdateSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newConditionUpdate.vehicle_id || !newConditionUpdate.condition) {
-      setConditionError('Please fill in all required fields');
+    
+    // Basic validation
+    if (!newFuelRequest.vehicle_id || !newFuelRequest.litres || !newFuelRequest.reason) {
+      setError('Please fill in all required fields');
       return;
     }
 
-    setIsConditionLoading(true);
-    setConditionError(null);
-    
+    setIsSubmittingFuel(true);
+    setError(null);
+
     try {
-      const response = await fetch('/api/owners', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'condition',
-          vehicle_id: newConditionUpdate.vehicle_id,
-          condition: newConditionUpdate.condition,
-          notes: newConditionUpdate.notes || null,
-        }),
+      const result = await createFuelRequest({
+        ...newFuelRequest,
+        vehicle_id: newFuelRequest.vehicle_id,
+        litres: newFuelRequest.litres,
+        reason: newFuelRequest.reason,
+        bank: newFuelRequest.bank,
+        account: newFuelRequest.account,
+        owner_id: ownerId, // Add the required owner_id field
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit condition update');
+      if (result.success) {
+        // Reset form and hide it
+        setNewFuelRequest({ 
+          vehicle_id: '', 
+          litres: '', 
+          reason: '', 
+          bank: '',
+          account: '' 
+        });
+        setShowFuelRequestForm(false);
+        
+        // Refresh the fuel requests list
+        await fetchFuelRequests();
+      } else {
+        throw new Error(result.error || 'Failed to create fuel request');
       }
-
-      const newUpdate = await response.json();
-      setConditionUpdates(prev => [newUpdate, ...prev]);
-      setNewConditionUpdate({ vehicle_id: '', condition: 'Good', notes: '' });
     } catch (err) {
-      setConditionError(err instanceof Error ? err.message : 'Failed to submit condition update');
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error submitting fuel request:', err);
     } finally {
-      setIsConditionLoading(false);
+      setIsSubmittingFuel(false);
     }
   };
 
+  // Handle maintenance request submission
   const handleMaintenanceRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const { vehicle_id, issue, priority } = newMaintenanceRequest;
+    
+    if (!vehicle_id || !issue) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
+    
     try {
       // Import the service dynamically to avoid SSR issues
       const { submitMaintenanceRequest } = await import('@/services/ownerService');
       const requestData = {
-        vehicleId: Number(newMaintenanceRequest.vehicle_id),
-        ownerId: owner_id,
-        issue: newMaintenanceRequest.issue,
-        priority: newMaintenanceRequest.priority,
+        vehicleId: vehicle_id,
+        ownerId: Number(ownerId), // Convert to number for the API
+        issue: issue,
+        priority: priority || 'medium',
+        status: 'pending' as const
       };
+      
       await submitMaintenanceRequest(requestData);
-      // Refresh list from API
+      
+      // Refresh the maintenance requests and reset the form
       await fetchMaintenanceRequests();
       setNewMaintenanceRequest({
         vehicle_id: '',
         issue: '',
         priority: 'medium',
       });
+      
+      // Show success message
+      setError('Maintenance request submitted successfully!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to submit request');
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error submitting maintenance request:', err);
     } finally {
       setIsLoading(false);
     }
@@ -201,7 +218,7 @@ const OwnerDashboard = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           vehicle_id: Number(newConditionUpdate.vehicle_id),
-          owner_id: owner_id,
+          owner_id: Number(ownerId),
           condition: newConditionUpdate.condition,
           notes: newConditionUpdate.notes,
         }),
@@ -211,7 +228,15 @@ const OwnerDashboard = () => {
         throw new Error(errorData.error || 'Failed to submit condition update');
       }
       await fetchConditionUpdates();
-      setNewConditionUpdate({ vehicle_id: '', condition: 'Good', notes: '' });
+      setNewConditionUpdate({
+        vehicle_id: '',
+        plate_number: '',
+        model: '',
+        color: '',
+        registration_date: '',
+        condition: 'Good',
+        notes: ''
+      });
     } catch (err) {
       setConditionError(err instanceof Error ? err.message : 'Failed to submit condition update');
     } finally {
@@ -301,17 +326,52 @@ const OwnerDashboard = () => {
                 <CardTitle>Vehicle Condition Updates</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleConditionUpdateSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="condition-vehicle">Vehicle ID *</Label>
-                    <Input
-                      id="condition-vehicle"
-                      value={newConditionUpdate.vehicle_id}
-                      onChange={(e) => setNewConditionUpdate({...newConditionUpdate, vehicle_id: e.target.value})}
-                      placeholder="Enter vehicle ID"
-                      required
-                      className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
-                    />
+                <form onSubmit={handleConditionSubmit} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="plate-number">Plate Number *</Label>
+                      <Input
+                        id="plate-number"
+                        value={newConditionUpdate.plate_number}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, plate_number: e.target.value})}
+                        placeholder="e.g., LASU5254"
+                        required
+                        className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="model">Model *</Label>
+                      <Input
+                        id="model"
+                        value={newConditionUpdate.model}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, model: e.target.value})}
+                        placeholder="e.g., HELL CAT 2015"
+                        required
+                        className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="color">Color *</Label>
+                      <Input
+                        id="color"
+                        value={newConditionUpdate.color}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, color: e.target.value})}
+                        placeholder="e.g., BLACK"
+                        required
+                        className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="registration-date">Registration Date *</Label>
+                      <Input
+                        id="registration-date"
+                        type="date"
+                        value={newConditionUpdate.registration_date}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, registration_date: e.target.value})}
+                        required
+                        className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="condition-status">Condition *</Label>
@@ -396,13 +456,12 @@ const OwnerDashboard = () => {
                       </Label>
                       <Input
                         id="fuel-vehicle-id"
-                        type="number"
-                        min="1"
+                        type="text"
                         value={newFuelRequest.vehicle_id}
                         onChange={(e) => setNewFuelRequest({ ...newFuelRequest, vehicle_id: e.target.value })}
-                        className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
-                        required
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
                         placeholder="Enter vehicle ID"
+                        required
                       />
                     </div>
                     <div>
@@ -415,28 +474,66 @@ const OwnerDashboard = () => {
                         min="1"
                         value={newFuelRequest.litres}
                         onChange={(e) => setNewFuelRequest({ ...newFuelRequest, litres: e.target.value })}
-                        className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
-                        required
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
                         placeholder="Enter litres"
+                        required
                       />
                     </div>
                     <div className="md:col-span-2">
                       <Label htmlFor="fuel-reason" className="text-sky-950">
                         Reason <span className="text-red-500">*</span>
                       </Label>
-                      <Textarea
+                      <Input
                         id="fuel-reason"
                         value={newFuelRequest.reason}
                         onChange={(e) => setNewFuelRequest({ ...newFuelRequest, reason: e.target.value })}
-                        className="min-h-[80px] bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
-                        required
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
                         placeholder="Reason for fuel request"
                       />
                     </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fuel-bank" className="text-sky-950">
+                        Bank Name
+                      </Label>
+                      <Input
+                        id="fuel-bank"
+                        type="text"
+                        value={newFuelRequest.bank}
+                        onChange={(e) => setNewFuelRequest({ ...newFuelRequest, bank: e.target.value })}
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
+                        placeholder="e.g., GTBank"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="fuel-account" className="text-sky-950">
+                        Account Number
+                      </Label>
+                      <Input
+                        id="fuel-account"
+                        type="text"
+                        inputMode="numeric"
+                        value={newFuelRequest.account}
+                        onChange={(e) => setNewFuelRequest({ ...newFuelRequest, account: e.target.value })}
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
+                        placeholder="Account number"
+                      />
+                    </div>
                   </div>
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-2">
-                    <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 transition-colors" disabled={isFuelLoading}>
-                      Submit Request
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 mt-2">
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmittingFuel}
+                      className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition-colors"
+                    >
+                      {isSubmittingFuel ? (
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Submitting...
+                        </span>
+                      ) : 'Submit Request'}
                     </Button>
                   </div>
                   {fuelError && <div className="text-red-500 mt-2">{fuelError}</div>}
@@ -445,10 +542,15 @@ const OwnerDashboard = () => {
                 {/* Fuel Requests List */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-medium text-sky-950">Recent Fuel Requests</h3>
+                  {error && (
+                    <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
+                      {error}
+                    </div>
+                  )}
                   {isFuelLoading ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <div className="text-center py-4">Loading fuel requests...</div>
                   ) : fuelRequests.length > 0 ? (
-                    fuelRequests.map((request) => (
+                    fuelRequests.map((request: FuelRequest) => (
                       <div key={request.id} className="border border-sky-200 rounded-lg p-3 sm:p-4 bg-white shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <div className="w-full">
@@ -673,7 +775,7 @@ const OwnerDashboard = () => {
 
           {/* Inspections Tab Content */}
           <TabsContent value="inspections" className="space-y-6 text-sky-950">
-            <InspectionFiles ownerId={owner_id.toString()} />
+            <InspectionFiles ownerId={ownerId} />
           </TabsContent>
         </Tabs>
       </div>

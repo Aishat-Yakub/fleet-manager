@@ -14,7 +14,8 @@ export type FuelRequest = {
   reason: string;
   notes?: string;
   status: 'pending' | 'approved' | 'rejected' | 'completed';
-  account_details: string;
+  bank?: string;
+  account: string | number;
   created_at: string;
   date?: string; 
 };

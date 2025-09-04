@@ -1,90 +1,66 @@
 import { supabase } from '@/lib/supabaseClient';
 
-// Get condition updates with optional vehicle ID filter
+// Get vehicle conditions with optional vehicle ID filter
 export const getConditionUpdates = async (vehicleId?: string) => {
   try {
+    // First get the base query
     let query = supabase
-      .from('condition_updates')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from('vehicles')
+      .select('id, condition, updated_at')
+      .order('updated_at', { ascending: false });
 
+    // Add filter if vehicleId is provided
     if (vehicleId) {
-      query = query.eq('vehicle_id', vehicleId);
+      query = query.eq('id', vehicleId);
     }
 
+    // Execute the query
     const { data, error } = await query;
-
     if (error) throw error;
-    return data;
+    
+    // Map the data to the expected format
+    return (data || []).map(vehicle => ({
+      vehicle_id: vehicle.id,
+      condition: vehicle.condition,
+      created_at: vehicle.updated_at, // Using updated_at as created_at for backward compatibility
+      notes: null // Add notes field for backward compatibility
+    }));
   } catch (error) {
-    console.error('Error fetching condition updates:', error);
+    console.error('Error fetching vehicle conditions:', error);
     throw error;
   }
 };
 
-// Add a new condition update
+// Update a vehicle's condition
 export const addConditionUpdate = async (updateData: {
   vehicle_id: string;
   condition: string;
   notes?: string;
 }) => {
-  console.log('Attempting to add condition update with data:', updateData);
+  console.log('Updating vehicle condition with data:', updateData);
   
   try {
-    // First, check if the vehicle already has a condition update
-    const { data: existingUpdates, error: fetchError } = await supabase
-      .from('condition_updates')
-      .select('*')
-      .eq('vehicle_id', updateData.vehicle_id);
+    // Update the vehicle's condition directly
+    const { data, error } = await supabase
+      .from('vehicles')
+      .update({
+        condition: updateData.condition,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', updateData.vehicle_id)
+      .select()
+      .single();
 
-    if (fetchError) {
-      console.error('Error checking for existing updates:', fetchError);
-      throw fetchError;
-    }
-
-    let result;
+    if (error) throw error;
     
-    if (existingUpdates && existingUpdates.length > 0) {
-      // Get the existing ID as a string
-      const existingId = existingUpdates[0]?.id;
-      
-      // Update existing record
-      const { data: updated, error: updateError } = await supabase
-        .from('condition_updates')
-        .update({
-          id: existingId, // Ensure we keep the same ID
-          condition: updateData.condition,
-          notes: updateData.notes || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingId) // Use the ID for the update
-        .select()
-        .single();
-      
-      if (updateError) throw updateError;
-      result = updated;
-    } else {
-      // Generate a new ID (using timestamp + random string for uniqueness)
-      const newId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Insert new record with explicit string ID
-      const { data: inserted, error: insertError } = await supabase
-        .from('condition_updates')
-        .insert([{
-          id: newId,
-          vehicle_id: updateData.vehicle_id,
-          condition: updateData.condition,
-          notes: updateData.notes || null
-        }])
-        .select()
-        .single();
-      
-      if (insertError) throw insertError;
-      result = inserted;
-    }
-    
-    console.log('Successfully updated condition:', result);
-    return result;
+    console.log('Successfully updated vehicle condition:', data);
+    return {
+      ...data,
+      // Map to match the expected return type
+      vehicle_id: data.id,
+      created_at: data.updated_at,
+      notes: updateData.notes || null
+    };
   } catch (error) {
     console.error('Error in addConditionUpdate:', {
       error: error instanceof Error ? error.message : 'Unknown error',

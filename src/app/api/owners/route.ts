@@ -1,24 +1,87 @@
 import { NextResponse } from 'next/server';
 import { getConditionUpdates, addConditionUpdate } from '@/services/ownerService';
+import { getMaintenanceRequests } from '@/services/maintenanceService';
+import { supabase } from '@/lib/supabaseClient';
 
 export async function GET(request: Request) {
+  console.log('GET /api/owners called');
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
+    console.log('Request type:', type);
     
-    // Handle condition updates request
+    // Handle vehicle conditions request
     if (type === 'condition') {
-      const vehicleId = searchParams.get('vehicleId') || undefined;
-      const updates = await getConditionUpdates(vehicleId);
-      return NextResponse.json(updates);
+      console.log('Fetching vehicle conditions');
+      const vehicleId = searchParams.get('vehicleId');
+      
+      // If vehicleId is provided, get specific vehicle condition
+      if (vehicleId) {
+        const { data: vehicle, error } = await supabase
+          .from('vehicles')
+          .select('id, condition, created_at')
+          .eq('id', vehicleId)
+          .single();
+          
+        if (error) throw error;
+        
+        // Create response object with explicit type
+        const response = {
+          vehicle_id: vehicle.id,
+          condition: vehicle.condition,
+          created_at: vehicle.created_at,
+          notes: null as string | null
+        };
+        
+        return NextResponse.json([response]);
+      }
+      
+      // Get all vehicle conditions
+    console.log('Fetching all vehicle conditions');
+    const { data: vehicles, error } = await supabase
+      .from('vehicles')
+      .select('id, condition, created_at')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(`Database error: ${error.message}`);
+    }
+      
+      // Format the response to match the expected format
+      const formattedData = vehicles.map(vehicle => ({
+        vehicle_id: vehicle.id,
+        condition: vehicle.condition,
+        created_at: vehicle.created_at,
+        notes: null
+      }));
+      
+      return NextResponse.json(formattedData);
+    }
+    
+    // Handle maintenance requests
+    if (type === 'maintenance') {
+      const ownerId = searchParams.get('ownerId') || undefined;
+      const requests = await getMaintenanceRequests(ownerId);
+      return NextResponse.json(requests);
     }
     
     // Handle other owner-related GET requests here
     return NextResponse.json({ message: 'Owner endpoint' });
     
   } catch (error) {
+    console.error('API Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      timestamp: new Date().toISOString()
+    });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'An error occurred' },
+      { 
+        error: errorMessage,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }
@@ -29,11 +92,11 @@ export async function POST(request: Request) {
     const data = await request.json();
     console.log('Received request with data:', data);
     
-    // Handle condition updates
+    // Handle vehicle condition updates
     if (data.type === 'condition') {
       try {
         const { vehicle_id, condition, notes } = data;
-        console.log('Processing condition update for vehicle:', vehicle_id);
+        console.log('Updating vehicle condition:', { vehicle_id, condition });
         
         if (!vehicle_id || !condition) {
           console.error('Missing required fields:', { vehicle_id, condition });
@@ -43,15 +106,29 @@ export async function POST(request: Request) {
           );
         }
         
-        console.log('Calling addConditionUpdate with:', { vehicle_id, condition, notes });
-        const newUpdate = await addConditionUpdate({ 
-          vehicle_id, 
-          condition, 
-          notes: notes || null 
-        });
+        // Update the vehicle's condition directly in the vehicles table
+        const { data: updatedVehicle, error } = await supabase
+          .from('vehicles')
+          .update({
+            condition,
+            created_at: new Date().toISOString()
+          })
+          .eq('id', vehicle_id)
+          .select('id, condition, created_at')
+          .single();
+          
+        if (error) throw error;
         
-        console.log('Successfully added condition update:', newUpdate);
-        return NextResponse.json(newUpdate, { status: 201 });
+        // Create response object with explicit type
+        const result = {
+          vehicle_id: updatedVehicle.id,
+          condition: updatedVehicle.condition,
+          created_at: updatedVehicle.created_at,
+          notes: notes || null
+        };
+        
+        console.log('Successfully updated vehicle condition:', result);
+        return NextResponse.json(result, { status: 200 });
         
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
