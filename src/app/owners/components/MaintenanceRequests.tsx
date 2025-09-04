@@ -4,28 +4,27 @@ import { useState, useCallback } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MaintenanceRequest } from '../types';
-import { MaintenanceRequestForm } from './MaintenanceRequestForm';
-import { MaintenanceRequestsList } from './MaintenanceRequestsList';
-import { useMaintenanceRequests } from '../hooks/useMaintenanceRequests';
+import { MaintenanceRequestForm, MaintenanceRequestsList } from './';
+import { useMaintenanceRequests } from '../hooks';
 
 type MaintenanceRequestsProps = {
   ownerId: string;
 };
 
 type MaintenanceRequestFormData = {
-  vehicle_id: number;
+  vehicle_id: string;
   issue: string;
   priority: 'low' | 'medium' | 'high';
-  owner_id: number;
+  owner_id: string;
 };
 
 export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
   const [showForm, setShowForm] = useState(false);
   const [newRequest, setNewRequest] = useState<MaintenanceRequestFormData>({
-    vehicle_id: 0,  
+    vehicle_id: '',  
     issue: '',
     priority: 'medium',
-    owner_id: Number(ownerId),
+    owner_id: ownerId,
   });
 
   const {
@@ -33,11 +32,11 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
     isLoading,
     error,
     createMaintenanceRequest,
-    updateMaintenanceRequestStatus,
+    updateMaintenanceRequest,
     fetchMaintenanceRequests,
   } = useMaintenanceRequests(ownerId);
 
-  const handleCreateRequest = async (e: React.FormEvent) => {
+  const handleCreateRequest = async (e: React.FormEvent) => { 
     e.preventDefault();
     
     if (!newRequest.vehicle_id || !newRequest.issue) {
@@ -46,21 +45,19 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
     }
   
     try {
-      const requestData = {
-        vehicle_id: Number(newRequest.vehicle_id),
-        owner_id: Number(ownerId),
+      await createMaintenanceRequest({
+        vehicle_id: newRequest.vehicle_id,
+        owner_id: ownerId,
         issue: newRequest.issue,
         priority: newRequest.priority,
-      };
-      
-      await createMaintenanceRequest(requestData);
+      });
       
       // Reset form and hide it
       setNewRequest({
-        vehicle_id: 0,
+        vehicle_id: '',
         issue: '',
         priority: 'medium',
-        owner_id: Number(ownerId),
+        owner_id: ownerId,
       });
       setShowForm(false);
       
@@ -71,9 +68,9 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
       alert('Failed to create maintenance request. Please try again.');
     }
   };
-  const handleUpdateStatus = async (requestId: number, status: string) => {
+  const handleUpdateStatus = async (requestId: string, status: 'pending' | 'approved' | 'rejected' | 'completed') => {
     try {
-      await updateMaintenanceRequestStatus(requestId, status);
+      await updateMaintenanceRequest(requestId, status);
       // Refresh the list after status update
       await fetchMaintenanceRequests();
     } catch (error) {
@@ -101,7 +98,11 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
         <div className="bg-white p-6 rounded-lg shadow">
           <MaintenanceRequestForm
             newMaintenanceRequest={newRequest}
-            onUpdate={setNewRequest}
+            onUpdate={(updates) => setNewRequest(prev => ({
+              ...prev,
+              ...updates,
+              owner_id: ownerId // Ensure owner_id is always set
+            }))}
             onSubmit={handleCreateRequest}
             onCancel={() => setShowForm(false)}
           />

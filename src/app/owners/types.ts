@@ -21,20 +21,20 @@ export type FuelRequest = {
 };
 
 export interface MaintenanceRequest {
-  id: number;
-  vehicle_id: number;  
-  owner_id: number; 
+  id: string;
+  vehicle_id: string;
+  owner_id: string;
   issue: string;
   priority: 'low' | 'medium' | 'high';
   status: 'pending' | 'approved' | 'rejected' | 'completed';
-  created_at?: string;
+  created_at: string;
   updated_at?: string;
   vehicle?: {
-    id: number;
-    make: string;
-    model: string;
-    year: number;
-    license_plate: string;
+    id: string;
+    make?: string;
+    model?: string;
+    year?: number;
+    license_plate?: string;
   };
 }
 

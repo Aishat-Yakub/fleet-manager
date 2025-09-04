@@ -10,6 +10,31 @@ export async function GET(request: Request) {
     const type = searchParams.get('type');
     console.log('Request type:', type);
     
+    // Handle maintenance requests
+    if (type === 'maintenance') {
+      console.log('Fetching all maintenance requests');
+      
+      try {
+        const { data: maintenanceRequests, error } = await supabase
+          .from('maintenance_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching maintenance requests:', error);
+          throw error;
+        }
+
+        return NextResponse.json(maintenanceRequests || []);
+      } catch (error) {
+        console.error('Error in maintenance requests API:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch maintenance requests' },
+          { status: 500 }
+        );
+      }
+    }
+    
     // Handle vehicle conditions request
     if (type === 'condition') {
       console.log('Fetching vehicle conditions');

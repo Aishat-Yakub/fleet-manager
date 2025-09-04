@@ -70,7 +70,7 @@ const OwnerDashboard = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/owners?type=maintenance&ownerId=${ownerId}`);
+      const response = await fetch('/api/owners?type=maintenance');
       if (!response.ok) {
         throw new Error('Failed to fetch maintenance requests');
       }
@@ -81,7 +81,7 @@ const OwnerDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [ownerId]);
+  }, []);
 
   // Fetch vehicle conditions
   const fetchConditionUpdates = useCallback(async () => {
@@ -178,17 +178,13 @@ const OwnerDashboard = () => {
     setError(null);
     
     try {
-      // Import the service dynamically to avoid SSR issues
-      const { submitMaintenanceRequest } = await import('@/services/ownerService');
-      const requestData = {
-        vehicleId: vehicle_id,
-        ownerId: Number(ownerId), // Convert to number for the API
-        issue: issue,
-        priority: priority || 'medium',
-        status: 'pending' as const
-      };
+      const { createMaintenanceRequest } = await import('@/services/maintenanceService');
       
-      await submitMaintenanceRequest(requestData);
+      await createMaintenanceRequest({
+        vehicle_id: vehicle_id,
+        issue: issue,
+        priority: priority || 'medium' as const
+      });
       
       // Refresh the maintenance requests and reset the form
       await fetchMaintenanceRequests();
@@ -403,20 +399,20 @@ const OwnerDashboard = () => {
                       Submit Update
                     </Button>
                   </div>
-                  {conditionError && <div className="text-red-500 mt-2">{conditionError}</div>}
+                  {conditionError && <div className="text-red-700 mt-2">{conditionError}</div>}
                 </form>
                 
                 {/* Recent Updates Section */}
                 <div className="mt-8">
                   <h2 className="text-lg text-sky-950 font-medium mb-4">Recent Updates</h2>
                   {isConditionLoading ? (
-                    <div className="text-center py-8">Loading...</div>
+                    <div className="text-center py-8 text-red-500">Loading...</div>
                   ) : conditionUpdates.length > 0 ? (
                     conditionUpdates.map((update) => (
                       <div key={update.id} className="border border-sky-950 rounded-lg p-4 bg-white mb-2">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <div>
-                            <p className="font-medium">Vehicle #{update.vehicle_id}</p>
+                            <p className="font-medium">Plate Number: {update.vehicle_id}</p>
                             <p className="text-sm text-gray-500">
                               Condition: {update.condition} • {update.created_at ? new Date(update.created_at.replace(' ', 'T')).toLocaleDateString('en-US', {
                                 year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -459,7 +455,7 @@ const OwnerDashboard = () => {
                         type="text"
                         value={newFuelRequest.vehicle_id}
                         onChange={(e) => setNewFuelRequest({ ...newFuelRequest, vehicle_id: e.target.value })}
-                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950/40 text-sky-950"
                         placeholder="Enter vehicle ID"
                         required
                       />
@@ -474,7 +470,7 @@ const OwnerDashboard = () => {
                         min="1"
                         value={newFuelRequest.litres}
                         onChange={(e) => setNewFuelRequest({ ...newFuelRequest, litres: e.target.value })}
-                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950/40 text-sky-950"
                         placeholder="Enter litres"
                         required
                       />
@@ -487,7 +483,7 @@ const OwnerDashboard = () => {
                         id="fuel-reason"
                         value={newFuelRequest.reason}
                         onChange={(e) => setNewFuelRequest({ ...newFuelRequest, reason: e.target.value })}
-                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950/40 text-sky-950"
                         placeholder="Reason for fuel request"
                       />
                     </div>
@@ -500,7 +496,7 @@ const OwnerDashboard = () => {
                         type="text"
                         value={newFuelRequest.bank}
                         onChange={(e) => setNewFuelRequest({ ...newFuelRequest, bank: e.target.value })}
-                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950/40 text-sky-950"
                         placeholder="e.g., GTBank"
                       />
                     </div>
@@ -514,7 +510,7 @@ const OwnerDashboard = () => {
                         inputMode="numeric"
                         value={newFuelRequest.account}
                         onChange={(e) => setNewFuelRequest({ ...newFuelRequest, account: e.target.value })}
-                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950 text-sky-950"
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950/40 text-sky-950"
                         placeholder="Account number"
                       />
                     </div>
@@ -541,21 +537,22 @@ const OwnerDashboard = () => {
 
                 {/* Fuel Requests List */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-sky-950">Recent Fuel Requests</h3>
+                  <h3 className="text-lg font-medium text-red-950">Recent Fuel Requests</h3>
                   {error && (
                     <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
                       {error}
                     </div>
                   )}
                   {isFuelLoading ? (
-                    <div className="text-center py-4">Loading fuel requests...</div>
+                    <div className="text-center py-4 text-red-700">Loading fuel requests...</div>
                   ) : fuelRequests.length > 0 ? (
                     fuelRequests.map((request: FuelRequest) => (
                       <div key={request.id} className="border border-sky-200 rounded-lg p-3 sm:p-4 bg-white shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <div className="w-full">
                               <div className="flex flex-wrap items-center gap-2">
-                                <p className="font-medium text-sm sm:text-base">Vehicle #{request.vehicle_id}</p>
+                                <p className="font-medium text-sm sm:text-base text-sky-950">Plate Number: {request.vehicle_id}</p>
+                                <br />
                                 <span className="text-xs text-gray-500 sm:ml-2">
                                   {request.litres}L • {new Date(request.created_at).toLocaleDateString('en-US', {
                                     month: 'short',
@@ -613,7 +610,7 @@ const OwnerDashboard = () => {
                       </Label>
                       <Input
                         id="maintenance-vehicle-id"
-                        type="number"
+                        type="text"
                         min="1"
                         value={newMaintenanceRequest.vehicle_id}
                         onChange={(e) =>
