@@ -1,15 +1,24 @@
 import { NextResponse } from 'next/server';
-import { createUser, getUsers, updateUserRole, deleteUser } from '@/services/authService';
-import { createMaintenanceRequest } from '@/services/maintenanceService';
-import { User } from '@/types/type';
+import { getConditionUpdates, addConditionUpdate } from '@/services/ownerService';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const users = await getUsers();
-    return NextResponse.json(users);
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type');
+    
+    // Handle condition updates request
+    if (type === 'condition') {
+      const vehicleId = searchParams.get('vehicleId') || undefined;
+      const updates = await getConditionUpdates(vehicleId);
+      return NextResponse.json(updates);
+    }
+    
+    // Handle other owner-related GET requests here
+    return NextResponse.json({ message: 'Owner endpoint' });
+    
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to fetch users' },
+      { error: error instanceof Error ? error.message : 'An error occurred' },
       { status: 500 }
     );
   }
@@ -17,71 +26,71 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const url = new URL(request.url);
-    const type = url.searchParams.get('type');
-    const body = await request.json();
+    const data = await request.json();
+    console.log('Received request with data:', data);
     
-    if (type === 'users' || body.type === 'user') {
-      const { email, password, role_id } = body;
-      if (!email || !password || role_id === undefined) {
+    // Handle condition updates
+    if (data.type === 'condition') {
+      try {
+        const { vehicle_id, condition, notes } = data;
+        console.log('Processing condition update for vehicle:', vehicle_id);
+        
+        if (!vehicle_id || !condition) {
+          console.error('Missing required fields:', { vehicle_id, condition });
+          return NextResponse.json(
+            { error: 'Vehicle ID and condition are required' },
+            { status: 400 }
+          );
+        }
+        
+        console.log('Calling addConditionUpdate with:', { vehicle_id, condition, notes });
+        const newUpdate = await addConditionUpdate({ 
+          vehicle_id, 
+          condition, 
+          notes: notes || null 
+        });
+        
+        console.log('Successfully added condition update:', newUpdate);
+        return NextResponse.json(newUpdate, { status: 201 });
+        
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        const errorCode = error && typeof error === 'object' && 'code' in error 
+          ? (error as { code: string }).code 
+          : 'NO_ERROR_CODE';
+          
+        console.error('Error in condition update handler:', {
+          error: errorMessage,
+          stack: errorStack,
+          requestData: data,
+          code: errorCode
+        });
+        
         return NextResponse.json(
-          { error: 'Missing required user fields: email, password, and role_id are required' },
-          { status: 400 }
+          { 
+            error: 'Failed to process condition update',
+            details: errorMessage,
+            code: errorCode
+          },
+          { status: 500 }
         );
       }
-      const user = await createUser(email, password, Number(role_id));
-      return NextResponse.json(user, { status: 201 });
-    } else if (type === 'maintenance' || body.type === 'maintenance') {
-      const { vehicle_id, owner_id, issue, priority } = body;
-      if (!vehicle_id || !owner_id || !issue || !priority) {
-        return NextResponse.json(
-          { error: 'Missing required maintenance fields' },
-          { status: 400 }
-        );
-      }
-      const maintenance = await createMaintenanceRequest({ vehicle_id, owner_id, issue, priority });
-      return NextResponse.json(maintenance, { status: 201 });
-    } else {
-      return NextResponse.json(
-        { error: 'Invalid type specified' },
-        { status: 400 }
-      );
     }
-  } catch (error: any) {
+    
+    // Handle other owner-related POST requests here
     return NextResponse.json(
-      { error: error.message || 'Failed to process request' },
-      { status: 500 }
+      { error: 'Operation not supported' }, 
+      { status: 400 }
     );
-  }
-}
-
-export async function PUT(request: Request) {
-  try {
-    const { id, role_id } = await request.json();
-    if (!role_id) {
-      return NextResponse.json(
-        { error: 'role_id is required' },
-        { status: 400 }
-      );
-    }
-    const user = await updateUserRole(id, role_id);
-    return NextResponse.json(user);
-  } catch (error: any) {
+    
+  } catch (error) {
+    console.error('Error in owners API route:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to update user role' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const { id } = await request.json();
-    await deleteUser(id);
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Failed to delete user' },
+      { 
+        error: 'Failed to process request',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

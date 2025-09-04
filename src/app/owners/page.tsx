@@ -12,6 +12,7 @@ import { InspectionFiles } from './components/InspectionFiles';
 import { FuelRequest, MaintenanceRequest } from './types';
 import { ConditionUpdate } from './types';
 import Logo from '@/app/assets/logo/Logo.jpg'
+import { addConditionUpdate } from '@/services/ownerService'; 
 import Image from 'next/image'
 
 
@@ -79,7 +80,7 @@ const OwnerDashboard = () => {
     setIsConditionLoading(true);
     setConditionError(null);
     try {
-      const response = await fetch(`/api/owners?ownerId=${owner_id}&type=condition`);
+      const response = await fetch(`/api/owners?type=condition`);
       if (!response.ok) throw new Error('Failed to fetch condition updates');
       const data = await response.json();
       setConditionUpdates(Array.isArray(data) ? data : []);
@@ -88,7 +89,7 @@ const OwnerDashboard = () => {
     } finally {
       setIsConditionLoading(false);
     }
-  }, [owner_id]);
+  }, []);
 
   useEffect(() => {
     fetchMaintenanceRequests();
@@ -122,6 +123,43 @@ const OwnerDashboard = () => {
       setFuelError(err instanceof Error ? err.message : 'Failed to submit fuel request');
     } finally {
       setIsFuelLoading(false);
+    }
+  };
+
+  const handleConditionUpdateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newConditionUpdate.vehicle_id || !newConditionUpdate.condition) {
+      setConditionError('Please fill in all required fields');
+      return;
+    }
+
+    setIsConditionLoading(true);
+    setConditionError(null);
+    
+    try {
+      const response = await fetch('/api/owners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'condition',
+          vehicle_id: newConditionUpdate.vehicle_id,
+          condition: newConditionUpdate.condition,
+          notes: newConditionUpdate.notes || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit condition update');
+      }
+
+      const newUpdate = await response.json();
+      setConditionUpdates(prev => [newUpdate, ...prev]);
+      setNewConditionUpdate({ vehicle_id: '', condition: 'Good', notes: '' });
+    } catch (err) {
+      setConditionError(err instanceof Error ? err.message : 'Failed to submit condition update');
+    } finally {
+      setIsConditionLoading(false);
     }
   };
 
@@ -263,42 +301,38 @@ const OwnerDashboard = () => {
                 <CardTitle>Vehicle Condition Updates</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleConditionSubmit} className="space-y-3 sm:space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="condition-vehicle-id">Vehicle ID</Label>
-                      <Input
-                        id="condition-vehicle-id"
-                        type="number"
-                        min="1"
-                        value={newConditionUpdate.vehicle_id}
-                        onChange={(e) => setNewConditionUpdate({ ...newConditionUpdate, vehicle_id: e.target.value })}
-                        className='text-sky-950 bg-transparent'
-                        placeholder="Enter vehicle ID"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="condition-status">Condition Status</Label>
-                      <select
-                        id="condition-status"
-                        value={newConditionUpdate.condition}
-                        onChange={(e) => setNewConditionUpdate({ ...newConditionUpdate, condition: e.target.value })}
-                        className="flex h-10 w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-sky-950"
-                        required
-                      >
-                        <option value="Good">Good</option>
-                        <option value="Fair">Fair</option>
-                        <option value="Poor">Poor</option>
-                      </select>
-                    </div>
+                <form onSubmit={handleConditionUpdateSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="condition-vehicle">Vehicle ID *</Label>
+                    <Input
+                      id="condition-vehicle"
+                      value={newConditionUpdate.vehicle_id}
+                      onChange={(e) => setNewConditionUpdate({...newConditionUpdate, vehicle_id: e.target.value})}
+                      placeholder="Enter vehicle ID"
+                      required
+                      className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="condition-status">Condition *</Label>
+                    <select
+                      id="condition-status"
+                      value={newConditionUpdate.condition}
+                      onChange={(e) => setNewConditionUpdate({...newConditionUpdate, condition: e.target.value})}
+                      className="w-full p-2 border border-sky-200 rounded-md focus:ring-sky-500 focus:border-sky-500"
+                      required
+                    >
+                      <option value="Good">Good</option>
+                      <option value="Fair">Fair</option>
+                      <option value="Poor">Poor</option>
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="condition-notes">Notes</Label>
                     <Textarea
                       id="condition-notes"
-                      value={newConditionUpdate.notes}
-                      onChange={(e) => setNewConditionUpdate({ ...newConditionUpdate, notes: e.target.value })}
+                      value={newConditionUpdate.notes || ''}
+                      onChange={(e) => setNewConditionUpdate({...newConditionUpdate, notes: e.target.value})}
                       className="min-h-[80px] bg-transparent border-sky-200 focus-visible:ring-sky-500"
                       placeholder="Add any additional notes about the vehicle's condition..."
                       rows={3}
