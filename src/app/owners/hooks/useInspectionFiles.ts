@@ -62,7 +62,7 @@ export const useInspectionFiles = (ownerId: string) => {
       setIsUploading(false);
       setUploadProgress(0);
     }
-  }, []);
+  }, [ownerId]);
 
   const deleteInspectionFile = useCallback(async (fileId: string) => {
     try {

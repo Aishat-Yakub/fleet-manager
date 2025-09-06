@@ -44,7 +44,7 @@ export function useMaintenanceRequests(ownerId?: string) {
     } finally {
       setIsLoading(false);
     }
-  }, [ownerId, fetchMaintenanceRequests]);
+  }, [fetchMaintenanceRequests]);
 
   const updateMaintenanceRequest = useCallback(async (id: string, status: 'pending' | 'approved' | 'rejected' | 'completed') => {
     setIsLoading(true);
