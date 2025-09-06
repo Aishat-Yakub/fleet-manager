@@ -7,11 +7,9 @@ import Logo from '@/app/assets/logo/Logo.jpg'
 import { 
   LayoutDashboard, 
   Users, 
-  UserPlus,
   Car, 
   Clock, 
-  FileText, 
-  Settings
+  FileText
 } from 'lucide-react';
 
 type NavItem = {

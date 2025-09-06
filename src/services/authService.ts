@@ -1,12 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
 
-type User = {
-  id: string;
-  email: string;
-  password: string;
-  role_id: number;
-};
-
 // Fetch all users with roles
 export async function getUsers() {
   const { data, error } = await supabase

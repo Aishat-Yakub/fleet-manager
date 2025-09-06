@@ -31,8 +31,7 @@ export function useMaintenanceRequests(ownerId?: string) {
     
     try {
       const newRequest = await createMaintenanceRequest({
-        ...requestData,
-        owner_id: ownerId || '',
+        ...requestData
       });
       
       await fetchMaintenanceRequests();

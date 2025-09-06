@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { getConditionUpdates, addConditionUpdate } from '@/services/ownerService';
 import { getMaintenanceRequests } from '@/services/maintenanceService';
 import { supabase } from '@/lib/supabaseClient';
 

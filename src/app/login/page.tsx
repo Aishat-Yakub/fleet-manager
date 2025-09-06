@@ -45,9 +45,9 @@ export default function LoginPage() {
         default:
           setError('Role not recognized. Contact support.');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message || 'Login failed');
+      setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function LoginPage() {
               className="object-cover rounded-full"
             />
           </div>
-          <h2 className="text-4xl md:text-6xl text-white font-bold mb-2">Let's Get Started</h2>
+          <h2 className="text-4xl md:text-6xl text-white font-bold mb-2">Let&apos;s Get Started</h2>
           <p className="text-sm text-gray-300">Sign in to your LASU Fleet account</p>
         </div>
 

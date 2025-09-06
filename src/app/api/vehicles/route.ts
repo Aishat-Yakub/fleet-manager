@@ -13,9 +13,9 @@ export async function GET(request: Request) {
     
     const vehicles = await getVehicles();
     return NextResponse.json(vehicles);
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch vehicles' },
+      { error: error instanceof Error ? error.message : 'Failed to fetch vehicles' },
       { status: 500 }
     );
   }
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const formatCondition = (condition: string): 'Good' | 'Fair' | 'Poor' => {
       const validConditions = ['Good', 'Fair', 'Poor'] as const;
       const normalizedCondition = condition.charAt(0).toUpperCase() + condition.slice(1).toLowerCase();
-      return validConditions.includes(normalizedCondition as any) ? 
+      return validConditions.includes(normalizedCondition as unknown as 'Good' | 'Fair' | 'Poor') ? 
         normalizedCondition as 'Good' | 'Fair' | 'Poor' : 
         'Good'; // Default to 'Good' if invalid
     };
@@ -63,22 +63,24 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(vehicle, { status: 201 });
-  } catch (error: any) {
-    const errorDetails = {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    };
-    
+  } catch (error: unknown) {
+    let errorDetails: Record<string, unknown> = {};
+    let errorMessage = 'Failed to create vehicle';
+    let isDuplicate = false;
+    if (error && typeof error === 'object') {
+      errorDetails = {
+        message: (error as { message?: string }).message,
+        name: (error as { name?: string }).name,
+        stack: (error as { stack?: string }).stack,
+        code: (error as { code?: string }).code,
+        details: (error as { details?: string }).details,
+        hint: (error as { hint?: string }).hint
+      };
+      errorMessage = (error as { message?: string }).message || errorMessage;
+      isDuplicate = Boolean((error as { details?: string }).details?.includes('already exists') ||
+        (error as { message?: string }).message?.includes('duplicate key'));
+    }
     console.error('Error in POST /api/vehicles:', errorDetails);
-    
-    const errorMessage = error.message || 'Failed to create vehicle';
-    const isDuplicate = error.details?.includes('already exists') || 
-                       error.message?.includes('duplicate key');
-    
     return NextResponse.json(
       { 
         error: isDuplicate 
@@ -108,9 +110,13 @@ export async function PUT(request: Request) {
     
     const vehicle = await updateVehicle(Number(id), updates);
     return NextResponse.json(vehicle);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let errorMessage = 'Failed to update vehicle';
+    if (error && typeof error === 'object' && 'message' in error) {
+      errorMessage = (error as { message?: string }).message || errorMessage;
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to update vehicle' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
@@ -127,9 +133,13 @@ export async function DELETE(request: Request) {
     }
     await deleteVehicle(Number(id));
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    let errorMessage = 'Failed to delete vehicle';
+    if (error && typeof error === 'object' && 'message' in error) {
+      errorMessage = (error as { message?: string }).message || errorMessage;
+    }
     return NextResponse.json(
-      { error: error.message || 'Failed to delete vehicle' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

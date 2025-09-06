@@ -96,6 +96,8 @@ export default function UsersPage() {
   if (isLoading) return <div className='text-sky-950 text-2xl'>Loading...</div>;
   if (error) return <div className='text-red-600 text-2xl'>Error: {error}</div>;
 
+  const usersArray = Array.isArray(users) ? users : [];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -129,7 +131,7 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody className="bg-transparent divide-y divide-gray-200">
-            {users.map((user) => (
+            {usersArray.map((user) => (
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">{user.email}</div>

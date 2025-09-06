@@ -40,17 +40,16 @@ export async function GET(request: Request) {
           hasMore: offset + limit < (count || 0)
         }
       });
-    } catch (error: any) {
+    } catch (error: unknown  ) {
       console.error('Error in audit GET handler:', error);
       throw error;
     }
-    
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Audit API Error:', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch audit logs',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+  details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
       },
       { status: 500 }
     );
@@ -82,12 +81,12 @@ export async function POST(request: Request) {
     
     return NextResponse.json(log, { status: 201 });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error creating audit log:', error);
     return NextResponse.json(
       { 
         error: 'Failed to create audit log',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+  details: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
       },
       { status: 500 }
     );

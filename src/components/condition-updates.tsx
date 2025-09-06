@@ -13,12 +13,10 @@ interface ConditionUpdate {
   };
 }
 
-interface ConditionUpdatesProps {
-  // ownerId is no longer needed
-}
 
-export const ConditionUpdates = (props: ConditionUpdatesProps) => {
-  const [conditionUpdates, setConditionUpdates] = useState<ConditionUpdate[]>([]);
+
+export const ConditionUpdates = () => {
+  const [conditionUpdates] = useState<ConditionUpdate[]>([]);
 
   return (
     <Card>

@@ -145,7 +145,8 @@ export async function PATCH(request: Request) {
     const supabase = createClient();
 
     // Update the maintenance request status
-    const { data, error } = await supabase
+
+    const { error } = await supabase
       .from('maintenance_requests')
       .update({ 
         status, 

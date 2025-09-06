@@ -27,7 +27,7 @@ export const FuelRequestForm = ({
   onSubmit,
   onInputChange,
   onCancel,
-  vehicles = [],
+  // vehicles = [],
 }: FuelRequestFormProps) => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 

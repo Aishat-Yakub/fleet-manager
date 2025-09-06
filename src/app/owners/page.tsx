@@ -1,28 +1,24 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { InspectionFiles } from './components/InspectionFiles';
 import { FuelRequest, MaintenanceRequest } from './types';
 import { ConditionUpdate } from './types';
 import { useFuelRequests } from './hooks/useFuelRequests';
-import Logo from '@/app/assets/logo/Logo.jpg'
-import { addConditionUpdate } from '@/services/ownerService'; 
+import Logo from '@/app/assets/logo/Logo.jpg'; 
 import Image from 'next/image'
-import {  File, Wrench, ArrowLeft } from 'lucide-react';
+import {  Wrench, ArrowLeft } from 'lucide-react';
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('condition');
   // Initialize state at the top of the component
   const [ownerId] = useState<string>('1'); // Get from auth context in a real app
-  const ownerIdNum = Number(ownerId); // Convert to number once for API calls
   
   // Use the useFuelRequests hook
   const { 
@@ -34,7 +30,6 @@ const OwnerDashboard = () => {
   } = useFuelRequests(ownerId);
   
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
-  const [showFuelRequestForm, setShowFuelRequestForm] = useState(false);
   const [isSubmittingFuel, setIsSubmittingFuel] = useState(false);
   const [newFuelRequest, setNewFuelRequest] = useState({
     vehicle_id: '',
@@ -58,7 +53,7 @@ const OwnerDashboard = () => {
     condition: 'Good', 
     notes: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false); // Removed unused
   const [error, setError] = useState<string | null>(null);
   const [isConditionLoading, setIsConditionLoading] = useState(false);
   const [conditionError, setConditionError] = useState<string | null>(null);
@@ -67,7 +62,6 @@ const OwnerDashboard = () => {
 
   // Fetch maintenance requests from API
   const fetchMaintenanceRequests = useCallback(async () => {
-    setIsLoading(true);
     setError(null);
     try {
       const response = await fetch('/api/owners?type=maintenance');
@@ -78,8 +72,6 @@ const OwnerDashboard = () => {
       setMaintenanceRequests(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -149,7 +141,7 @@ const OwnerDashboard = () => {
           bank: '',
           account: '' 
         });
-        setShowFuelRequestForm(false);
+  // setShowFuelRequestForm(false); // Removed unused
         
         // Refresh the fuel requests list
         await fetchFuelRequests();
@@ -174,7 +166,7 @@ const OwnerDashboard = () => {
       return;
     }
 
-    setIsLoading(true);
+  // setIsLoading(true); // Removed unused
     setError(null);
     
     try {
@@ -200,7 +192,7 @@ const OwnerDashboard = () => {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error submitting maintenance request:', err);
     } finally {
-      setIsLoading(false);
+  // setIsLoading(false); // Removed unused
     }
   };
 

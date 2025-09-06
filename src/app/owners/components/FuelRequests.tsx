@@ -74,7 +74,7 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
     fuelRequests: FuelRequestWithVehicle[]; 
     isLoading: boolean; 
     error: string | null; 
-    createFuelRequest: (data: any) => Promise<{ success: boolean; data?: any; error?: string }>; 
+  createFuelRequest: (data: unknown) => Promise<{ success: boolean; data?: FuelRequestWithVehicle; error?: string }>; 
     fetchFuelRequests: () => Promise<void>; 
   };
 

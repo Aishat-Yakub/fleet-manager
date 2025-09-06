@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { MaintenanceRequest } from '../types';
 import { MaintenanceRequestForm, MaintenanceRequestsList } from './';
 import { useMaintenanceRequests } from '../hooks';
 
@@ -15,16 +14,14 @@ type MaintenanceRequestFormData = {
   vehicle_id: string;
   issue: string;
   priority: 'low' | 'medium' | 'high';
-  owner_id: string;
 };
 
 export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
   const [showForm, setShowForm] = useState(false);
   const [newRequest, setNewRequest] = useState<MaintenanceRequestFormData>({
-    vehicle_id: '',  
+    vehicle_id: '',
     issue: '',
     priority: 'medium',
-    owner_id: ownerId,
   });
 
   const {
@@ -32,8 +29,7 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
     isLoading,
     error,
     createMaintenanceRequest,
-    updateMaintenanceRequest,
-    fetchMaintenanceRequests,
+    fetchMaintenanceRequests
   } = useMaintenanceRequests(ownerId);
 
   const handleCreateRequest = async (e: React.FormEvent) => { 
@@ -47,9 +43,9 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
     try {
       await createMaintenanceRequest({
         vehicle_id: newRequest.vehicle_id,
-        owner_id: ownerId,
         issue: newRequest.issue,
         priority: newRequest.priority,
+        owner_id: ''
       });
       
       // Reset form and hide it
@@ -57,7 +53,6 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
         vehicle_id: '',
         issue: '',
         priority: 'medium',
-        owner_id: ownerId,
       });
       setShowForm(false);
       
@@ -66,18 +61,10 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
     } catch (error) {
       console.error('Failed to create maintenance request:', error);
       alert('Failed to create maintenance request. Please try again.');
-    }
+  }
   };
-  const handleUpdateStatus = async (requestId: string, status: 'pending' | 'approved' | 'rejected' | 'completed') => {
-    try {
-      await updateMaintenanceRequest(requestId, status);
-      // Refresh the list after status update
-      await fetchMaintenanceRequests();
-    } catch (error) {
-      console.error('Failed to update status:', error);
-      alert('Failed to update status. Please try again.');
-    }
-  };
+
+
 
   return (
     <div className="space-y-8">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Clock, User, Activity, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Search, AlertTriangle } from 'lucide-react';
 
 type AuditLog = {
   log_id: string;

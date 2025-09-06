@@ -42,6 +42,20 @@ export async function getVehicles(): Promise<Vehicle[]> {
     created_at: v.created_at
   }));
 }
+type FuelRequestRow = {
+	id: string;
+	vehicle_id: string;
+	owner_id?: string | number;
+	litres: number;
+	reason: string;
+	status: string;
+	created_at: string;
+	bank?: string;
+	account?: string;
+	vehicle_make?: string;
+	vehicle_model?: string;
+};
+
 export async function getFuelRequests(): Promise<FuelRequest[]> {
 	const { data, error } = await supabase
 		.from('fuel_requests')
@@ -57,12 +71,12 @@ export async function getFuelRequests(): Promise<FuelRequest[]> {
 			account
 		`);
 	if (error) throw new Error(error.message);
-	return (data || []).map((req: any) => ({
+	return (data || []).map((req: FuelRequestRow) => ({
 		id: req.id,
 		vehicleId: req.vehicle_id,
 		requestedBy: req.owner_id?.toString() ?? '',
 		amount: req.litres,
-		status: req.status,
+		status: req.status as 'pending' | 'approved' | 'rejected',
 		requestedAt: req.created_at,
 		vehicleMake: req.vehicle_make ?? '',
 		vehicleModel: req.vehicle_model ?? '',
@@ -112,12 +126,25 @@ export async function getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
 		`);
 	if (error) throw new Error(error.message);
 	// Map DB fields to UI fields if needed
-	return (data || []).map((req: any) => ({
+	type MaintenanceRequestRow = {
+		id: string;
+		vehicle_id: string;
+		owner_id?: string | number;
+		issue: string;
+		priority?: string;
+		status: string;
+		created_at: string;
+		vehicle_make?: string;
+		vehicle_model?: string;
+		estimated_cost?: number;
+	};
+
+	return (data || []).map((req: MaintenanceRequestRow) => ({
 		id: req.id,
 		vehicleId: req.vehicle_id,
 		requestedBy: req.owner_id?.toString() ?? '',
 		issue: req.issue,
-		status: req.status,
+		status: req.status as 'pending' | 'approved' | 'rejected' | 'completed' | 'in_progress',
 		requestedAt: req.created_at,
 		vehicleMake: req.vehicle_make ?? '',
 		vehicleModel: req.vehicle_model ?? '',

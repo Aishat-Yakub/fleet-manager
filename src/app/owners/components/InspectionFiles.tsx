@@ -22,7 +22,6 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
     uploadProgress,
     error,
     uploadInspectionFile,
-    deleteInspectionFile,
   } = useInspectionFiles(ownerId);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +35,7 @@ export const InspectionFiles = ({ ownerId }: InspectionFilesProps) => {
     if (!selectedFile || !vehicleId) return;
 
     try {
-      await uploadInspectionFile(selectedFile, vehicleId);
+      await uploadInspectionFile(selectedFile);
       setSelectedFile(null);
       setVehicleId('');
       setShowUploadForm(false);
