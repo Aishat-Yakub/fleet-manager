@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabaseClient';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -54,13 +53,13 @@ const OwnerDashboard = () => {
     notes: ''
   });
 
-  // Standalone file upload state
+  // Initialize file upload state
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Standalone file upload logic
+  // file upload logic
   const handleFileUpload = async (file: File) => {
     setUploading(true);
     setUploadError(null);
@@ -86,9 +85,8 @@ const OwnerDashboard = () => {
   };
   // const [isLoading, setIsLoading] = useState(false); // Removed unused
   const [error, setError] = useState<string | null>(null);
-  const [conditionError, setConditionError] = useState<string | null>(null);
-  const [conditionSuccess, setConditionSuccess] = useState<string | null>(null);
   const [isConditionLoading, setIsConditionLoading] = useState(false);
+  const [conditionError, setConditionError] = useState<string | null>(null);
 
   // ownerId is now managed by the state above
 
@@ -161,7 +159,7 @@ const OwnerDashboard = () => {
         reason: newFuelRequest.reason,
         bank: newFuelRequest.bank,
         account: newFuelRequest.account,
-        owner_id: ownerId, // Add the required owner_id field
+        owner_id: ownerId,
       });
 
       if (result.success) {
@@ -232,64 +230,26 @@ const OwnerDashboard = () => {
     e.preventDefault();
     setIsConditionLoading(true);
     setConditionError(null);
-    setConditionSuccess(null);
-    
-    // Validate required fields
-    if (!newConditionUpdate.plate_number || !newConditionUpdate.condition) {
-      setConditionError('Plate number and condition are required');
-      setIsConditionLoading(false);
-      return;
-    }
-
     try {
-      // First, check if the vehicle exists by plate number
-      const { data: existingVehicle, error: vehicleError } = await supabase
-        .from('vehicles')
-        .select('id')
-        .eq('plate_number', newConditionUpdate.plate_number)
-        .single();
-
-      let vehicleId = existingVehicle?.id;
-
-      // If vehicle doesn't exist, create it
-      if (!existingVehicle) {
-        const { data: newVehicle, error: createError } = await supabase
-          .from('vehicles')
-          .insert([
-            {
-              plate_number: newConditionUpdate.plate_number,
-              model: newConditionUpdate.model,
-              color: newConditionUpdate.color,
-              registration_date: newConditionUpdate.registration_date,
-              condition: newConditionUpdate.condition,
-              status: 'active'
-            }
-          ])
-          .select('id')
-          .single();
-
-        if (createError) throw createError;
-        vehicleId = newVehicle.id;
-      }
-
-      // Now update the condition
       const response = await fetch('/api/owners', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: 'condition',
-          vehicle_id: vehicleId,
-          condition: newConditionUpdate.condition,
-          notes: newConditionUpdate.notes
+            type: 'condition',
+            vehicle_id: newConditionUpdate.vehicle_id,
+            model: newConditionUpdate.model,
+            color: newConditionUpdate.color,
+            registration_date: newConditionUpdate.registration_date,
+            condition: newConditionUpdate.condition,
+            notes: newConditionUpdate.notes,
+            plate_number: newConditionUpdate.plate_number,
         }),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to submit condition update');
       }
       await fetchConditionUpdates();
-      // Reset form
       setNewConditionUpdate({
         vehicle_id: '',
         plate_number: '',
@@ -299,21 +259,9 @@ const OwnerDashboard = () => {
         condition: 'Good',
         notes: ''
       });
-      
-      // Show success message
-      setConditionSuccess('Vehicle condition updated successfully!');
-      setConditionError(null);
-      
-      // Clear success message after 5 seconds
-      setTimeout(() => setConditionSuccess(null), 5000);
-      
+      if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
-      setConditionError(errorMessage);
-      console.error('Error submitting condition update:', err);
-      
-      // Clear error after 5 seconds
-      setTimeout(() => setConditionError(null), 5000);
+      setConditionError(err instanceof Error ? err.message : 'Failed to submit condition update');
     } finally {
       setIsConditionLoading(false);
     }
@@ -500,16 +448,7 @@ const OwnerDashboard = () => {
                       Submit Update
                     </Button>
                   </div>
-                  {conditionError && (
-                    <div className="text-red-500 text-sm mt-2 p-2 bg-red-50 rounded-md">
-                      {conditionError}
-                    </div>
-                  )}
-                  {conditionSuccess && (
-                    <div className="text-green-600 text-sm mt-2 p-2 bg-green-50 rounded-md">
-                      {conditionSuccess}
-                    </div>
-                  )}
+                  {conditionError && <div className="text-red-700 mt-2">{conditionError}</div>}
                 </form>
                 
                 {/* Recent Updates Section */}

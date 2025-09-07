@@ -322,61 +322,55 @@ export async function POST(request: Request) {
       }
     }
     
-    // Handle vehicle condition updates
+    // Handle vehicle condition updates (insert new vehicle row)
     if (data.type === 'condition') {
       try {
-        const { vehicle_id, condition, notes } = data;
-        console.log('Updating vehicle condition:', { vehicle_id, condition });
-        
-        if (!vehicle_id || !condition) {
-          console.error('Missing required fields:', { vehicle_id, condition });
+        const { plate_number, registration_date, model, color, condition, status } = data;
+        if (!plate_number || !registration_date || !model || !color || !condition) {
+          console.error('Missing required fields for vehicle insert:', { plate_number, registration_date, model, color, condition });
           return NextResponse.json(
-            { error: 'Vehicle ID and condition are required' },
+            { error: 'All vehicle fields except status are required' },
             { status: 400 }
           );
         }
-        
-        // Update the vehicle's condition directly in the vehicles table
-        const { data: updatedVehicle, error } = await supabase
+        // If status is not provided, default to 'active'
+        const vehicleStatus = typeof status === 'string' && status.length > 0 ? status : 'active';
+        // Use plate_number as id
+        const id = plate_number;
+        // Insert new vehicle row, set id = plate_number
+        const { data: insertedVehicle, error } = await supabase
           .from('vehicles')
-          .update({
-            condition,
-            created_at: new Date().toISOString()
-          })
-          .eq('id', vehicle_id)
-          .select('id, condition, created_at')
+          .insert([
+            {
+              id,
+              plate_number,
+              registration_date,
+              model,
+              color,
+              condition,
+              status: vehicleStatus,
+              created_at: new Date().toISOString()
+            }
+          ])
+          .select('id, plate_number, registration_date, model, color, condition, status, created_at')
           .single();
-          
         if (error) throw error;
-        
-        // Create response object with explicit type
-        const result = {
-          vehicle_id: updatedVehicle.id,
-          condition: updatedVehicle.condition,
-          created_at: updatedVehicle.created_at,
-          notes: notes || null
-        };
-        
-        console.log('Successfully updated vehicle condition:', result);
-        return NextResponse.json(result, { status: 200 });
-        
+        return NextResponse.json(insertedVehicle, { status: 201 });
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         const errorStack = error instanceof Error ? error.stack : undefined;
         const errorCode = error && typeof error === 'object' && 'code' in error 
           ? (error as { code: string }).code 
           : 'NO_ERROR_CODE';
-          
-        console.error('Error in condition update handler:', {
+        console.error('Error in vehicle insert handler:', {
           error: errorMessage,
           stack: errorStack,
           requestData: data,
           code: errorCode
         });
-        
         return NextResponse.json(
           { 
-            error: 'Failed to process condition update',
+            error: 'Failed to insert vehicle',
             details: errorMessage,
             code: errorCode
           },
