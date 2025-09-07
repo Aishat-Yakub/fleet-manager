@@ -294,6 +294,7 @@ The project follows the Next.js App Router structure. Here are the main routes a
   - Deletes a vehicle
   - Required body: `{ id: string }`
 
+---
 
 ## 📄 License
 
