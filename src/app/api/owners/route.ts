@@ -90,6 +90,49 @@ export async function GET(request: Request) {
       return NextResponse.json(requests);
     }
     
+    // Handle users list request
+    if (type === 'users') {
+      console.log('Fetching all users with roles');
+      
+      try {
+        const { data: users, error } = await supabase
+          .from('users')
+          .select(`
+            id,
+            email,
+            role_id,
+            created_at,
+            roles (
+              role_name
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching users:', error);
+          throw error;
+        }
+
+        // Format the response to match the expected frontend format
+        const formattedUsers = users.map(user => ({
+          id: user.id,
+          email: user.email,
+          role_id: user.role_id,
+          created_at: user.created_at,
+          roles: user.roles && user.roles.length > 0 ? { role_name: user.roles[0].role_name } : null,
+          status: 'active' // Default status if not in your database
+        }));
+
+        return NextResponse.json(formattedUsers);
+      } catch (error) {
+        console.error('Error in users API:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch users' },
+          { status: 500 }
+        );
+      }
+    }
+    
     // Handle other owner-related GET requests here
     return NextResponse.json({ message: 'Owner endpoint' });
     
@@ -111,10 +154,190 @@ export async function GET(request: Request) {
   }
 }
 
+export async function DELETE(request: Request) {
+  try {
+    const requestBody = await request.json();
+    const id = requestBody.id;
+    
+    if (!id) {
+      console.error('No ID provided in request body:', requestBody);
+      return NextResponse.json(
+        { 
+          error: 'User ID is required',
+          receivedBody: requestBody  // For debugging
+        },
+        { status: 400 }
+      );
+    }
+
+    // First delete from auth
+    const { error: authError } = await supabase.auth.admin.deleteUser(id);
+    
+    if (authError) {
+      console.error('Error deleting user from auth:', authError);
+      return NextResponse.json(
+        { 
+          error: 'Failed to delete user from authentication',
+          details: authError.message 
+        },
+        { status: 500 }
+      );
+    }
+
+    // Then delete from public.users
+    const { error: dbError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', id);
+
+    if (dbError) {
+      console.error('Error deleting user from database:', dbError);
+      return NextResponse.json(
+        { 
+          error: 'Failed to delete user from database',
+          details: dbError.message 
+        },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { success: true, message: 'User deleted successfully' },
+      { status: 200 }
+    );
+    
+  } catch (error) {
+    console.error('Error in DELETE handler:', error);
+    return NextResponse.json(
+      { 
+        error: 'Internal Server Error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const data = await request.json();
     console.log('Received request with data:', data);
+    
+    // Handle user creation
+    if (data.type === 'users') {
+      try {
+        const { email, password, role_id, name } = data;
+        
+        // Validate input
+        if (!email || !password || !role_id) {
+          console.error('Missing required fields for user creation:', { email, role_id });
+          return NextResponse.json(
+            { 
+              error: 'Validation Error',
+              details: 'Email, password, and role_id are required',
+              fields: { email: !email, password: !password, role_id: !role_id }
+            },
+            { status: 400 }
+          );
+        }
+        
+        // Check if user already exists
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle();
+          
+        if (existingUser) {
+          return NextResponse.json(
+            { 
+              error: 'User already exists',
+              details: 'A user with this email already exists',
+              code: 'USER_EXISTS'
+            },
+            { status: 409 }
+          );
+        }
+        
+        // Create user in auth.users
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: name || '',
+              role_id: Number(role_id)
+            }
+          }
+        });
+        
+        if (signUpError) {
+          console.error('Error creating auth user:', signUpError);
+          return NextResponse.json(
+            { 
+              error: 'Authentication Error',
+              details: signUpError.message,
+              code: signUpError.status || 'AUTH_ERROR'
+            },
+            { status: 400 }
+          );
+        }
+        
+        if (!authData.user) {
+          throw new Error('No user data returned from auth');
+        }
+        
+        // Create user in public.users with the correct schema
+        const { data: createdUser, error: userError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: authData.user.id,
+              email,
+              password, // Store hashed password (Supabase Auth handles the hashing)
+              role_id: Number(role_id),
+              status: 'active',
+              created_at: new Date().toISOString(),
+              // Add role based on role_id
+              role: role_id === '1' ? 'user' : 
+                    role_id === '2' ? 'admin' : 
+                    role_id === '3' ? 'manager' : 'user'
+            }
+          ])
+          .select('*')
+          .single();
+          
+        if (userError) {
+          // If user creation in public.users fails, try to clean up the auth user
+          await supabase.auth.admin.deleteUser(authData.user.id).catch(console.error);
+          
+          console.error('Error creating user in users table:', userError);
+          return NextResponse.json(
+            { 
+              error: 'Database Error',
+              details: userError.message,
+              code: 'USER_CREATION_FAILED',
+              hint: 'Check if the users table has the correct columns (id, email, password, role_id, status, created_at, role)'
+            },
+            { status: 500 }
+          );
+        }
+        
+        console.log('Successfully created user:', createdUser);
+        return NextResponse.json(createdUser, { status: 201 });
+        
+      } catch (error) {
+        console.error('Unexpected error in user creation:', error);
+        return NextResponse.json(
+          { 
+            error: 'Internal Server Error',
+            details: error instanceof Error ? error.message : 'An unexpected error occurred',
+            code: 'INTERNAL_ERROR'
+          },
+          { status: 500 }
+        );
+      }
+    }
     
     // Handle vehicle condition updates
     if (data.type === 'condition') {

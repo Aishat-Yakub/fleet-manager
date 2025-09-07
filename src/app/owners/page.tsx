@@ -50,37 +50,33 @@ const OwnerDashboard = () => {
     color: '',
     registration_date: '',
     condition: 'Good',
-    notes: '',
-    fileUrl: ''
+    notes: ''
   });
+
+  // Standalone file upload state
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  // File upload logic for Supabase S3
+
+  // Standalone file upload logic
   const handleFileUpload = async (file: File) => {
     setUploading(true);
     setUploadError(null);
+    setFileUrl(null);
     try {
-      // You may want to generate a unique filename
       const fileName = `${Date.now()}_${file.name}`;
-      const formData = new FormData();
-      formData.append('file', file);
-      // This endpoint and headers may need to be adjusted for your Supabase bucket config
       const res = await fetch('https://tuvffxdpawcslfavcbth.storage.supabase.co/storage/v1/s3/condition-uploads/' + fileName, {
         method: 'POST',
         body: file,
         headers: {
           'Content-Type': file.type,
           'x-upsert': 'true',
-          // You may need to add Authorization if your bucket is not public
         },
       });
-      if (!res.ok) {
-        throw new Error('Failed to upload file');
-      }
-      // The public URL pattern may differ based on your bucket config
+      if (!res.ok) throw new Error('Failed to upload file');
       const publicUrl = `https://tuvffxdpawcslfavcbth.storage.supabase.co/storage/v1/object/public/condition-uploads/${fileName}`;
-      setNewConditionUpdate((prev) => ({ ...prev, fileUrl: publicUrl }));
+      setFileUrl(publicUrl);
     } catch (err) {
       setUploadError((err as Error).message || 'File upload failed');
     } finally {
@@ -239,11 +235,14 @@ const OwnerDashboard = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          vehicle_id: Number(newConditionUpdate.vehicle_id),
-          owner_id: Number(ownerId),
+          type: 'condition',
+          vehicle_id: newConditionUpdate.vehicle_id,
+          model: newConditionUpdate.model,
+          color: newConditionUpdate.color,
+          registration_date: newConditionUpdate.registration_date,
           condition: newConditionUpdate.condition,
           notes: newConditionUpdate.notes,
-          file_url: newConditionUpdate.fileUrl,
+         plate_number: newConditionUpdate.plate_number,
         }),
       });
       if (!response.ok) {
@@ -258,8 +257,7 @@ const OwnerDashboard = () => {
         color: '',
         registration_date: '',
         condition: 'Good',
-        notes: '',
-        fileUrl: ''
+        notes: ''
       });
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
@@ -416,28 +414,35 @@ const OwnerDashboard = () => {
                       rows={3}
                     />
                   </div>
-                  {/* File Upload */}
-                  <div className="space-y-2">
-                    <Label htmlFor="condition-file">Upload File (optional)</Label>
-                    <input
-                      id="condition-file"
-                      type="file"
-                      ref={fileInputRef}
-                      className="block w-full text-sm text-sky-950 border border-sky-200 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      accept="image/*,application/pdf"
-                      onChange={async (e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          await handleFileUpload(e.target.files[0]);
-                        }
-                      }}
-                      disabled={uploading}
-                    />
-                    {uploading && <div className="text-blue-600 text-xs mt-1">Uploading...</div>}
-                    {uploadError && <div className="text-red-600 text-xs mt-1">{uploadError}</div>}
-                    {newConditionUpdate.fileUrl && (
-                      <div className="text-green-700 text-xs mt-1 break-all">File uploaded: <a href={newConditionUpdate.fileUrl} target="_blank" rel="noopener noreferrer" className="underline">View file</a></div>
-                    )}
-                  </div>
+
+        {/* Standalone File Upload Section */}
+        <div className="my-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Upload a File to Supabase</CardTitle>
+              <CardDescription>Upload images or PDFs. This is separate from the condition update form.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <input
+                type="file"
+                accept="image/*,application/pdf"
+                ref={fileInputRef}
+                onChange={async (e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    await handleFileUpload(e.target.files[0]);
+                  }
+                }}
+                disabled={uploading}
+                className="block w-full text-sm text-sky-950 border border-sky-200 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
+              />
+              {uploading && <div className="text-blue-600 text-xs mt-2">Uploading...</div>}
+              {uploadError && <div className="text-red-600 text-xs mt-2">{uploadError}</div>}
+              {fileUrl && (
+                <div className="text-green-700 text-xs mt-2 break-all">File uploaded: <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">View file</a></div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
                   <div className="pt-4">
                     <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={isConditionLoading}>
                       Submit Update

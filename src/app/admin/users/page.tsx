@@ -51,14 +51,20 @@ export default function UsersPage() {
   const handleSaveUser = async (userData: Omit<User, 'id'> & { password?: string }) => {
     try {
       const method = editingUser ? 'PUT' : 'POST';
-      const url = editingUser ? `/api/owners?type=users` : '/api/owners?type=users';
+      const url = '/api/owners';
+      
+      const requestBody = {
+        type: 'users',
+        ...(editingUser ? { id: editingUser.id } : {}),
+        ...userData
+      };
       
       const response = await fetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editingUser ? { id: editingUser.id, ...userData } : userData),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) throw new Error('Failed to save user');
@@ -76,12 +82,15 @@ export default function UsersPage() {
     if (!confirm('Are you sure you want to delete this user?')) return;
     
     try {
-      const response = await fetch('/api/owners?type=users', {
+      const response = await fetch('/api/owners', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: userId }),
+        body: JSON.stringify({
+          type: 'users',
+          id: userId
+        })
       });
 
       if (!response.ok) throw new Error('Failed to delete user');

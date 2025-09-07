@@ -27,7 +27,6 @@ export async function getAllUsers(): Promise<UserWithRole[]> {
   if (error) throw new Error(error.message);
   return data as unknown as UserWithRole[];
 }
-
 // Update
 export async function updateUser(id: string, updates: Partial<User>) {
   const { data, error } = await supabase
