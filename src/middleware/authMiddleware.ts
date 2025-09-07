@@ -1,32 +1,42 @@
 import { supabase } from "../lib/supabaseClient";
 
-// Define the expected User + Role shape
 type UserWithRole = {
   id: string;
   email: string;
+  password: string;
   role_id: number;
   roles: { role_name: string };
 };
 
-// Login function
 export async function login(email: string, password: string) {
-  const { data, error } = await supabase
-    .from("users")
-    .select("id, email, role_id, roles(role_name)") // select role_name properly
-    .eq("email", email)
-    .eq("password", password)
-    .single<UserWithRole>();
+  try {
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('id, email, password, role_id, roles(role_name)')
+      .eq('email', email)
+      .single<UserWithRole>();
 
-  if (error || !data) throw new Error("Invalid credentials");
+    if (userError || !user) {
+      console.error('User not found or error:', userError);
+      throw new Error('Invalid credentials');
+    }
 
-  return {
-    userId: data.id,
-    email: data.email,
-    role: data.roles?.role_name || null, // safe access
-  };
+    if (user.password !== password) {
+      console.error('Password mismatch');
+      throw new Error('Invalid credentials');
+    }
+
+    return {
+      userId: user.id,
+      email: user.email,
+      role: user.roles?.role_name || null,
+    };
+  } catch (error) {
+    console.error('Login error:', error);
+    throw new Error('Invalid credentials');
+  }
 }
 
-// Role check helpers
 export function isOwner(role: string | null): boolean {
   return role === "owner";
 }
@@ -43,7 +53,6 @@ export function isAuditor(role: string | null): boolean {
   return role === "auditor";
 }
 
-// Generic role guard
 export function hasRole(role: string | null, allowed: string[]): boolean {
   return role !== null && allowed.includes(role);
 }
