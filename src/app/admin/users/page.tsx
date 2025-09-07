@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Edit, Users } from 'lucide-react';
+import { Plus, Users, Trash2 } from 'lucide-react';
 
 type User = {
   id: string;
@@ -14,10 +14,9 @@ type User = {
 };
 
 export default function UsersPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
 
   // Fetch users on component mount
@@ -38,67 +37,36 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  const handleOpenModal = (user: User | null = null) => {
-    setEditingUser(user);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setEditingUser(null);
-    setIsModalOpen(false);
-  };
-
-  const handleSaveUser = async (userData: Omit<User, 'id'> & { password?: string }) => {
-    try {
-      const method = editingUser ? 'PUT' : 'POST';
-      const url = '/api/owners';
-      
-      const requestBody = {
-        type: 'users',
-        ...(editingUser ? { id: editingUser.id } : {}),
-        ...userData
-      };
-      
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) throw new Error('Failed to save user');
-      
-      // Refresh users list
-      const updatedUsers = await fetch('/api/owners?type=users').then(res => res.json());
-      setUsers(updatedUsers);
-      handleCloseModal();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save user');
-    }
-  };
-
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
     
     try {
+      setIsDeleting(prev => ({ ...prev, [userId]: true }));
+      setError(null);
+      
       const response = await fetch('/api/owners', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          type: 'users',
-          id: userId
-        })
+        body: JSON.stringify({ id: userId })
       });
 
-      if (!response.ok) throw new Error('Failed to delete user');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
       
-      // Update local state
+      // Update local state to remove the deleted user
       setUsers(users.filter(user => user.id !== userId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete user');
+    } finally {
+      setIsDeleting(prev => {
+        const newState = { ...prev };
+        delete newState[userId];
+        return newState;
+      });
     }
   };
 
@@ -113,8 +81,8 @@ export default function UsersPage() {
         <h1 className="text-2xl font-bold flex items-center text-sky-950">
           <Users className="mr-2 text-sky-950" /> Users Management
         </h1>
+        {/* Add User button only, no edit logic */}
         <button
-          onClick={() => handleOpenModal()}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
         >
           <Plus size={18} className="mr-1" /> Add User
@@ -156,16 +124,16 @@ export default function UsersPage() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
-                    onClick={() => handleOpenModal(user)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                  >
-                    <Edit size={18} />
-                  </button>
-                  <button
                     onClick={() => handleDeleteUser(user.id)}
-                    className="text-red-600 hover:text-red-900"
+                    disabled={isDeleting[user.id]}
+                    className={`${isDeleting[user.id] ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:text-red-900'}`}
+                    title="Delete user"
                   >
-                    <Trash2 size={18} />
+                    {isDeleting[user.id] ? (
+                      <div className="w-4 h-4 border-2 border-gray-400 border-t-2 border-t-red-600 rounded-full animate-spin"></div>
+                    ) : (
+                      <Trash2 size={18} />
+                    )}
                   </button>
                 </td>
               </tr>
@@ -174,80 +142,7 @@ export default function UsersPage() {
         </table>
       </div>
 
-      {/* User Form Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-sky-950/30 backdrop-blur-lg bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4 text-sky-950">
-              {editingUser ? 'Edit User' : 'Add New User'}
-            </h2>
-            
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              handleSaveUser({
-                email: formData.get('email') as string,
-                password: formData.get('password') as string,
-                role_id: Number(formData.get('role_id')),
-              });
-            }}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-sky-950 mb-1">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  defaultValue={editingUser?.email || ''}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sky-950"
-                  required
-                />
-              </div>
-              
-              {!editingUser && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-sky-950 mb-1">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="w-full px-3 py-2 border border-gray-300 text-sky-950 rounded-md"
-                    required={!editingUser}
-                  />
-                </div>
-              )}
-              
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-sky-950 mb-1">Role</label>
-                <select
-                  name="role_id"
-                  defaultValue={editingUser?.role_id || ''}
-                  className="w-full px-3 py-2 border border-gray-300 text-sky-950 rounded-md"
-                  required
-                >
-                  <option value="">Select a role</option>
-                  <option value="1">Admin</option>
-                  <option value="2">Manager</option>
-                  <option value="3">User</option>
-                </select>
-              </div>
-              
-              <div className="flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  {editingUser ? 'Update' : 'Create'} User
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }

@@ -154,37 +154,19 @@ export async function GET(request: Request) {
   }
 }
 
+
 export async function DELETE(request: Request) {
   try {
-    const requestBody = await request.json();
-    const id = requestBody.id;
+    const { id } = await request.json();
     
     if (!id) {
-      console.error('No ID provided in request body:', requestBody);
       return NextResponse.json(
-        { 
-          error: 'User ID is required',
-          receivedBody: requestBody  // For debugging
-        },
+        { error: 'User ID is required' },
         { status: 400 }
       );
     }
 
-    // First delete from auth
-    const { error: authError } = await supabase.auth.admin.deleteUser(id);
-    
-    if (authError) {
-      console.error('Error deleting user from auth:', authError);
-      return NextResponse.json(
-        { 
-          error: 'Failed to delete user from authentication',
-          details: authError.message 
-        },
-        { status: 500 }
-      );
-    }
-
-    // Then delete from public.users
+    // Delete the user from the users table
     const { error: dbError } = await supabase
       .from('users')
       .delete()
@@ -194,7 +176,7 @@ export async function DELETE(request: Request) {
       console.error('Error deleting user from database:', dbError);
       return NextResponse.json(
         { 
-          error: 'Failed to delete user from database',
+          error: 'Failed to delete user',
           details: dbError.message 
         },
         { status: 500 }
@@ -211,7 +193,8 @@ export async function DELETE(request: Request) {
     return NextResponse.json(
       { 
         error: 'Internal Server Error',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
       },
       { status: 500 }
     );

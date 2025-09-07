@@ -22,8 +22,8 @@ export const getConditionUpdates = async (vehicleId?: string) => {
     return (data || []).map(vehicle => ({
       vehicle_id: vehicle.id,
       condition: vehicle.condition,
-      created_at: vehicle.updated_at, // Using updated_at as created_at for backward compatibility
-      notes: null // Add notes field for backward compatibility
+      created_at: vehicle.updated_at,
+      notes: null 
     }));
   } catch (error) {
     console.error('Error fetching vehicle conditions:', error);
