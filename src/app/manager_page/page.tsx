@@ -33,7 +33,7 @@ export default function ManagerDashboard() {
     <div className="min-h-screen bg-sky-50 py-8">
       <div className="container mx-auto px-4">
       <div className="flex items-center h-16 flex-shrink-0 px-6 border-b border-gray-200">
-          <h1 className="text-2xl flex justify-center items-center gap-2 font-bold text-gray-900">
+          <h1 className="text-xl md:text-2xl flex justify-center items-center gap-2 font-bold text-gray-900">
             <Image
               src={Logo}
               alt="Fleet Manager Logo"

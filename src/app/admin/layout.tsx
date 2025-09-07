@@ -46,8 +46,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       )}
 
-      <div className="flex h-[calc(100vh-0px)] overflow-hidden flex-row-reverse">
-        {/* Desktop Sidebar on the right */}
+      <div className="flex h-[calc(100vh-0px)] overflow-hidden">
+        {/* Desktop Sidebar on the left */}
         <div className="hidden lg:flex lg:flex-shrink-0">
           <Sidebar />
         </div>

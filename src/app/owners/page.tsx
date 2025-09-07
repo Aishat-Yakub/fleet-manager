@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { InspectionFiles } from './components/InspectionFiles';
 import { FuelRequest, MaintenanceRequest } from './types';
 import { ConditionUpdate } from './types';
 import { useFuelRequests } from './hooks/useFuelRequests';
@@ -297,14 +296,7 @@ const OwnerDashboard = () => {
             >
               Maintenance
             </TabsTrigger>
-            <TabsTrigger 
-              value="inspections" 
-              className={
-                `transition-colors text-sky-950 hover:bg-sky-50 hover:text-sky-950 ${activeTab === 'inspections' ? 'bg-blue-600 text-white' : ''}`
-              }
-            >
-              Inspections
-            </TabsTrigger>
+
           </TabsList>
 
           {/* Condition Updates Tab */}
@@ -401,7 +393,7 @@ const OwnerDashboard = () => {
                     <div className="text-center py-8 text-red-500">Loading...</div>
                   ) : conditionUpdates.length > 0 ? (
                     conditionUpdates.map((update) => (
-                      <div key={update.id} className="border border-sky-950 rounded-lg p-4 bg-white mb-2">
+                      <div key={update.id} className="border border-sky-950 rounded-lg p-4 bg-transparent mb-2">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <div>
                             <p className="font-medium">Plate Number: {update.vehicle_id}</p>
@@ -539,7 +531,7 @@ const OwnerDashboard = () => {
                     <div className="text-center py-4 text-red-700">Loading fuel requests...</div>
                   ) : fuelRequests.length > 0 ? (
                     fuelRequests.map((request: FuelRequest) => (
-                      <div key={request.id} className="border border-sky-200 rounded-lg p-3 sm:p-4 bg-white shadow-sm">
+                      <div key={request.id} className="border border-sky-200 rounded-lg p-3t sha sm:p-4 bg-transparent">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <div className="w-full">
                               <div className="flex flex-wrap items-center gap-2">
@@ -694,13 +686,13 @@ const OwnerDashboard = () => {
                             </th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200 bg-white">
+                        <tbody className="divide-y divide-gray-200 bg-transparent">
                           {maintenanceRequests.map((request) => (
                             <tr key={request.id} className="hover:bg-sky-50">
                               <td className="py-3 pl-3 pr-1 sm:pl-4 sm:pr-3 text-sm font-medium text-sky-950">
                                 <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                                   <span className="sm:hidden mr-2 text-xs text-gray-500">Vehicle:</span>
-                                  {`#${request.vehicle_id}`}
+                                  {`${request.vehicle_id}`}
                                 </div>
                                 <div className="sm:hidden text-xs text-gray-600 mt-1 line-clamp-2">
                                   {request.issue}
@@ -760,11 +752,6 @@ const OwnerDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Inspections Tab Content */}
-          <TabsContent value="inspections" className="space-y-6 text-sky-950">
-            <InspectionFiles ownerId={ownerId} />
           </TabsContent>
         </Tabs>
       </div>
