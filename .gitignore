@@ -36,8 +36,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# windsurf
+.windsurf
+.windsurfrules
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 supabase.md
-
