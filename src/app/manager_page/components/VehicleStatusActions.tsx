@@ -29,7 +29,7 @@ export const VehicleStatusActions: React.FC<VehicleStatusActionsProps> = ({ row,
       <Button 
         variant="outline" 
         size="sm"
-        className={`bg-sky-950 text-white hover:bg-sky-800 hover:border-blue-800/20 ${row.original.status === 'active' ? 'bg-blue-800/30' : ''}`}
+        className={`bg-blue-600 text-white hover:bg-blue-700 ${row.original.status === 'inactive' ? 'bg-blue-700' : ''}`}
         disabled={row.original.status === 'active' || loading}
         onClick={() => handleStatusChange('active')}
       >
@@ -38,7 +38,7 @@ export const VehicleStatusActions: React.FC<VehicleStatusActionsProps> = ({ row,
       <Button 
         variant="outline" 
         size="sm"
-        className={`bg-red-600 text-white hover:bg-red-700 hover:border-red-700/20 ${row.original.status === 'inactive' ? 'bg-red-800/30' : ''}`}
+        className={`bg-red-600/40 text-white hover:bg-red-700 ${row.original.status === 'active' ? 'bg-red-700/60' : ''}`}
         disabled={row.original.status === 'inactive' || loading}
         onClick={() => handleStatusChange('inactive')}
       >

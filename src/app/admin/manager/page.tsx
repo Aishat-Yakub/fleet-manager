@@ -33,25 +33,10 @@ export default function ManagerDashboard() {
         <h1 className="text-3xl md:text-4xl font-bold mb-8 text-sky-950">Vehicle Management Dashboard</h1>
         
         <Tabs defaultValue="vehicles" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-md mb-8 bg-sky-100/50 p-1.5 rounded-full">
-            <TabsTrigger 
-              value="vehicles" 
-              className="text-black hover:!text-black focus:!text-black data-[state=active]:bg-white data-[state=active]:text-black rounded-full transition-colors"
-            >
-              Vehicles
-            </TabsTrigger>
-            <TabsTrigger 
-              value="fuel-requests" 
-              className="text-black hover:!text-black focus:!text-black data-[state=active]:bg-white data-[state=active]:text-black rounded-full transition-colors"
-            >
-              Fuel Requests
-            </TabsTrigger>
-            <TabsTrigger 
-              value="maintenance-requests" 
-              className="text-black hover:!text-black focus:!text-black data-[state=active]:bg-white data-[state=active]:text-black rounded-full transition-colors"
-            >
-              Maintenance
-            </TabsTrigger>
+          <TabsList className="w-full flex flex-wrap justify-start md:justify-center mb-6">
+            <TabsTrigger value="vehicles">Vehicles</TabsTrigger>
+            <TabsTrigger value="fuel-requests">Fuel Requests</TabsTrigger>
+            <TabsTrigger value="maintenance-requests">Maintenance</TabsTrigger>
           </TabsList>
 
         <TabsContent value="vehicles" className="bg-white/60 backdrop-blur-lg rounded-xl border border-sky-950/40 p-6">

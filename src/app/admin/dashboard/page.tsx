@@ -7,7 +7,7 @@ import Link from 'next/link';
 type StatCardProps = { title: string; value: string | number; icon: React.ReactNode };
 
 const StatCard = ({ title, value, icon }: StatCardProps) => (
-  <div className="bg-white rounded-lg shadow p-6">
+  <div className="bg-white rounded-lg border border-sky-900 p-6">
     <div className="flex justify-between items-start">
       <div>
         <p className="text-sky-950 text-sm font-medium">{title}</p>
@@ -46,7 +46,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg p-6 border border-sky-950/40">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-sky-950">Recent Activity</h2>
           <Link href="/admin/activity" className="text-sm text-blue-600 hover:text-blue-800">

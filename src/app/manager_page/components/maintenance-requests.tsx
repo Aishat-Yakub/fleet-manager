@@ -27,15 +27,15 @@ export function MaintenanceRequests() {
 
   
 
-  const handleStatusChange = async (id: number, status: 'approved' | 'rejected') => {
+  const handleStatusChange = async (id: string, status: 'approved' | 'rejected') => {
     try {
-      await updateMaintenanceRequest(id, status, {});
+      await updateMaintenanceRequest(Number(id), status, {});
       const updatedRequests = await getMaintenanceRequests();
       setRequests(updatedRequests);
     } catch (error) {
       console.error(`Error updating status to ${status}:`, error);
     }
-  };
+  }
 
   if (loading) {
     return <div className='text-sky-600'>Loading maintenance requests...</div>;
@@ -98,16 +98,16 @@ export function MaintenanceRequests() {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="border-sky-200 text-sky-700 hover:bg-sky-50 hover:border-sky-300"
-                          onClick={() => handleStatusChange(Number(request.id), 'approved')}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => handleStatusChange(request.id, 'approved')}
                         >
                           Approve
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
-                          className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
-                          onClick={() => handleStatusChange(Number(request.id), 'rejected')}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                          onClick={() => handleStatusChange(request.id, 'rejected')}
                         >
                           Reject
                         </Button>
