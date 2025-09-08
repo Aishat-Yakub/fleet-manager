@@ -10,14 +10,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { FuelRequest, MaintenanceRequest } from './types';
 import { ConditionUpdate } from './types';
 import { useFuelRequests } from './hooks/useFuelRequests';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Logo from '@/app/assets/logo/Logo.jpg'; 
 import Image from 'next/image'
-import {  Wrench, ArrowLeft } from 'lucide-react';
+import { Wrench, ArrowLeft } from 'lucide-react';
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('condition');
   // Initialize state at the top of the component
-  const [ownerId] = useState<string>('1'); // Get from auth context in a real app
+  const [ownerId] = useState<string>('1');
   
   // Use the useFuelRequests hook
   const { 
@@ -42,6 +43,9 @@ const OwnerDashboard = () => {
     issue: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
   });
+  const [maintenanceFileUrl, setMaintenanceFileUrl] = useState<string | null>(null);
+  const [uploadingMaintenanceFile, setUploadingMaintenanceFile] = useState(false);
+  const maintenanceFileInputRef = useRef<HTMLInputElement | null>(null);
   const [conditionUpdates, setConditionUpdates] = useState<ConditionUpdate[]>([]);
   const [newConditionUpdate, setNewConditionUpdate] = useState({
     vehicle_id: '',
@@ -64,26 +68,42 @@ const OwnerDashboard = () => {
     setUploading(true);
     setUploadError(null);
     setFileUrl(null);
+  
     try {
-      const fileName = `${Date.now()}_${file.name}`;
-      const res = await fetch('https://tuvffxdpawcslfavcbth.storage.supabase.co/storage/v1/s3/condition-uploads/' + fileName, {
-        method: 'POST',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-          'x-upsert': 'true',
-        },
-      });
-      if (!res.ok) throw new Error('Failed to upload file');
-      const publicUrl = `https://tuvffxdpawcslfavcbth.storage.supabase.co/storage/v1/object/public/condition-uploads/${fileName}`;
+      const supabase = createClientComponentClient();
+      const fileExt = file.name.split('.').pop();
+      
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `uploads/${fileName}`;
+  
+      // ⚡ Make sure bucket name matches your dashboard
+      const { data, error } = await supabase.storage
+        .from('upload') 
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: file.type,
+        });
+  
+      if (error) throw error;
+  
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('upload') 
+        .getPublicUrl(filePath);
+  
       setFileUrl(publicUrl);
+      return publicUrl;
     } catch (err) {
-      setUploadError((err as Error).message || 'File upload failed');
+      console.error('Upload error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'File upload failed';
+      setUploadError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setUploading(false);
     }
   };
-  // const [isLoading, setIsLoading] = useState(false); // Removed unused
+  
   const [error, setError] = useState<string | null>(null);
   const [isConditionLoading, setIsConditionLoading] = useState(false);
   const [conditionError, setConditionError] = useState<string | null>(null);
@@ -196,17 +216,20 @@ const OwnerDashboard = () => {
       return;
     }
 
-  // setIsLoading(true); // Removed unused
     setError(null);
     
     try {
       const { createMaintenanceRequest } = await import('@/services/maintenanceService');
       
-      await createMaintenanceRequest({
+      // Include file URL in the request if a file was uploaded
+      const requestData = {
         vehicle_id: vehicle_id,
         issue: issue,
-        priority: priority || 'medium' as const
-      });
+        priority: priority || 'medium' as const,
+        attachment_url: maintenanceFileUrl || null
+      };
+      
+      await createMaintenanceRequest(requestData);
       
       // Refresh the maintenance requests and reset the form
       await fetchMaintenanceRequests();
@@ -215,6 +238,8 @@ const OwnerDashboard = () => {
         issue: '',
         priority: 'medium',
       });
+      setMaintenanceFileUrl(null);
+      if (maintenanceFileInputRef.current) maintenanceFileInputRef.current.value = '';
       
       // Show success message
       setError('Maintenance request submitted successfully!');
@@ -303,36 +328,49 @@ const OwnerDashboard = () => {
           className="w-full pt-2 sm:pt-4"
           defaultValue="condition"
         >
-          {/* tab-section */}
           <TabsList 
-            className="border border-sky-200 bg-sky-50 font-medium rounded-lg grid w-full grid-cols-2 sm:grid-cols-4 gap-1 mb-4 sm:mb-6 md:mb-8 p-0.5 text-xs sm:text-sm md:text-base"
+            className="w-full flex flex-wrap gap-1 p-1 bg-sky-50 rounded-lg border border-sky-200"
             aria-label="Vehicle management sections"
           >
             <TabsTrigger 
               value="condition" 
-              className={
-                `transition-colors text-sky-950 hover:bg-sky-50 hover:text-sky-950 ${activeTab === 'condition' ? 'bg-blue-600 text-white' : ''}`
-              }
+              className={`
+                flex-1 min-w-[120px] sm:min-w-[140px] md:min-w-[160px] py-2 px-1 sm:px-2 md:px-4
+                text-xs xs:text-sm sm:text-base font-medium rounded-md transition-all duration-200
+                hover:bg-sky-100 hover:text-sky-900
+                ${activeTab === 'condition' 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700 hover:text-white' 
+                  : 'text-sky-700'}
+              `}
             >
-              Condition Updates
+              <span className="truncate">Condition Updates</span>
             </TabsTrigger>
             <TabsTrigger 
               value="fuel" 
-              className={
-                `transition-colors text-sky-950 hover:bg-sky-50 hover:text-sky-950 ${activeTab === 'fuel' ? 'bg-blue-600 text-white' : ''}`
-              }
+              className={`
+                flex-1 min-w-[120px] sm:min-w-[140px] md:min-w-[160px] py-2 px-1 sm:px-2 md:px-4
+                text-xs xs:text-sm sm:text-base font-medium rounded-md transition-all duration-200
+                hover:bg-sky-100 hover:text-sky-900
+                ${activeTab === 'fuel' 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700 hover:text-white' 
+                  : 'text-sky-700'}
+              `}
             >
-              Fuel Requests
+              <span className="truncate">Fuel Requests</span>
             </TabsTrigger>
             <TabsTrigger 
               value="maintenance" 
-              className={
-                `transition-colors text-sky-950 hover:bg-sky-50 hover:text-sky-950 ${activeTab === 'maintenance' ? 'bg-blue-600 text-white' : ''}`
-              }
+              className={`
+                flex-1 min-w-[120px] sm:min-w-[140px] md:min-w-[160px] py-2 px-1 sm:px-2 md:px-4
+                text-xs xs:text-sm sm:text-base font-medium rounded-md transition-all duration-200
+                hover:bg-sky-100 hover:text-sky-900
+                ${activeTab === 'maintenance' 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700 hover:text-white' 
+                  : 'text-sky-700'}
+              `}
             >
-              Maintenance
+              <span className="truncate">Maintenance</span>
             </TabsTrigger>
-
           </TabsList>
 
           {/* Condition Updates Tab */}
@@ -384,65 +422,49 @@ const OwnerDashboard = () => {
                         type="date"
                         value={newConditionUpdate.registration_date}
                         onChange={(e) => setNewConditionUpdate({...newConditionUpdate, registration_date: e.target.value})}
-                        required
                         className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="condition-status">Condition *</Label>
-                    <select
-                      id="condition-status"
-                      value={newConditionUpdate.condition}
-                      onChange={(e) => setNewConditionUpdate({...newConditionUpdate, condition: e.target.value})}
-                      className="w-full p-2 border border-sky-200 rounded-md focus:ring-sky-500 focus:border-sky-500"
-                      required
-                    >
-                      <option value="Good">Good</option>
-                      <option value="Fair">Fair</option>
-                      <option value="Poor">Poor</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="condition-notes">Notes</Label>
-                    <Textarea
-                      id="condition-notes"
-                      value={newConditionUpdate.notes || ''}
-                      onChange={(e) => setNewConditionUpdate({...newConditionUpdate, notes: e.target.value})}
-                      className="min-h-[80px] bg-transparent border-sky-200 focus-visible:ring-sky-500"
-                      placeholder="Add any additional notes about the vehicle's condition..."
-                      rows={3}
-                    />
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">Notes</Label>
+                      <Textarea
+                        id="notes"
+                        value={newConditionUpdate.notes}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, notes: e.target.value})}
+                        className="min-h-[80px] bg-transparent border-sky-200 focus-visible:ring-sky-500"
+                        placeholder="Add any additional notes about the vehicle's condition..."
+                      />
+                    </div>
                   </div>
 
-        {/* Standalone File Upload Section */}
-        <div className="my-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upload a File to Supabase</CardTitle>
-              <CardDescription>Upload images or PDFs. This is separate from the condition update form.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <input
-                type="file"
-                accept="image/*,application/pdf"
-                ref={fileInputRef}
-                onChange={async (e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    await handleFileUpload(e.target.files[0]);
-                  }
-                }}
-                disabled={uploading}
-                className="block w-full text-sm text-sky-950 border border-sky-200 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
-              />
-              {uploading && <div className="text-blue-600 text-xs mt-2">Uploading...</div>}
-              {uploadError && <div className="text-red-600 text-xs mt-2">{uploadError}</div>}
-              {fileUrl && (
-                <div className="text-green-700 text-xs mt-2 break-all">File uploaded: <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">View file</a></div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                  {/* Standalone File Upload Section */}
+                  <div className="my-8">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Upload a File to Supabase</CardTitle>
+                        <CardDescription>Upload images or PDFs. This is separate from the condition update form.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          ref={fileInputRef}
+                          onChange={async (e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              await handleFileUpload(e.target.files[0]);
+                            }
+                          }}
+                          disabled={uploading}
+                          className="block w-full text-sm text-sky-950 border border-sky-200 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        />
+                        {uploading && <div className="text-blue-600 text-xs mt-2">Uploading...</div>}
+                        {uploadError && <div className="text-red-600 text-xs mt-2">{uploadError}</div>}
+                        {fileUrl && (
+                          <div className="text-green-700 text-xs mt-2 break-all">File uploaded: <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">View file</a></div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                   <div className="pt-4">
                     <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={isConditionLoading}>
                       Submit Update
@@ -721,6 +743,37 @@ const OwnerDashboard = () => {
                     </Button>
                   </div>
                 </form>
+
+
+                  {/* Standalone File Upload Section */}
+                  <div className="my-8">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Upload a File to Supabase</CardTitle>
+                        <CardDescription>Upload images or PDFs. This is separate from the condition update form.</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          ref={fileInputRef}
+                          onChange={async (e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              await handleFileUpload(e.target.files[0]);
+                            }
+                          }}
+                          disabled={uploading}
+                          className="block w-full text-sm text-sky-950 border border-sky-200 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        />
+                        {uploading && <div className="text-blue-600 text-xs mt-2">Uploading...</div>}
+                        {uploadError && <div className="text-red-600 text-xs mt-2">{uploadError}</div>}
+                        {fileUrl && (
+                          <div className="text-green-700 text-xs mt-2 break-all">File uploaded: <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">View file</a></div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                
 
                 {/* Maintenance Requests List */}
                 <div className="border-t border-gray-200 pt-6">
