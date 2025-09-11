@@ -45,18 +45,17 @@ export function FuelRequests() {
           <div className="text-center py-8 text-sky-600">No fuel requests found.</div>
         ) : (
           requests.map((request) => (
-            <div key={request.id} className="bg-white text-sky-950 rounded-lg border border-gray-200 p-5 transition-shadow">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div key={request.id}
+              className="p-4 border rounded-lg hover:border-sky-950/60 transition-shadow"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="space-y-1">
-                  <h3 className="font-medium text-sky-900">
-                    {request.vehicleMake} {request.vehicleModel}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-sky-900">Requested By: {request.vehicleId}</h3>
+                  </div>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                     <span className="text-gray-600">
-                      Requested by: <span className="text-sky-800">{request.requestedBy}</span>
-                    </span>
-                    <span className="text-gray-600">
-                      Amount: <span className="font-medium text-sky-900">{request.amount} L</span>
+                      Amount: <span className="font-medium text-sky-900">{request.amount}L</span>
                     </span>
                     <span className="text-gray-600">
                       Bank: <span className="font-medium text-sky-900">{request.bank}</span>

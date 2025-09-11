@@ -40,7 +40,7 @@ export default function LoginPage() {
           router.push('/manager_page');
           break;
         case 'auditor':
-          router.push('/admin/auditors');
+          router.push('/auditor_page');
           break;
         default:
           setError('Role not recognized. Contact support.');

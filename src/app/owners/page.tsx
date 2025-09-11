@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Search } from 'lucide-react';
 import { FuelRequest, MaintenanceRequest } from './types';
-import { ConditionUpdate } from './types';
+import { ConditionUpdate } from '@/services/conditionService';
 import { useFuelRequests } from './hooks/useFuelRequests';
+import { getConditionUpdates, updateConditionStatus } from '@/services/conditionService';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Logo from '@/app/assets/logo/Logo.jpg'; 
 import Image from 'next/image'
@@ -36,7 +38,8 @@ const OwnerDashboard = () => {
     litres: '',
     reason: '',
     bank: '',
-    account: ''
+    account: '',
+    name: ''
   });
   const [newMaintenanceRequest, setNewMaintenanceRequest] = useState({
     vehicle_id: '',
@@ -47,14 +50,19 @@ const OwnerDashboard = () => {
   const [uploadingMaintenanceFile, setUploadingMaintenanceFile] = useState(false);
   const maintenanceFileInputRef = useRef<HTMLInputElement | null>(null);
   const [conditionUpdates, setConditionUpdates] = useState<ConditionUpdate[]>([]);
-  const [newConditionUpdate, setNewConditionUpdate] = useState({
+  const [searchTerm, setSearchTerm] = useState('');
+  const [fuelSearchTerm, setFuelSearchTerm] = useState('');
+  const [maintenanceSearchTerm, setMaintenanceSearchTerm] = useState('');
+  const [newConditionUpdate, setNewConditionUpdate] = useState<{
+    vehicle_id: string;
+    conditon: 'Good' | 'Fair' | 'Poor';
+    note: string;
+    name: string;
+  }>({
     vehicle_id: '',
-    plate_number: '',
-    model: '',
-    color: '',
-    registration_date: '',
-    condition: 'Good',
-    notes: ''
+    conditon: 'Good',
+    note: '',
+    name: ''
   });
 
   // Initialize file upload state
@@ -125,26 +133,14 @@ const OwnerDashboard = () => {
     }
   }, []);
 
+
   // Fetch vehicle conditions
   const fetchConditionUpdates = useCallback(async () => {
     setIsConditionLoading(true);
     setConditionError(null);
     try {
-      const response = await fetch(`/api/owners?type=condition`);
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to fetch vehicle conditions');
-      }
-      const data = await response.json();
-      // Map the response to match the expected format with an id field
-      const formattedData = Array.isArray(data) 
-        ? data.map(item => ({
-            ...item,
-            id: item.vehicle_id, // Use vehicle_id as id for React keys
-            created_at: item.created_at || new Date().toISOString()
-          }))
-        : [];
-      setConditionUpdates(formattedData);
+      const data = await getConditionUpdates();
+      setConditionUpdates(data);
     } catch (err) {
       console.error('Error fetching vehicle conditions:', err);
       setConditionError(err instanceof Error ? err.message : 'An error occurred');
@@ -179,6 +175,7 @@ const OwnerDashboard = () => {
         reason: newFuelRequest.reason,
         bank: newFuelRequest.bank,
         account: newFuelRequest.account,
+        name: newFuelRequest.name,
         owner_id: ownerId,
       });
 
@@ -189,7 +186,8 @@ const OwnerDashboard = () => {
           litres: '', 
           reason: '', 
           bank: '',
-          account: '' 
+          account: '',
+          name: ''
         });
   // setShowFuelRequestForm(false); // Removed unused
         
@@ -253,44 +251,50 @@ const OwnerDashboard = () => {
 
   const handleConditionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!newConditionUpdate.vehicle_id || !newConditionUpdate.conditon || !newConditionUpdate.name) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
     setIsConditionLoading(true);
     setConditionError(null);
+
     try {
-      const response = await fetch('/api/owners', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            type: 'condition',
-            vehicle_id: newConditionUpdate.vehicle_id,
-            model: newConditionUpdate.model,
-            color: newConditionUpdate.color,
-            registration_date: newConditionUpdate.registration_date,
-            condition: newConditionUpdate.condition,
-            notes: newConditionUpdate.notes,
-            plate_number: newConditionUpdate.plate_number,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit condition update');
-      }
-      await fetchConditionUpdates();
+      const { submitConditionUpdate } = await import('@/services/conditionService');
+      await submitConditionUpdate(newConditionUpdate);
+      
+      // Add the new condition update to the list
+      setConditionUpdates(prev => [
+        {
+          id: Date.now(), // Temporary ID
+          name: newConditionUpdate.name || 'Owner',
+          vehicle_id: newConditionUpdate.vehicle_id,
+          conditon: newConditionUpdate.conditon,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+          note: newConditionUpdate.note
+        },
+        ...prev
+      ]);
+
+      // Reset form
       setNewConditionUpdate({
         vehicle_id: '',
-        plate_number: '',
-        model: '',
-        color: '',
-        registration_date: '',
-        condition: 'Good',
-        notes: ''
+        conditon: 'Good',
+        note: '',
+        name: ''
       });
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      
     } catch (err) {
+      console.error('Error submitting condition update:', err);
       setConditionError(err instanceof Error ? err.message : 'Failed to submit condition update');
     } finally {
       setIsConditionLoading(false);
     }
   };
+
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -383,54 +387,47 @@ const OwnerDashboard = () => {
                 <form onSubmit={handleConditionSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="plate-number">Plate Number *</Label>
+                      <Label htmlFor="name">Your Name *</Label>
                       <Input
-                        id="plate-number"
-                        value={newConditionUpdate.plate_number}
-                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, plate_number: e.target.value})}
-                        placeholder="e.g., LASU5254"
+                        id="name"
+                        value={newConditionUpdate.name}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, name: e.target.value})}
+                        placeholder="Your full name"
                         required
                         className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="model">Model *</Label>
+                      <Label htmlFor="vehicle_id">Vehicle ID *</Label>
                       <Input
-                        id="model"
-                        value={newConditionUpdate.model}
-                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, model: e.target.value})}
-                        placeholder="e.g., HELL CAT 2015"
+                        id="vehicle_id"
+                        value={newConditionUpdate.vehicle_id}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, vehicle_id: e.target.value})}
+                        placeholder="e.g., LASU28381"
                         required
                         className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="color">Color *</Label>
-                      <Input
-                        id="color"
-                        value={newConditionUpdate.color}
-                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, color: e.target.value})}
-                        placeholder="e.g., BLACK"
+                      <Label htmlFor="conditon">Condition *</Label>
+                      <select
+                        id="conditon"
+                        value={newConditionUpdate.conditon}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, conditon: e.target.value as 'Good' | 'Fair' | 'Poor'})}
+                        className="w-full p-2 border border-sky-200 rounded-md bg-transparent focus-visible:ring-sky-500 focus-visible:ring-2"
                         required
-                        className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
-                      />
+                      >
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                        <option value="Poor">Poor</option>
+                      </select>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="registration-date">Registration Date *</Label>
-                      <Input
-                        id="registration-date"
-                        type="date"
-                        value={newConditionUpdate.registration_date}
-                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, registration_date: e.target.value})}
-                        className="bg-transparent border-sky-200 focus-visible:ring-sky-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="notes">Notes</Label>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="note">Note</Label>
                       <Textarea
-                        id="notes"
-                        value={newConditionUpdate.notes}
-                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, notes: e.target.value})}
+                        id="note"
+                        value={newConditionUpdate.note}
+                        onChange={(e) => setNewConditionUpdate({...newConditionUpdate, note: e.target.value})}
                         className="min-h-[80px] bg-transparent border-sky-200 focus-visible:ring-sky-500"
                         placeholder="Add any additional notes about the vehicle's condition..."
                       />
@@ -441,8 +438,8 @@ const OwnerDashboard = () => {
                   <div className="my-8">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Upload a File to Supabase</CardTitle>
-                        <CardDescription>Upload images or PDFs. This is separate from the condition update form.</CardDescription>
+                        <CardTitle>Upload </CardTitle>
+                        <CardDescription>Upload images or PDFs.</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <input
@@ -475,21 +472,48 @@ const OwnerDashboard = () => {
                 
                 {/* Recent Updates Section */}
                 <div className="mt-8">
-                  <h2 className="text-lg text-sky-950 font-medium mb-4">Recent Updates</h2>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <h2 className="text-lg text-sky-950 font-medium">Recent Updates</h2>
+                    <div className="relative w-full sm:w-64">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        type="text"
+                        placeholder="Search by name, vehicle ID, or status..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 bg-transparent border-sky-200 focus-visible:ring-sky-500"
+                      />
+                    </div>
+                  </div>
                   {isConditionLoading ? (
                     <div className="text-center py-8 text-red-500">Loading...</div>
                   ) : conditionUpdates.length > 0 ? (
-                    conditionUpdates.map((update) => (
+                    conditionUpdates
+                      .filter(update => {
+                        if (!searchTerm) return true;
+                        const searchLower = searchTerm.toLowerCase();
+                        return (
+                          update.name.toLowerCase().includes(searchLower) ||
+                          update.vehicle_id.toLowerCase().includes(searchLower) ||
+                          update.status.toLowerCase().includes(searchLower) ||
+                          update.conditon.toLowerCase().includes(searchLower)
+                        );
+                      })
+                      .map((update) => (
                       <div key={update.id} className="border border-sky-950 rounded-lg p-4 bg-transparent mb-2">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <div>
-                            <p className="font-medium">Plate Number: {update.vehicle_id}</p>
+                            <p className="font-medium">{update.name} - Plate Number: {update.vehicle_id}</p>
                             <p className="text-sm text-gray-500">
-                              Condition: {update.condition} • {update.created_at ? new Date(update.created_at.replace(' ', 'T')).toLocaleDateString('en-US', {
+                              Condition: {update.conditon} • Status: <span className={`font-medium ${
+                                update.status === 'pending' ? 'text-yellow-600' :
+                                update.status === 'approved' ? 'text-green-600' :
+                                'text-red-600'
+                              }`}>{update.status}</span> • {update.created_at ? new Date(update.created_at.replace(' ', 'T')).toLocaleDateString('en-US', {
                                 year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                               }) : ''}
-                              {update.notes && (
-                                <span className="block mt-1 text-gray-600">{update.notes}</span>
+                              {update.note && (
+                                <span className="block mt-1 text-gray-600">{update.note}</span>
                               )}
                             </p>
                           </div>
@@ -558,6 +582,20 @@ const OwnerDashboard = () => {
                         placeholder="Reason for fuel request"
                       />
                     </div>
+                    <div className="md:col-span-2">
+                      <Label htmlFor="fuel-name" className="text-sky-950">
+                        Name <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="fuel-name"
+                        type="text"
+                        value={newFuelRequest.name}
+                        onChange={(e) => setNewFuelRequest({ ...newFuelRequest, name: e.target.value })}
+                        className="w-full bg-transparent border-sky-200 focus-visible:ring-sky-500 placeholder:text-sky-950/40 text-sky-950"
+                        placeholder="Enter your full name"
+                        required
+                      />
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="fuel-bank" className="text-sky-950">
                         Bank Name
@@ -608,7 +646,19 @@ const OwnerDashboard = () => {
 
                 {/* Fuel Requests List */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium text-red-950">Recent Fuel Requests</h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <h3 className="text-lg font-medium text-red-950">Recent Fuel Requests</h3>
+                    <div className="relative w-full sm:w-64">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sky-950 h-4 w-4" />
+                      <Input
+                        type="text"
+                        placeholder="Search by name, vehicle ID, or status..."
+                        value={fuelSearchTerm}
+                        onChange={(e) => setFuelSearchTerm(e.target.value)}
+                        className="pl-10 bg-transparent text-sky-950 placeholder:text-sky-950/40 border-sky-200 focus-visible:ring-sky-500"
+                      />
+                    </div>
+                  </div>
                   {error && (
                     <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
                       {error}
@@ -617,12 +667,26 @@ const OwnerDashboard = () => {
                   {isFuelLoading ? (
                     <div className="text-center py-4 text-red-700">Loading fuel requests...</div>
                   ) : fuelRequests.length > 0 ? (
-                    fuelRequests.map((request: FuelRequest) => (
+                    fuelRequests
+                      .filter(request => {
+                        if (!fuelSearchTerm) return true;
+                        const searchLower = fuelSearchTerm.toLowerCase();
+                        return (
+                          (request.name && request.name.toLowerCase().includes(searchLower)) ||
+                          (request.vehicle_id && request.vehicle_id.toLowerCase().includes(searchLower)) ||
+                          (request.status && request.status.toLowerCase().includes(searchLower)) ||
+                          (request.reason && request.reason.toLowerCase().includes(searchLower))
+                        );
+                      })
+                      .map((request: FuelRequest) => (
                       <div key={request.id} className="border border-sky-200 rounded-lg p-3t sha sm:p-4 bg-transparent">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                             <div className="w-full">
                               <div className="flex flex-wrap items-center gap-2">
                                 <p className="font-medium text-sm sm:text-base text-sky-950">Plate Number: {request.vehicle_id}</p>
+                                {request.name && (
+                                  <p className="font-medium text-sm sm:text-base text-sky-950">Name: {request.name}</p>
+                                )}
                                 <br />
                                 <span className="text-xs text-gray-500 sm:ml-2">
                                   {request.litres}L • {new Date(request.created_at).toLocaleDateString('en-US', {
@@ -749,8 +813,8 @@ const OwnerDashboard = () => {
                   <div className="my-8">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Upload a File to Supabase</CardTitle>
-                        <CardDescription>Upload images or PDFs. This is separate from the condition update form.</CardDescription>
+                        <CardTitle>Upload</CardTitle>
+                        <CardDescription>Upload images or PDFs</CardDescription>
                       </CardHeader>
                       <CardContent>
                         <input
@@ -777,9 +841,21 @@ const OwnerDashboard = () => {
 
                 {/* Maintenance Requests List */}
                 <div className="border-t border-gray-200 pt-6">
-                  <h3 className="text-lg font-medium text-sky-950 mb-4">
-                    Recent Maintenance Requests
-                  </h3>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <h3 className="text-lg font-medium text-sky-950">
+                      Recent Maintenance Requests
+                    </h3>
+                    <div className="relative w-full sm:w-64">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sky-950 h-4 w-4" />
+                      <Input
+                        type="text"
+                        placeholder="Search by vehicle ID, issue, or priority..."
+                        value={maintenanceSearchTerm}
+                        onChange={(e) => setMaintenanceSearchTerm(e.target.value)}
+                        className="pl-10 bg-transparent text-sky-950 placeholder:text-sky-950/40 border-sky-200 focus-visible:ring-sky-500"
+                      />
+                    </div>
+                  </div>
 
                   {maintenanceRequests.length > 0 ? (
                     <div className="overflow-x-auto">
@@ -805,7 +881,17 @@ const OwnerDashboard = () => {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200 bg-transparent">
-                          {maintenanceRequests.map((request) => (
+                          {maintenanceRequests
+                            .filter(request => {
+                              if (!maintenanceSearchTerm) return true;
+                              const searchLower = maintenanceSearchTerm.toLowerCase();
+                              return (
+                                (request.vehicle_id && request.vehicle_id.toLowerCase().includes(searchLower)) ||
+                                (request.issue && request.issue.toLowerCase().includes(searchLower)) ||
+                                (request.priority && request.priority.toLowerCase().includes(searchLower))
+                              );
+                            })
+                            .map((request) => (
                             <tr key={request.id} className="hover:bg-sky-50">
                               <td className="py-3 pl-3 pr-1 sm:pl-4 sm:pr-3 text-sm font-medium text-sky-950">
                                 <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
@@ -871,6 +957,7 @@ const OwnerDashboard = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
         </Tabs>
       </div>
     </div>

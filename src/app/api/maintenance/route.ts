@@ -74,8 +74,8 @@ export async function POST(request: Request) {
       .from('maintenance_requests')
       .insert([
         {
-          vehicle_id: Number(vehicle_id),
-          owner_id: Number(owner_id),
+          vehicle_id: vehicle_id,  // Keep as string to match Supabase table
+          owner_id: owner_id,      // Keep as string if it's also a string in the table
           issue,
           priority,
           status: 'pending',

@@ -5,6 +5,11 @@ import "./fonts.css";
 export const metadata: Metadata = {
   title: "LASU Fleet Manager",
   description: "LASU Fleet Manager- Manage all your car maintenance",
+  icons:{
+    icon: "/favicon.ico",
+    shortcut: "/logo.png"
+    
+  }
 };
 
 export default function RootLayout({

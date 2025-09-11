@@ -27,13 +27,16 @@ export type FuelRequest = {
 };
 
 export type MaintenanceRequest = {
+  requestedAt: string | number | Date;
   id: string;
-  vehicleId: string;
-  vehicleMake: string;
-  vehicleModel: string;
-  requestedBy: string;
+  vehicle_id: string;
+  owner_id: string;
   issue: string;
   status: 'pending' | 'approved' | 'rejected' | 'in_progress' | 'completed';
-  requestedAt: string;
-  estimatedCost?: number;
+  created_at: string;
+  estimated_cost?: number;
+  notes?: string;
+  assigned_to?: string;
+  completed_at?: string;
+  Name?: string; // Requester's name
 };

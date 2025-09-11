@@ -42,6 +42,7 @@ export default function VehiclesPage() {
     const formData = new FormData(e.target as HTMLFormElement);
     const vehicleData = {
       plate_number: formData.get('plate_number') as string,
+      Name: formData.get('Name') as string,
       model: formData.get('model') as string,
       color: formData.get('color') as string,
       condition: formData.get('condition') as Vehicle['condition'],
@@ -245,6 +246,9 @@ export default function VehiclesPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Plate Number
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -267,6 +271,11 @@ export default function VehiclesPage() {
               <tbody className="">
                 {filteredVehicles.map((vehicle) => (
                   <tr key={vehicle.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {vehicle.Name || 'Unnamed Vehicle'}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900 font-mono">
                         {vehicle.plate_number}
@@ -340,6 +349,19 @@ export default function VehiclesPage() {
 
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sky-950">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-1">
+                    Vehicle Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="Name"
+                    defaultValue={editingVehicle?.Name || ''}
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., Rector's Official Car"
+                    required
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Plate Number <span className="text-red-500">*</span>

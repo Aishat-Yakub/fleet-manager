@@ -57,7 +57,12 @@ export function MaintenanceRequests() {
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="space-y-2 flex-1">
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                      <h3 className="font-medium text-sky-900">{request.vehicleMake} {request.vehicleModel}</h3>
+                      <div>
+                        <h3 className="text-md text-gray-500">Requested by: 
+                        <span className="text-sky-900">
+                        {request.vehicleId}</span>
+                        </h3>
+                      </div>
                       <span className="flex items-center">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           request.status === 'approved' ? 'bg-green-50 text-green-700' :
@@ -79,7 +84,7 @@ export function MaintenanceRequests() {
                     
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                       <span className="text-gray-600">
-                        Requested by: <span className="text-sky-800">{request.requestedBy}</span>
+                        Date & Time <span className="text-sky-800">{request.requestedBy}</span>
                       </span>
                       {request.estimatedCost && (
                         <span className="text-gray-600">

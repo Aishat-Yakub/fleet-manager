@@ -9,6 +9,7 @@ export interface Vehicle {
   condition: 'Good' | 'Fair' | 'Poor';
   status: 'active' | 'inactive';
   created_at: string;
+  Name: string;  // Note: Supabase returns 'Name' with capital N
 }
 
 // Fetch all vehicles
@@ -63,7 +64,8 @@ export async function createVehicle(vehicleData: Omit<Vehicle, 'id' | 'created_a
     const vehicleWithId = {
       ...vehicleData,
       id: generateId(),
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      Name: vehicleData.Name || 'Unnamed Vehicle' // Default name if not provided
     };
 
     const { data, error } = await supabase
@@ -85,7 +87,7 @@ export async function createVehicle(vehicleData: Omit<Vehicle, 'id' | 'created_a
 }
 
 // Update a vehicle
-export async function updateVehicle(id: number, updates: Partial<Vehicle>) {
+export async function updateVehicle(id: string, updates: Partial<Vehicle>) {
   try {
     const { data, error } = await supabase
       .from('vehicles')
@@ -103,7 +105,7 @@ export async function updateVehicle(id: number, updates: Partial<Vehicle>) {
 }
 
 // Delete a vehicle
-export async function deleteVehicle(id: number) {
+export async function deleteVehicle(id: string) {
   try {
     const { error } = await supabase
       .from('vehicles')

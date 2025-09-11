@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const requestData = await request.json();
     
     // Validate required fields
-    const requiredFields = ['plate_number', 'model', 'color', 'condition', 'registration_date'];
+    const requiredFields = ['plate_number', 'model', 'color', 'condition', 'registration_date', 'Name'];
     const missingFields = requiredFields.filter(field => !requestData[field]);
     
     if (missingFields.length > 0) {
@@ -52,7 +52,8 @@ export async function POST(request: Request) {
       color: requestData.color.trim(),
       condition: formatCondition(requestData.condition),
       registration_date: requestData.registration_date,
-      status: requestData.status || 'active' // Default to 'active' if not provided
+      status: requestData.status || 'active', // Default to 'active' if not provided
+      Name: requestData.Name.trim()
     };
 
     // Create the vehicle
@@ -108,7 +109,7 @@ export async function PUT(request: Request) {
       updates.condition = updates.condition.toLowerCase();
     }
     
-    const vehicle = await updateVehicle(Number(id), updates);
+    const vehicle = await updateVehicle(id, updates);
     return NextResponse.json(vehicle);
   } catch (error: unknown) {
     let errorMessage = 'Failed to update vehicle';
@@ -131,7 +132,7 @@ export async function DELETE(request: Request) {
         { status: 400 }
       );
     }
-    await deleteVehicle(Number(id));
+    await deleteVehicle(id);
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     let errorMessage = 'Failed to delete vehicle';

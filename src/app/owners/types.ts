@@ -5,17 +5,18 @@ export type Vehicle = {
 };
 
 export type FuelRequest = {
-  id: number;
-  vehicle_id: string | number;
+  id: string;
+  vehicle_id: string;
   vehicle?: string; 
-  owner_id: string | number;
+  owner_id: string;
   litres: number | string;
   amount?: number | string;
   reason: string;
   notes?: string;
   status: 'pending' | 'approved' | 'rejected' | 'completed';
-  bank?: string;
+  bank: string;
   account: string | number;
+  name: string;
   created_at: string;
   date?: string; 
 };

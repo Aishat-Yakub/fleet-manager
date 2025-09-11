@@ -10,6 +10,9 @@ interface FuelRequestFormProps {
     vehicle_id: string;
     litres: string;
     reason: string;
+    bank: string;
+    account: string;
+    name: string;
     account_details?: string;
   };
   isLoading: boolean;
@@ -48,24 +51,44 @@ export const FuelRequestForm = ({
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="vehicle_id" className="flex items-center">
-            Vehicle ID
-            <span className="text-red-500 ml-1">*</span>
-          </Label>
-          <Input
-            id="vehicle_id"
-            name="vehicle_id"
-            type="text"
-            value={formData.vehicle_id}
-            onChange={onInputChange}
-            onBlur={() => handleBlur('vehicle_id')}
-            placeholder="Enter vehicle ID"
-            required
-            disabled={isLoading}
-          />
-          {showError('vehicle_id') && (
-            <p className="text-sm text-red-600">Vehicle ID is required</p>
-          )}
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Your Name</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={onInputChange}
+                onBlur={() => handleBlur('name')}
+                placeholder="Enter your name"
+                required
+                disabled={isLoading}
+              />
+              {showError('name') && (
+                <p className="text-sm text-red-600">Your name is required</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="vehicle_id" className="flex items-center">
+                Vehicle ID
+                <span className="text-red-500 ml-1">*</span>
+              </Label>
+              <Input
+                id="vehicle_id"
+                name="vehicle_id"
+                type="text"
+                value={formData.vehicle_id}
+                onChange={onInputChange}
+                onBlur={() => handleBlur('vehicle_id')}
+                placeholder="Enter vehicle ID"
+                required
+                disabled={isLoading}
+              />
+              {showError('vehicle_id') && (
+                <p className="text-sm text-red-600">Vehicle ID is required</p>
+              )}
+            </div>
+          </div>
         </div>
         
         <div className="space-y-2">
@@ -116,6 +139,42 @@ export const FuelRequestForm = ({
         {showError('reason') && (
           <p className="text-sm text-red-600">Please provide a reason</p>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <div className="grid gap-2">
+          <Label htmlFor="bank">Bank Name</Label>
+          <Input
+            id="bank"
+            name="bank"
+            value={formData.bank || ''}
+            onChange={onInputChange}
+            onBlur={() => handleBlur('bank')}
+            placeholder="Enter bank name"
+            required
+            disabled={isLoading}
+          />
+          {showError('bank') && (
+            <p className="text-sm text-red-600">Bank name is required</p>
+          )}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="account">Account Number</Label>
+          <Input
+            id="account"
+            name="account"
+            type="number"
+            value={formData.account || ''}
+            onChange={onInputChange}
+            onBlur={() => handleBlur('account')}
+            placeholder="Enter account number"
+            required
+            disabled={isLoading}
+          />
+          {showError('account') && (
+            <p className="text-sm text-red-600">Account number is required</p>
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">

@@ -1,5 +1,16 @@
 import { supabase } from '@/lib/supabaseClient';
 
+// Owner interface matching Supabase structure
+export interface Owner {
+  idx?: number;
+  id: number;
+  name: string;
+  vehicle_id: string;
+  conditon: string; // Note: 'conditon' is misspelled in the database
+  created_at: string;
+  status: string;
+}
+
 // Get vehicle conditions with optional vehicle ID filter
 export const getConditionUpdates = async (vehicleId?: string) => {
   try {
@@ -96,5 +107,49 @@ export const submitMaintenanceRequest = async (requestData: {
   } catch (error) {
     console.error('Error submitting maintenance request:', error);
     throw error;
+  }
+};
+
+// Create a new owner
+export const createOwner = async (ownerData: {
+  name: string;
+  vehicle_id: string;
+  conditon: string;
+  status?: string;
+}) => {
+  try {
+    const { data, error } = await supabase
+      .from('owners') // Assuming the table name is 'owners'
+      .insert([{
+        name: ownerData.name,
+        vehicle_id: ownerData.vehicle_id,
+        conditon: ownerData.conditon, // Note: 'conditon' is misspelled in the database
+        status: ownerData.status || 'pending',
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as Owner;
+  } catch (error) {
+    console.error('Error creating owner:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to create owner');
+  }
+};
+
+// Get all owners
+export const getOwners = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('owners') // Assuming the table name is 'owners'
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data as Owner[];
+  } catch (error) {
+    console.error('Error fetching owners:', error);
+    throw new Error(error instanceof Error ? error.message : 'Failed to fetch owners');
   }
 };
