@@ -14,10 +14,11 @@ export type Vehicle = {
 
 export type FuelRequest = {
   id: string;
-  vehicleId: string;
+  vehicle_id: string;
   vehicleMake: string;
   vehicleModel: string;
   requestedBy: string;
+  Name: string;
   amount: number;
   status: 'pending' | 'approved' | 'rejected';
   requestedAt: string;
@@ -38,5 +39,5 @@ export type MaintenanceRequest = {
   notes?: string;
   assigned_to?: string;
   completed_at?: string;
-  Name?: string; // Requester's name
+  name?: string; // Requester's name
 };

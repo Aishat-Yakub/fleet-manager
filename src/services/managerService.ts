@@ -54,6 +54,8 @@ type FuelRequestRow = {
 	account?: string;
 	vehicle_make?: string;
 	vehicle_model?: string;
+	Name?: string;
+	name?: string;
 };
 
 export async function getFuelRequests(): Promise<FuelRequest[]> {
@@ -68,13 +70,15 @@ export async function getFuelRequests(): Promise<FuelRequest[]> {
 			status,
 			created_at,
 			bank,
-			account
+			account,
+			Name
 		`);
 	if (error) throw new Error(error.message);
 	return (data || []).map((req: FuelRequestRow) => ({
 		id: req.id,
-		vehicleId: req.vehicle_id,
+		vehicle_id: req.vehicle_id,
 		requestedBy: req.owner_id?.toString() ?? '',
+		Name: req.Name || '',
 		amount: req.litres,
 		status: req.status as 'pending' | 'approved' | 'rejected',
 		requestedAt: req.created_at,
@@ -99,8 +103,9 @@ export async function updateFuelRequestStatus(
 	if (error) throw new Error(error.message);
 	return {
 		id: data.id,
-		vehicleId: data.vehicle_id,
+		vehicle_id: data.vehicle_id,
 		requestedBy: data.owner_id?.toString() ?? '',
+		Name: data.Name || '',
 		amount: data.litres,
 		status: data.status,
 		requestedAt: data.created_at,
@@ -121,32 +126,37 @@ export async function getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
 			   issue,
 			   priority,
 			   status,
-			   created_at
+			   created_at,
+			   name
 		   `);
 	if (error) throw new Error(error.message);
 	// Map DB fields to UI fields if needed
-	   type MaintenanceRequestRow = {
-		   id: string;
-		   vehicle_id: string;
-		   issue: string;
-		   priority?: string;
-		   status: string;
-		   created_at: string;
-		   vehicle_make?: string;
-		   vehicle_model?: string;
-		   estimated_cost?: number;
-	   };
+		   type MaintenanceRequestRow = {
+			   id: string;
+			   vehicle_id: string;
+			   issue: string;
+			   priority?: string;
+			   status: string;
+			   created_at: string;
+			   vehicle_make?: string;
+			   vehicle_model?: string;
+			   estimated_cost?: number;
+			   name?: string;
+		   };
 
 	   return (data || []).map((req: MaintenanceRequestRow) => ({
 		   id: req.id,
-		   vehicleId: req.vehicle_id,
-		   requestedBy: '', // No owner_id in table, set as empty string
+		   vehicle_id: req.vehicle_id,
+		   owner_id: '', // No owner_id in table, set as empty string
 		   issue: req.issue,
 		   status: req.status as 'pending' | 'approved' | 'rejected' | 'completed' | 'in_progress',
+		   created_at: req.created_at,
+		   estimated_cost: req.estimated_cost,
+		   notes: '',
+		   assigned_to: '',
+		   completed_at: '',
+		   name: req.name || '', // Requester's name
 		   requestedAt: req.created_at,
-		   vehicleMake: req.vehicle_make ?? '',
-		   vehicleModel: req.vehicle_model ?? '',
-		   // Add more fields if needed
 	   }));
 }
 
@@ -167,13 +177,16 @@ export async function updateMaintenanceRequest(
 	if (error) throw new Error(error.message);
 	return {
 		id: data.id,
-		vehicleId: data.vehicle_id,
-		requestedBy: data.owner_id?.toString() ?? '',
+		vehicle_id: data.vehicle_id,
+		owner_id: data.owner_id?.toString() ?? '',
 		issue: data.issue,
 		status: data.status,
+		created_at: data.created_at,
+		estimated_cost: data.estimated_cost,
+		notes: data.notes || '',
+		assigned_to: data.assigned_to || '',
+		completed_at: data.completed_at || '',
+		name: data.name || '', // Requester's name
 		requestedAt: data.created_at,
-		estimatedCost: data.estimated_cost,
-		vehicleMake: data.vehicle_make ?? '',
-		vehicleModel: data.vehicle_model ?? '',
 	};
 }

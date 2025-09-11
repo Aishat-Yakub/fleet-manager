@@ -96,7 +96,7 @@ export default function ManagerDashboard() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                    <thead className="text-sky-950">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Name
@@ -118,9 +118,9 @@ export default function ManagerDashboard() {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="divide-y divide-gray-200">
                       {conditionUpdates.map((update) => (
-                        <tr key={update.id} className="hover:bg-gray-50">
+                        <tr key={update.id}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {update.name}
                           </td>
@@ -129,11 +129,11 @@ export default function ManagerDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              update.condition === 'Good' ? 'bg-green-100 text-green-800' :
-                              update.condition === 'Fair' ? 'bg-yellow-100 text-yellow-800' :
+                              update.conditon === 'Good' ? 'bg-green-100 text-green-800' :
+                              update.conditon === 'Fair' ? 'bg-yellow-100 text-yellow-800' :
                               'bg-red-100 text-red-800'
                             }`}>
-                              {update.condition}
+                              {update.conditon}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
