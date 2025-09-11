@@ -16,7 +16,7 @@ export type FuelRequest = {
   status: 'pending' | 'approved' | 'rejected' | 'completed';
   bank: string;
   account: string | number;
-  name: string;
+  Name: string;
   created_at: string;
   date?: string; 
 };
@@ -28,6 +28,7 @@ export interface MaintenanceRequest {
   issue: string;
   priority: 'low' | 'medium' | 'high';
   status: 'pending' | 'approved' | 'rejected' | 'completed';
+  name: string | null;
   created_at: string;
   updated_at?: string;
   vehicle?: {

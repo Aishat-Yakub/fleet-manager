@@ -45,6 +45,7 @@ const OwnerDashboard = () => {
     vehicle_id: '',
     issue: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
+    name: ''
   });
   const [maintenanceFileUrl, setMaintenanceFileUrl] = useState<string | null>(null);
   const [uploadingMaintenanceFile, setUploadingMaintenanceFile] = useState(false);
@@ -175,7 +176,7 @@ const OwnerDashboard = () => {
         reason: newFuelRequest.reason,
         bank: newFuelRequest.bank,
         account: newFuelRequest.account,
-        name: newFuelRequest.name,
+        Name: newFuelRequest.name,
         owner_id: ownerId,
       });
 
@@ -189,7 +190,6 @@ const OwnerDashboard = () => {
           account: '',
           name: ''
         });
-  // setShowFuelRequestForm(false); // Removed unused
         
         // Refresh the fuel requests list
         await fetchFuelRequests();
@@ -207,7 +207,7 @@ const OwnerDashboard = () => {
   // Handle maintenance request submission
   const handleMaintenanceRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { vehicle_id, issue, priority } = newMaintenanceRequest;
+    const { vehicle_id, issue, priority, name } = newMaintenanceRequest;
     
     if (!vehicle_id || !issue) {
       setError('Please fill in all required fields');
@@ -224,6 +224,7 @@ const OwnerDashboard = () => {
         vehicle_id: vehicle_id,
         issue: issue,
         priority: priority || 'medium' as const,
+        name: name || null,
         attachment_url: maintenanceFileUrl || null
       };
       
@@ -235,6 +236,7 @@ const OwnerDashboard = () => {
         vehicle_id: '',
         issue: '',
         priority: 'medium',
+        name: ''
       });
       setMaintenanceFileUrl(null);
       if (maintenanceFileInputRef.current) maintenanceFileInputRef.current.value = '';
@@ -387,7 +389,7 @@ const OwnerDashboard = () => {
                 <form onSubmit={handleConditionSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Your Name *</Label>
+                      <Label htmlFor="name">Name <span className="text-red-500">*</span></Label>
                       <Input
                         id="name"
                         value={newConditionUpdate.name}
@@ -398,7 +400,7 @@ const OwnerDashboard = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="vehicle_id">Vehicle ID *</Label>
+                      <Label htmlFor="vehicle_id">Vehicle ID <span className="text-red-500">*</span></Label>
                       <Input
                         id="vehicle_id"
                         value={newConditionUpdate.vehicle_id}
@@ -409,7 +411,7 @@ const OwnerDashboard = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="conditon">Condition *</Label>
+                      <Label htmlFor="conditon">Condition <span className="text-red-500">*</span></Label>
                       <select
                         id="conditon"
                         value={newConditionUpdate.conditon}
@@ -471,55 +473,127 @@ const OwnerDashboard = () => {
                 </form>
                 
                 {/* Recent Updates Section */}
-                <div className="mt-8">
+                <div className="border-t border-gray-200 pt-6">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                    <h2 className="text-lg text-sky-950 font-medium">Recent Updates</h2>
+                    <h3 className="text-lg font-medium text-sky-950">
+                      Recent Condition Updates
+                    </h3>
                     <div className="relative w-full sm:w-64">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sky-950 h-4 w-4" />
                       <Input
                         type="text"
-                        placeholder="Search by name, vehicle ID, or status..."
+                        placeholder="Search by name, vehicle ID, status, or condition..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-transparent border-sky-200 focus-visible:ring-sky-500"
+                        className="pl-10 bg-transparent text-sky-950 placeholder:text-sky-950/40 border-sky-200 focus-visible:ring-sky-500"
                       />
                     </div>
                   </div>
                   {isConditionLoading ? (
-                    <div className="text-center py-8 text-red-500">Loading...</div>
+                    <div className="text-center py-4 text-sky-950">Loading condition updates...</div>
                   ) : conditionUpdates.length > 0 ? (
-                    conditionUpdates
-                      .filter(update => {
-                        if (!searchTerm) return true;
-                        const searchLower = searchTerm.toLowerCase();
-                        return (
-                          update.name.toLowerCase().includes(searchLower) ||
-                          update.vehicle_id.toLowerCase().includes(searchLower) ||
-                          update.status.toLowerCase().includes(searchLower) ||
-                          update.conditon.toLowerCase().includes(searchLower)
-                        );
-                      })
-                      .map((update) => (
-                      <div key={update.id} className="border border-sky-950 rounded-lg p-4 bg-transparent mb-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <div>
-                            <p className="font-medium">{update.name} - Plate Number: {update.vehicle_id}</p>
-                            <p className="text-sm text-gray-500">
-                              Condition: {update.conditon} • Status: <span className={`font-medium ${
-                                update.status === 'pending' ? 'text-yellow-600' :
-                                update.status === 'approved' ? 'text-green-600' :
-                                'text-red-600'
-                              }`}>{update.status}</span> • {update.created_at ? new Date(update.created_at.replace(' ', 'T')).toLocaleDateString('en-US', {
-                                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                              }) : ''}
-                              {update.note && (
-                                <span className="block mt-1 text-gray-600">{update.note}</span>
-                              )}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
+                    <div className="overflow-x-auto">
+                    <div className="inline-block min-w-full align-middle">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-sky-50">
+                          <tr>
+                            <th scope="col" className="py-3 pl-4 pr-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Vehicle ID
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Name
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Condition
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden sm:table-cell">
+                              Note
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Status
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden md:table-cell">
+                              Date
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-transparent">
+                          {conditionUpdates
+                            .filter(update => {
+                              if (!searchTerm) return true;
+                              const searchLower = searchTerm.toLowerCase();
+                              return (
+                                update.name.toLowerCase().includes(searchLower) ||
+                                update.vehicle_id.toLowerCase().includes(searchLower) ||
+                                update.status.toLowerCase().includes(searchLower) ||
+                                update.conditon.toLowerCase().includes(searchLower)
+                              );
+                            })
+                            .map((update) => (
+                            <tr key={update.id} className="hover:bg-sky-50">
+                              <td className="py-3 pl-4 pr-3 text-sm font-medium text-sky-950">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Vehicle ID:</span>
+                                  {update.vehicle_id}
+                                </div>
+                                <div className="sm:hidden text-xs text-gray-600 mt-1">
+                                  Condition: {update.conditon}
+                                </div>
+                              </td>
+                              <td className="px-3 py-3 text-sm text-sky-950">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Name:</span>
+                                  {update.name || '—'}
+                                </div>
+                              </td>
+                              <td className="px-3 py-3 text-sm text-sky-950">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Condition:</span>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    update.conditon === 'Good'
+                                      ? 'bg-green-100 text-green-800'
+                                      : update.conditon === 'Fair'
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {update.conditon}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="hidden sm:table-cell px-3 py-3 text-sm text-sky-900 max-w-xs">
+                                <div className="line-clamp-2">
+                                  {update.note || '—'}
+                                </div>
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-3 text-sm">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Status:</span>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    update.status === 'approved'
+                                      ? 'bg-green-100 text-green-800'
+                                      : update.status === 'rejected'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {update.status ? update.status.charAt(0).toUpperCase() + update.status.slice(1) : ''}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-3 text-xs sm:text-sm text-sky-950 hidden md:table-cell">
+                                {update.created_at ? new Date(update.created_at.replace(' ', 'T')).toLocaleDateString(undefined, {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                }) : "—"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                   ) : (
                     <div className="text-center py-8 border rounded-lg bg-sky-50">
                       <p className="text-gray-500">No condition updates found</p>
@@ -645,14 +719,16 @@ const OwnerDashboard = () => {
                 </form>
 
                 {/* Fuel Requests List */}
-                <div className="space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <h3 className="text-lg font-medium text-red-950">Recent Fuel Requests</h3>
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <h3 className="text-lg font-medium text-sky-950">
+                      Recent Fuel Requests
+                    </h3>
                     <div className="relative w-full sm:w-64">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sky-950 h-4 w-4" />
                       <Input
                         type="text"
-                        placeholder="Search by name, vehicle ID, or status..."
+                        placeholder="Search by name, vehicle ID, status, or reason..."
                         value={fuelSearchTerm}
                         onChange={(e) => setFuelSearchTerm(e.target.value)}
                         className="pl-10 bg-transparent text-sky-950 placeholder:text-sky-950/40 border-sky-200 focus-visible:ring-sky-500"
@@ -660,60 +736,108 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
                   {error && (
-                    <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
+                    <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md mb-4">
                       {error}
                     </div>
                   )}
                   {isFuelLoading ? (
-                    <div className="text-center py-4 text-red-700">Loading fuel requests...</div>
+                    <div className="text-center py-4 text-sky-950">Loading fuel requests...</div>
                   ) : fuelRequests.length > 0 ? (
-                    fuelRequests
-                      .filter(request => {
-                        if (!fuelSearchTerm) return true;
-                        const searchLower = fuelSearchTerm.toLowerCase();
-                        return (
-                          (request.name && request.name.toLowerCase().includes(searchLower)) ||
-                          (request.vehicle_id && request.vehicle_id.toLowerCase().includes(searchLower)) ||
-                          (request.status && request.status.toLowerCase().includes(searchLower)) ||
-                          (request.reason && request.reason.toLowerCase().includes(searchLower))
-                        );
-                      })
-                      .map((request: FuelRequest) => (
-                      <div key={request.id} className="border border-sky-200 rounded-lg p-3t sha sm:p-4 bg-transparent">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                            <div className="w-full">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <p className="font-medium text-sm sm:text-base text-sky-950">Plate Number: {request.vehicle_id}</p>
-                                {request.name && (
-                                  <p className="font-medium text-sm sm:text-base text-sky-950">Name: {request.name}</p>
-                                )}
-                                <br />
-                                <span className="text-xs text-gray-500 sm:ml-2">
-                                  {request.litres}L • {new Date(request.created_at).toLocaleDateString('en-US', {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: true
-                                  })}
-                                </span>
-                              </div>
-                              {request.reason && (
-                                <p className="text-xs sm:text-sm text-gray-600 mt-1">{request.reason}</p>
-                              )}
-                            </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-                            request.status === 'approved'
-                              ? 'bg-green-100 text-green-800'
-                              : request.status === 'rejected'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                          }`} aria-label={`Request status: ${request.status}`}>
-                            {request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : ''}
-                          </span>
-                        </div>
-                      </div>
-                    ))
+                    <div className="overflow-x-auto">
+                    <div className="inline-block min-w-full align-middle">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-sky-50">
+                          <tr>
+                            <th scope="col" className="py-3 pl-4 pr-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Vehicle ID
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Name
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Litres
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden sm:table-cell">
+                              Reason
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Status
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden md:table-cell">
+                              Date
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-transparent">
+                          {fuelRequests
+                            .filter(request => {
+                              if (!fuelSearchTerm) return true;
+                              const searchLower = fuelSearchTerm.toLowerCase();
+                              return (
+                                (request.Name && request.Name.toLowerCase().includes(searchLower)) ||
+                                (request.vehicle_id && request.vehicle_id.toLowerCase().includes(searchLower)) ||
+                                (request.status && request.status.toLowerCase().includes(searchLower)) ||
+                                (request.reason && request.reason.toLowerCase().includes(searchLower))
+                              );
+                            })
+                            .map((request: FuelRequest) => (
+                            <tr key={request.id} className="hover:bg-sky-50">
+                              <td className="py-3 pl-4 pr-3 text-sm font-medium text-sky-950">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Vehicle ID:</span>
+                                  {request.vehicle_id}
+                                </div>
+                                <div className="sm:hidden text-xs text-gray-600 mt-1">
+                                  {request.litres}L
+                                </div>
+                              </td>
+                              <td className="px-3 py-3 text-sm text-sky-950">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Name:</span>
+                                  {request.Name || '—'}
+                                </div>
+                              </td>
+                              <td className="px-3 py-3 text-sm text-sky-950">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Litres:</span>
+                                  {request.litres}L
+                                </div>
+                              </td>
+                              <td className="hidden sm:table-cell px-3 py-3 text-sm text-sky-900 max-w-xs">
+                                <div className="line-clamp-2">
+                                  {request.reason || '—'}
+                                </div>
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-3 text-sm">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Status:</span>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    request.status === 'approved'
+                                      ? 'bg-green-100 text-green-800'
+                                      : request.status === 'rejected'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {request.status ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : ''}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-3 text-xs sm:text-sm text-sky-950 hidden md:table-cell">
+                                {request.created_at ? new Date(request.created_at).toLocaleDateString(undefined, {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: true
+                                }) : "—"}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                   ) : (
                     <div className="text-center py-8 border rounded-lg bg-sky-50">
                       <p className="text-gray-500">No fuel requests found</p>
@@ -738,7 +862,7 @@ const OwnerDashboard = () => {
                 {/* New Maintenance Request Form */}
                 <form onSubmit={handleMaintenanceRequestSubmit} className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    {/* Vehicle ID Input */}
+                    {/* Vehicle ID Input - First column */}
                     <div>
                       <Label htmlFor="maintenance-vehicle-id" className="text-sky-950">
                         Vehicle ID <span className="text-red-500">*</span>
@@ -757,7 +881,25 @@ const OwnerDashboard = () => {
                       />
                     </div>
 
-                    {/* Priority Select */}
+                    {/* Name Input - Second column */}
+                    <div>
+                      <Label htmlFor="maintenance-name" className="text-sky-950">
+                        Name <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="maintenance-name"
+                        type="text"
+                        value={newMaintenanceRequest.name}
+                        onChange={(e) =>
+                          setNewMaintenanceRequest({ ...newMaintenanceRequest, name: e.target.value })
+                        }
+                        className="bg-transparent text-sky-950 border-sky-200 focus-visible:ring-sky-500"
+                        required
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+
+                    {/* Priority Select - First column */}
                     <div>
                       <Label htmlFor="maintenance-priority" className="text-sky-950">
                         Priority <span className="text-red-500">*</span>
@@ -780,8 +922,8 @@ const OwnerDashboard = () => {
                       </select>
                     </div>
 
-                    {/* Issue Description */}
-                    <div className="md:col-span-2">
+                    {/* Issue Description - Full width */}
+                    <div className="sm:col-span-2">
                       <Label htmlFor="maintenance-issue" className="text-sky-950">
                         Issue Description <span className="text-red-500">*</span>
                       </Label>
@@ -849,7 +991,7 @@ const OwnerDashboard = () => {
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sky-950 h-4 w-4" />
                       <Input
                         type="text"
-                        placeholder="Search by vehicle ID, issue, or priority..."
+                        placeholder="Search by vehicle ID, issue, priority, or name..."
                         value={maintenanceSearchTerm}
                         onChange={(e) => setMaintenanceSearchTerm(e.target.value)}
                         className="pl-10 bg-transparent text-sky-950 placeholder:text-sky-950/40 border-sky-200 focus-visible:ring-sky-500"
@@ -863,19 +1005,22 @@ const OwnerDashboard = () => {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-sky-50">
                           <tr>
-                            <th scope="col" className="py-3 pl-3 pr-1 sm:pl-4 sm:pr-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
-                              Vehicle
+                            <th scope="col" className="py-3 pl-4 pr-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Vehicle ID
                             </th>
-                            <th scope="col" className="px-1 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden sm:table-cell">
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                              Name
+                            </th>
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden sm:table-cell">
                               Issue
                             </th>
-                            <th scope="col" className="px-1 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
                               Priority
                             </th>
-                            <th scope="col" className="px-1 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950">
                               Status
                             </th>
-                            <th scope="col" className="px-1 sm:px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden xs:table-cell">
+                            <th scope="col" className="px-3 py-3 text-left text-xs sm:text-sm font-semibold text-sky-950 hidden md:table-cell">
                               Date
                             </th>
                           </tr>
@@ -888,50 +1033,63 @@ const OwnerDashboard = () => {
                               return (
                                 (request.vehicle_id && request.vehicle_id.toLowerCase().includes(searchLower)) ||
                                 (request.issue && request.issue.toLowerCase().includes(searchLower)) ||
-                                (request.priority && request.priority.toLowerCase().includes(searchLower))
+                                (request.priority && request.priority.toLowerCase().includes(searchLower)) ||
+                                (request.name && request.name.toLowerCase().includes(searchLower))
                               );
                             })
                             .map((request) => (
                             <tr key={request.id} className="hover:bg-sky-50">
-                              <td className="py-3 pl-3 pr-1 sm:pl-4 sm:pr-3 text-sm font-medium text-sky-950">
-                                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
-                                  <span className="sm:hidden mr-2 text-xs text-gray-500">Vehicle:</span>
-                                  {`${request.vehicle_id}`}
+                              <td className="py-3 pl-4 pr-3 text-sm font-medium text-sky-950">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Vehicle ID:</span>
+                                  {request.vehicle_id}
                                 </div>
                                 <div className="sm:hidden text-xs text-gray-600 mt-1 line-clamp-2">
                                   {request.issue}
                                 </div>
                               </td>
-                              <td className="hidden sm:table-cell px-1 sm:px-3 py-3 text-sm text-sky-900 max-w-xs">
+                              <td className="px-3 py-3 text-sm text-sky-950">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Name:</span>
+                                  {request.name || '—'}
+                                </div>
+                              </td>
+                              <td className="hidden sm:table-cell px-3 py-3 text-sm text-sky-900 max-w-xs">
                                 <div className="line-clamp-2">
                                   {request.issue}
                                 </div>
                               </td>
-                              <td className="whitespace-nowrap px-1 sm:px-3 py-3 text-sm">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  (request.priority?.trim() === 'high')
-                                    ? 'bg-red-100 text-red-800' 
-                                    : (request.priority?.trim() === 'medium')
-                                      ? 'bg-yellow-100 text-yellow-800'
-                                      : 'bg-green-100 text-green-800'
-                                }`}>
-                                  {request.priority ? (request.priority.trim().length > 0 ? request.priority.trim().charAt(0).toUpperCase() + request.priority.trim().slice(1) : '') : ''}
-                                </span>
+                              <td className="whitespace-nowrap px-3 py-3 text-sm">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Priority:</span>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    (request.priority?.trim() === 'high')
+                                      ? 'bg-red-100 text-red-800' 
+                                      : (request.priority?.trim() === 'medium')
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-green-100 text-green-800'
+                                  }`}>
+                                    {request.priority ? (request.priority.trim().length > 0 ? request.priority.trim().charAt(0).toUpperCase() + request.priority.trim().slice(1) : '') : ''}
+                                  </span>
+                                </div>
                               </td>
-                              <td className="whitespace-nowrap px-1 sm:px-3 py-3 text-sm">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                                  request.status === 'completed'
-                                    ? 'bg-green-100 text-green-800'
-                                    : request.status === 'approved'
-                                      ? 'bg-blue-100 text-blue-800'
-                                      : request.status === 'rejected'
-                                        ? 'bg-red-100 text-red-800'
-                                        : 'bg-yellow-100 text-yellow-800'
-                                }`}>
-                                  {request.status ? (request.status.length > 0 ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : '') : ''}
-                                </span>
+                              <td className="whitespace-nowrap px-3 py-3 text-sm">
+                                <div className="flex flex-col sm:block">
+                                  <span className="sm:hidden text-xs text-gray-500 mb-1">Status:</span>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    request.status === 'completed'
+                                      ? 'bg-green-100 text-green-800'
+                                      : request.status === 'approved'
+                                        ? 'bg-blue-100 text-blue-800'
+                                        : request.status === 'rejected'
+                                          ? 'bg-red-100 text-red-800'
+                                          : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {request.status ? (request.status.length > 0 ? request.status.charAt(0).toUpperCase() + request.status.slice(1) : '') : ''}
+                                  </span>
+                                </div>
                               </td>
-                              <td className="whitespace-nowrap px-1 sm:px-3 py-3 text-xs sm:text-sm text-sky-950 hidden xs:table-cell">
+                              <td className="whitespace-nowrap px-3 py-3 text-xs sm:text-sm text-sky-950 hidden md:table-cell">
                                 {request.created_at ? new Date(request.created_at).toLocaleDateString(undefined, {
                                   year: 'numeric',
                                   month: 'short',

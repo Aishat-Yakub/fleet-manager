@@ -48,7 +48,7 @@ export const useFuelRequests = (ownerId: string) => {
           reason: requestData.reason || '',
           bank: requestData.bank || null,
           account: requestData.account || null,
-          name: requestData.name || '',
+          Name: requestData.Name || '',
           status: 'pending',
         }])
         .select();

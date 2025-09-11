@@ -3,11 +3,13 @@ import { supabase } from '../lib/supabaseClient';
 export async function createMaintenanceRequest({ 
   vehicle_id, 
   issue, 
-  priority 
+  priority,
+  name
 }: {
   vehicle_id: string;
   issue: string;
   priority: 'low' | 'medium' | 'high';
+  name: string | null;
 }) {
   try {
     const { data, error } = await supabase
@@ -16,6 +18,7 @@ export async function createMaintenanceRequest({
         vehicle_id, 
         issue, 
         priority,
+        name,
         status: 'pending' as const
       }])
       .select('*')
