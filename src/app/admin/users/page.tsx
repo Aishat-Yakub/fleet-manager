@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Users, Trash2 } from 'lucide-react';
+import Link from 'next/link';
 
 type User = {
   id: string;
@@ -36,6 +37,22 @@ export default function UsersPage() {
 
     fetchUsers();
   }, []);
+
+  // Function to get role name from role_id
+  const getRoleName = (roleId: number) => {
+    switch (roleId) {
+      case 1:
+        return 'User';
+      case 2:
+        return 'Admin';
+      case 3:
+        return 'Manager';
+      case 4:
+        return 'Auditor';
+      default:
+        return 'Unknown';
+    }
+  };
 
   const handleDeleteUser = async (userId: string) => {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
@@ -82,11 +99,13 @@ export default function UsersPage() {
           <Users className="mr-2 text-sky-950" /> Users Management
         </h1>
         {/* Add User button only, no edit logic */}
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
-        >
-          <Plus size={18} className="mr-1" /> Add User
-        </button>
+        <Link href="/admin/users/create">
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+          >
+            <Plus size={18} className="mr-1" /> Add User
+          </button>
+        </Link>
       </div>
 
       <div className="bg-white/30 rounded-lg overflow-hidden">
@@ -114,7 +133,7 @@ export default function UsersPage() {
                   <div className="text-sm font-medium text-gray-900">{user.email}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{user.roles?.role_name || 'N/A'}</div>
+                  <div className="text-sm text-gray-900">{getRoleName(user.role_id)}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 

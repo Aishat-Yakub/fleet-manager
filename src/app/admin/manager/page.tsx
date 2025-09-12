@@ -14,7 +14,7 @@ export interface ConditionUpdate {
   id: number;
   name: string;
   vehicle_id: string;
-  condition: 'Good' | 'Fair' | 'Poor';
+  conditon: 'Good' | 'Fair' | 'Poor';
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   notes?: string;
@@ -114,11 +114,11 @@ export default function ManagerDashboard() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                update.condition === 'Good' ? 'bg-green-100 text-green-800' :
-                                update.condition === 'Fair' ? 'bg-yellow-100 text-yellow-800' :
+                                update.conditon === 'Good' ? 'bg-green-100 text-green-800' :
+                                update.conditon === 'Fair' ? 'bg-yellow-100 text-yellow-800' :
                                 'bg-red-100 text-red-800'
                               }`}>
-                                {update.condition}
+                                {update.conditon}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -139,14 +139,14 @@ export default function ManagerDashboard() {
                                   <button
                                     onClick={() => handleStatusUpdate(update.id, 'approved')}
                                     disabled={processing === update.id}
-                                    className="px-2 py-1 text-xs font-medium text-white-700 bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                                    className="px-3 py-2 text-xs font-bold text-white-700 bg-blue-500 rounded-md hover:bg-blue-600 disabled:opacity-50"
                                   >
                                     Approve
                                   </button>
                                   <button
                                     onClick={() => handleStatusUpdate(update.id, 'rejected')}
                                     disabled={processing === update.id}
-                                    className="px-2 py-1 text-xs font-medium text-white bg-red-500 rounded-md hover:bg-red-600 disabled:opacity-50"
+                                    className="px-3 py-2 text-xs font-bold text-white bg-red-500 rounded-md hover:bg-red-600 disabled:opacity-50"
                                   >
                                     Reject
                                   </button>
@@ -165,9 +165,6 @@ export default function ManagerDashboard() {
 
           <TabsContent value="fuel-requests">
             <Card className="border-0 shadow-none">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-sky-900">Fuel Requests</CardTitle>
-              </CardHeader>
               <CardContent className="px-0">
                 <FuelRequests />
               </CardContent>
@@ -176,9 +173,6 @@ export default function ManagerDashboard() {
 
           <TabsContent value="maintenance-requests">
             <Card className="border-0 shadow-none">
-              <CardHeader className="px-0 pt-0">
-                <CardTitle className="text-sky-900">Maintenance Requests</CardTitle>
-              </CardHeader>
               <CardContent className="px-0">
                 <MaintenanceRequests />
               </CardContent>

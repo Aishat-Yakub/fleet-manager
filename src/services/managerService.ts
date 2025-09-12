@@ -21,7 +21,8 @@ export async function updateVehicleStatus(id: string, status: 'active' | 'inacti
 	};
 }
 import { supabase } from '../lib/supabaseClient';
-import { MaintenanceRequest, FuelRequest, Vehicle } from '@/app/manager_page/types';
+import { Vehicle } from '@/app/manager_page/types';
+import { MaintenanceRequest, FuelRequest } from '@/app/admin/manager/types';
 export async function getVehicles(): Promise<Vehicle[]> {
   const { data, error } = await supabase
     .from('vehicles')
@@ -77,13 +78,10 @@ export async function getFuelRequests(): Promise<FuelRequest[]> {
 	return (data || []).map((req: FuelRequestRow) => ({
 		id: req.id,
 		vehicle_id: req.vehicle_id,
-		requestedBy: req.owner_id?.toString() ?? '',
 		Name: req.Name || '',
-		amount: req.litres,
+		litres: req.litres,
 		status: req.status as 'pending' | 'approved' | 'rejected',
-		requestedAt: req.created_at,
-		vehicleMake: req.vehicle_make ?? '',
-		vehicleModel: req.vehicle_model ?? '',
+		created_at: req.created_at,
 		reason: req.reason,
 		bank: req.bank ?? '',
 		account: req.account ?? ''
@@ -104,13 +102,10 @@ export async function updateFuelRequestStatus(
 	return {
 		id: data.id,
 		vehicle_id: data.vehicle_id,
-		requestedBy: data.owner_id?.toString() ?? '',
 		Name: data.Name || '',
-		amount: data.litres,
+		litres: data.litres,
 		status: data.status,
-		requestedAt: data.created_at,
-		vehicleMake: data.vehicle_make ?? '',
-		vehicleModel: data.vehicle_model ?? '',
+		created_at: data.created_at,
 		reason: data.reason,
 		bank: data.bank ?? '',
 		account: data.account ?? ''
@@ -156,7 +151,6 @@ export async function getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
 		   assigned_to: '',
 		   completed_at: '',
 		   name: req.name || '', // Requester's name
-		   requestedAt: req.created_at,
 	   }));
 }
 
@@ -187,6 +181,5 @@ export async function updateMaintenanceRequest(
 		assigned_to: data.assigned_to || '',
 		completed_at: data.completed_at || '',
 		name: data.name || '', // Requester's name
-		requestedAt: data.created_at,
 	};
 }

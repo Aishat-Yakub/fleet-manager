@@ -59,76 +59,87 @@ const CreateUserPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 text-sky-950">
-      <Card>
-        <CardHeader>
-          <CardTitle>Create New User</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
-                {error}
-              </div>
-            )}
-            <div>
-              <Label htmlFor="email">Email</Label>
+    <div className="container mx-auto p-4">
+      <div className="container mx-auto px-4 w-full">
+        <Card className="border-0 shadow-none">
+          <CardHeader className="px-0 pt-0">    
+            <CardTitle className="text-sky-900 text-2xl md:text-3xl">Create New User</CardTitle>
+          </CardHeader>
+          <CardContent className="px-0">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg w-full">
+                  {error}
+                </div>
+              )}
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sky-900 font-medium">Email
+                <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                className='bg-white border border-sky-950/30'
+                className='bg-white border text-sky-950 placeholder:text-sky-950/40 border-sky-950/30 focus:border-sky-500 focus:ring-sky-500'
+                placeholder="Enter user email"
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sky-900 font-medium">Password
+                <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                className='bg-white border border-sky-950/30'
+                className='bg-white border text-sky-950 placeholder:text-sky-950/40 border-sky-950/30 focus:border-sky-500 focus:ring-sky-500'
+                placeholder="Enter password (min 6 characters)"
                 required
                 minLength={6}
               />
             </div>
-            <div>
-              <Label>Role</Label>
+            <div className="space-y-2">
+              <Label className="text-sky-900 font-medium">Role
+                <span className="text-red-500">*</span>
+              </Label>
               <Select value={formData.role_id} onValueChange={handleRoleChange}>
-                <SelectTrigger className="w-full bg-white border border-sky-950/30">
+                <SelectTrigger className="w-full bg-white border text-sky-950 placeholder:text-sky-950/40 border-sky-950/30 focus:border-sky-500 focus:ring-sky-500">
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="2">Admin</SelectItem>
-                  <SelectItem value="3">Manager</SelectItem>
-                  <SelectItem value="1">User</SelectItem>
+                  <SelectItem value="3" className='text-sky-950 shadow-none'>Manager</SelectItem>
+                  <SelectItem value="2" className='text-sky-950 shadow-none'>Admin</SelectItem>
+                  <SelectItem value="1" className='text-sky-950 shadow-none'>User</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-end space-x-4 pt-4">
               <Button 
                 type="button" 
                 variant="outline" 
                 onClick={() => router.back()}
                 disabled={isLoading}
+                className="bg-blue-600 text-white hover:bg-blue-700"
               >
                 Cancel
               </Button>
               <Button 
                 type="submit" 
-                className="bg-sky-950 hover:bg-sky-900"
+                className="bg-sky-900 hover:bg-sky-800 text-white"
                 disabled={isLoading}
               >
                 {isLoading ? 'Creating...' : 'Create User'}
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

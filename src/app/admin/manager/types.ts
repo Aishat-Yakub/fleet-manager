@@ -14,13 +14,11 @@ export type Vehicle = {
 
 export type FuelRequest = {
   id: string;
-  vehicleId: string;
-  vehicleMake: string;
-  vehicleModel: string;
-  requestedBy: string;
-  amount: number;
+  Name: string;
+  vehicle_id: string;
+  litres: number;
   status: 'pending' | 'approved' | 'rejected';
-  requestedAt: string;
+  created_at: string;
   reason?: string;
   bank: string;
   account: number | string;
@@ -28,12 +26,14 @@ export type FuelRequest = {
 
 export type MaintenanceRequest = {
   id: string;
-  vehicleId: string;
-  vehicleMake: string;
-  vehicleModel: string;
-  requestedBy: string;
+  vehicle_id: string;
+  owner_id: string;
   issue: string;
   status: 'pending' | 'approved' | 'rejected' | 'in_progress' | 'completed';
-  requestedAt: string;
-  estimatedCost?: number;
+  created_at: string;
+  estimated_cost?: number;
+  notes?: string;
+  assigned_to?: string;
+  completed_at?: string;
+  name?: string;
 };

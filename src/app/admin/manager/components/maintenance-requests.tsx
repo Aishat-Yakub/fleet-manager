@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { getMaintenanceRequests, updateMaintenanceRequest } from '@/services/managerService';
-
 import { Button } from '@/components/ui/button';
 import { MaintenanceRequest } from '../types';
+import { Check, X } from 'lucide-react';
 
 export function MaintenanceRequests() {
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  // Removed Add Cost modal state
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -24,8 +23,6 @@ export function MaintenanceRequests() {
     };
     fetchRequests();
   }, []);
-
-  
 
   const handleStatusChange = async (id: number, status: 'approved' | 'rejected') => {
     try {
@@ -44,89 +41,88 @@ export function MaintenanceRequests() {
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-6 text-sky-900">Maintenance Requests</h2>
-      <div className="space-y-4">
-        {requests.length === 0 ? (
-          <div className="text-center py-8 text-sky-600">No maintenance requests found.</div>
-        ) : (
-          <div className="space-y-3">
-            {requests.map((request) => (
-              <div 
-                key={request.id} 
-                className=" rounded-lg border border-gray-200 p-5 transition-shadow"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <div className="space-y-2 flex-1">
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                      <div>
-                        <h3 className="text-md text-gray-500">Requested by: 
-                        <span className="text-sky-900">
-                        {request.vehicleId}</span>
-                        </h3>
-                      </div>
-                      <span className="flex items-center">
-                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          request.status === 'approved' ? 'bg-green-50 text-green-700' :
-                          request.status === 'rejected' ? 'bg-red-50 text-red-700' :
-                          request.status === 'in_progress' ? 'bg-blue-50 text-blue-700' :
-                          request.status === 'completed' ? 'bg-purple-50 text-purple-700' :
-                          'bg-amber-50 text-amber-700'
-                        }`}>
-                          {request.status.replace('_', ' ').split(' ').map(word => 
-                            word.charAt(0).toUpperCase() + word.slice(1)
-                          ).join(' ')}
-                        </span>
-                      </span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium text-gray-600">Issue:</span> {request.issue}
-                    </p>
-                    
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                      <span className="text-gray-600">
-                        Date & Time <span className="text-sky-800">{request.requestedBy}</span>
-                      </span>
-                      {request.estimatedCost && (
-                        <span className="text-gray-600">
-                          Estimated: <span className="font-medium text-sky-900">${request.estimatedCost.toFixed(2)}</span>
-                        </span>
-                      )}
-                      <span className="text-xs text-gray-500">
-                        {new Date(request.requestedAt).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-shrink-0 space-x-2">
+      
+      {requests.length === 0 ? (
+        <div className="text-center py-8 text-sky-600">No maintenance requests found.</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Vehicle ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Issue
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {requests.map((request) => (
+                <tr key={request.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {request.name || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                    {request.vehicle_id}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                    {request.issue}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      request.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                      request.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                      request.status === 'completed' ? 'bg-purple-100 text-purple-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {request.status.replace('_', ' ').split(' ').map(word => 
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                      ).join(' ')}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(request.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     {request.status === 'pending' && (
-                      <>
-                        <Button 
-                          variant="outline" 
+                      <div className="flex space-x-2">
+                        <Button
                           size="sm"
-                          className="bg-blue-500 hover:bg-blue-600 text-white"
+                          className='bg-blue-600 hover:bg-blue-700 text-white'
                           onClick={() => handleStatusChange(Number(request.id), 'approved')}
                         >
                           Approve
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
                           size="sm"
-                          className="bg-sky-800 hover:bg-sky-900 text-white"
+                          className='bg-red-600 hover:bg-red-700 text-white'
                           onClick={() => handleStatusChange(Number(request.id), 'rejected')}
                         >
                           Reject
                         </Button>
-                      </>
+                      </div>
                     )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-  {/* Removed Add Cost modal */}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
