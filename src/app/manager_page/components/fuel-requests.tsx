@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '../../../components/ui/button';
 import { getFuelRequests, updateFuelRequestStatus } from '@/services/managerService';
-import { FuelRequest } from '../types';
+import { FuelRequest } from '@/app/admin/manager/types';
 
 export function FuelRequests() {
   const [requests, setRequests] = useState<FuelRequest[]>([]);
@@ -83,7 +82,7 @@ export function FuelRequests() {
                     {request.Name || '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {request.amount} L
+                    {request.litres} L
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {request.bank}
@@ -101,7 +100,7 @@ export function FuelRequests() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(request.requestedAt).toLocaleDateString()}
+                    {new Date(request.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     {request.status === 'pending' && (

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '../../../../components/ui/button';
 import { getFuelRequests, updateFuelRequestStatus } from '@/services/managerService';
 import { FuelRequest } from '../types';
-import { Check, X } from 'lucide-react';
 
 export function FuelRequests() {
   const [requests, setRequests] = useState<FuelRequest[]>([]);

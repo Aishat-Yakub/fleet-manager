@@ -61,6 +61,9 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
     vehicle_id: '',
     litres: '',
     reason: '',
+    bank: '',
+    account: '',
+    name: '',
     account_details: '',
   });
 
@@ -95,7 +98,7 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
     });
     
     if (result.success) {
-      setFormData({ vehicle_id: '', litres: '', reason: '', account_details: '' });
+      setFormData({ vehicle_id: '', litres: '', reason: '', bank: '', account: '', name: '', account_details: '' });
       setShowForm(false);
     }
   };
@@ -110,7 +113,7 @@ export const FuelRequests = ({ ownerId }: FuelRequestsProps) => {
 
   const handleCancel = useCallback(() => {
     setShowForm(false);
-    setFormData({ vehicle_id: '', litres: '', reason: '', account_details: '' });
+    setFormData({ vehicle_id: '', litres: '', reason: '', bank: '', account: '', name: '', account_details: '' });
   }, []);
 
 

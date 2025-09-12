@@ -10,17 +10,13 @@ interface HeaderAndTabsProps {
   setActiveTab: (tab: ActiveTab) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
-  fetchAllData: () => Promise<void>;
-  loading: boolean;
 }
 
 export default function HeaderAndTabs({ 
   activeTab, 
   setActiveTab, 
   searchQuery, 
-  setSearchQuery,
-  fetchAllData,
-  loading
+  setSearchQuery
 }: HeaderAndTabsProps) {
   const [currentMobileTabIndex, setCurrentMobileTabIndex] = useState(0);
   

@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '../lib/supabaseClient';
 
 // Type definitions for auditor data
 export interface VehicleCondition {

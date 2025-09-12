@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { getMaintenanceRequests, updateMaintenanceRequest } from '@/services/managerService';
 import { Button } from '@/components/ui/button';
 import { MaintenanceRequest } from '../types';
-import { Check, X } from 'lucide-react';
 
 export function MaintenanceRequests() {
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);

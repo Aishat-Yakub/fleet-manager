@@ -10,6 +10,18 @@ export interface FuelRequest {
   notes?: string;
 }
 
+interface RawFuelRequestData {
+  id: number;
+  vehicle_id: number;
+  amount_liters: number;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  notes?: string;
+  vehicles?: {
+    name: string;
+  };
+}
+
 export async function getFuelRequests(): Promise<FuelRequest[]> {
   const { data, error } = await supabase
     .from('fuel_requests')
@@ -22,10 +34,22 @@ export async function getFuelRequests(): Promise<FuelRequest[]> {
   }
 
   // Map the joined data to a flatter structure
-  return data.map((item: any) => ({
-    ...item,
-    vehicle_name: item.vehicles?.name || `Vehicle ${item.vehicle_id}`
-  }));
+  if (!data || !Array.isArray(data)) {
+    return [];
+  }
+  
+  return data.map((item: unknown) => {
+    const rawItem = item as RawFuelRequestData;
+    return {
+      id: rawItem.id,
+      vehicle_id: rawItem.vehicle_id,
+      amount_liters: rawItem.amount_liters,
+      status: rawItem.status,
+      created_at: rawItem.created_at,
+      notes: rawItem.notes,
+      vehicle_name: rawItem.vehicles?.name || `Vehicle ${rawItem.vehicle_id}`
+    };
+  });
 }
 
 export async function updateFuelRequestStatus(id: number, status: 'approved' | 'rejected', notes?: string) {

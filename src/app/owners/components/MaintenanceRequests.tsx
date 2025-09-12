@@ -45,7 +45,8 @@ export function MaintenanceRequests({ ownerId }: MaintenanceRequestsProps) {
         vehicle_id: newRequest.vehicle_id,
         issue: newRequest.issue,
         priority: newRequest.priority,
-        owner_id: ''
+        owner_id: '',
+        name: ''
       });
       
       // Reset form and hide it

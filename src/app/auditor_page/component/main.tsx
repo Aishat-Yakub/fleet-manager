@@ -19,7 +19,6 @@ export default function AuditorsPage() {
     vehicles,
     loading,
     error,
-    fetchAllData,
     refetchConditionUpdates,
     refetchFuelRequests,
     refetchMaintenanceRequests,
@@ -123,8 +122,6 @@ export default function AuditorsPage() {
         setActiveTab={setActiveTab}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        fetchAllData={fetchAllData}
-        loading={isLoading}
       />
 
       {activeTab === 'vehicles' && (

@@ -11,7 +11,7 @@ import { Search } from 'lucide-react';
 import { FuelRequest, MaintenanceRequest } from './types';
 import { ConditionUpdate } from '@/services/conditionService';
 import { useFuelRequests } from './hooks/useFuelRequests';
-import { getConditionUpdates, updateConditionStatus } from '@/services/conditionService';
+import { getConditionUpdates } from '@/services/conditionService';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Logo from '@/app/assets/logo/Logo.jpg'; 
 import Image from 'next/image'
@@ -48,7 +48,6 @@ const OwnerDashboard = () => {
     name: ''
   });
   const [maintenanceFileUrl, setMaintenanceFileUrl] = useState<string | null>(null);
-  const [uploadingMaintenanceFile, setUploadingMaintenanceFile] = useState(false);
   const maintenanceFileInputRef = useRef<HTMLInputElement | null>(null);
   const [conditionUpdates, setConditionUpdates] = useState<ConditionUpdate[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,7 +85,7 @@ const OwnerDashboard = () => {
       const filePath = `uploads/${fileName}`;
   
       // ⚡ Make sure bucket name matches your dashboard
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('upload') 
         .upload(filePath, file, {
           cacheControl: '3600',

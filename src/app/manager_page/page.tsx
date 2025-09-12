@@ -3,16 +3,22 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataTable, columns, FuelRequests, MaintenanceRequests } from './components';
+import { FuelRequests, MaintenanceRequests } from './components';
 import { getConditionUpdates, updateConditionStatus } from '@/services/conditionService';
-import { Vehicle } from './types';
 import { Check, X } from 'lucide-react';
 import Logo from '@/app/assets/logo/Logo.jpg'
 import Image from 'next/image';
 
 export default function ManagerDashboard() {
 
-  const [conditionUpdates, setConditionUpdates] = useState<any[]>([]);
+  const [conditionUpdates, setConditionUpdates] = useState<{
+    id: number;
+    name: string;
+    vehicle_id: string;
+    conditon: string;
+    status: string;
+    created_at: string;
+  }[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
 

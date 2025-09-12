@@ -4,9 +4,6 @@ import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getConditionUpdates, updateConditionStatus } from '@/services/conditionService';
-import { Button } from "@/components/ui/button";
-import { Check, X, Clock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { FuelRequests } from './components/fuel-requests';
 import { MaintenanceRequests } from './components/maintenance-requests';
 
@@ -25,7 +22,6 @@ export default function ManagerDashboard() {
   const [updates, setUpdates] = useState<ConditionUpdate[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<number | null>(null);
-  const router = useRouter();
 
   const fetchConditionUpdates = async () => {
     try {

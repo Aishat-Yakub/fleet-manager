@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getMaintenanceRequests, updateMaintenanceRequest } from '@/services/managerService';
 
-import { Button } from '@/components/ui/button';
-import { MaintenanceRequest } from '../types';
+import { MaintenanceRequest } from '@/app/admin/manager/types';
 
 export function MaintenanceRequests() {
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);

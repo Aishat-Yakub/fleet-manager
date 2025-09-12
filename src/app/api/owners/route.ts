@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { getMaintenanceRequests } from '@/services/maintenanceService';
-import { createOwner, getOwners } from '@/services/ownerService';
 import { supabase } from '@/lib/supabaseClient';
 
 export async function GET(request: Request) {
