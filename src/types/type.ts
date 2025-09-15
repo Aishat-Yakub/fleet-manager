@@ -5,7 +5,7 @@ export type Role = {
   
   export type User = {
     id: string;
-    email: string;
+    vehicle_id: string;
     password: string;
     role_id: number;
     created_at: string;

@@ -99,7 +99,7 @@ export async function GET(request: Request) {
           .from('users')
           .select(`
             id,
-            email,
+            vehicle_id,
             role_id,
             created_at,
             roles (
@@ -114,9 +114,9 @@ export async function GET(request: Request) {
         }
 
         // Format the response to match the expected frontend format
-        const formattedUsers = users.map(user => ({
+        const formattedUsers = users.map((user: any) => ({
           id: user.id,
-          email: user.email,
+          vehicle_id: user.vehicle_id,
           role_id: user.role_id,
           created_at: user.created_at,
           roles: user.roles && user.roles.length > 0 ? { role_name: user.roles[0].role_name } : null,
@@ -209,16 +209,16 @@ export async function POST(request: Request) {
     // Handle user creation
     if (data.type === 'users') {
       try {
-        const { email, password, role_id, name } = data;
+        const { vehicle_id, password, role_id } = data;
         
         // Validate input
-        if (!email || !password || !role_id) {
-          console.error('Missing required fields for user creation:', { email, role_id });
+        if (!vehicle_id || !password || !role_id) {
+          console.error('Missing required fields for user creation:', { vehicle_id, role_id });
           return NextResponse.json(
             { 
               error: 'Validation Error',
-              details: 'Email, password, and role_id are required',
-              fields: { email: !email, password: !password, role_id: !role_id }
+              details: 'Vehicle ID, password, and role_id are required',
+              fields: { vehicle_id: !vehicle_id, password: !password, role_id: !role_id }
             },
             { status: 400 }
           );
@@ -228,28 +228,29 @@ export async function POST(request: Request) {
         const { data: existingUser } = await supabase
           .from('users')
           .select('id')
-          .eq('email', email)
+          .eq('vehicle_id', vehicle_id)
           .maybeSingle();
           
         if (existingUser) {
           return NextResponse.json(
             { 
               error: 'User already exists',
-              details: 'A user with this email already exists',
+              details: 'A user with this vehicle ID already exists',
               code: 'USER_EXISTS'
             },
             { status: 409 }
           );
         }
         
-        // Create user in auth.users
+        // Create user in auth.users - use vehicle_id as email if it's an email format, otherwise create a valid email
+        const authEmail = vehicle_id.includes('@') ? vehicle_id : `user-${vehicle_id.toLowerCase().replace(/[^a-z0-9]/g, '')}@gmail.com`;
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
-          email,
+          email: authEmail,
           password,
           options: {
             data: {
-              name: name || '',
-              role_id: Number(role_id)
+              role_id: Number(role_id),
+              vehicle_id: vehicle_id
             }
           }
         });
@@ -276,12 +277,11 @@ export async function POST(request: Request) {
           .insert([
             {
               id: authData.user.id,
-              email,
+              vehicle_id: vehicle_id,
               password, // Store hashed password (Supabase Auth handles the hashing)
               role_id: Number(role_id),
               status: 'active',
               created_at: new Date().toISOString(),
-              // Add role based on role_id
               role: role_id === '1' ? 'user' : 
                     role_id === '2' ? 'admin' : 
                     role_id === '3' ? 'manager' : 'user'

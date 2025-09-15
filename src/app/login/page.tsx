@@ -18,11 +18,11 @@ export default function LoginPage() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('username') as string; // email instead of username
+    const vehicle_id = formData.get('vehicle_id') as string;
     const password = formData.get('password') as string;
 
     try {
-      const user = await login(email, password);
+      const user = await login(vehicle_id, password);
       console.log('Logged in user:', user);
 
       // Save user in localStorage
@@ -75,11 +75,10 @@ export default function LoginPage() {
             <div>
               <label htmlFor="username" className="sr-only">Email</label>
               <input
-                id="username"
-                name="username"
-                type="email"
-                required
-                placeholder="Email"
+                id="Enter your vehicle id"
+                name="vehicle_id"
+                type="text"
+                placeholder="Enter your vehicle id"
                 className="appearance-none bg-white/10 backdrop-blur-lg text-white rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
               />
             </div>

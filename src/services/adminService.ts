@@ -7,11 +7,11 @@ import { cookies } from 'next/headers';
 /* ---------------- USERS CRUD ---------------- */
 
 // Create
-export async function createUser(email: string, password: string, role_id: number) {
+export async function createUser(vehicle_id: string, password: string, role_id: number) {
   const { data, error } = await supabase
     .from("users")
-    .insert([{ email, password, role_id }])
-    .select("id, email, role_id")
+    .insert([{ vehicle_id, password, role_id }])
+    .select("id, vehicle_id, role_id")
     .single();
 
   if (error) throw new Error(error.message);
@@ -22,7 +22,7 @@ export async function createUser(email: string, password: string, role_id: numbe
 export async function getAllUsers(): Promise<UserWithRole[]> {
   const { data, error } = await supabase
     .from("users")
-    .select("id, email, role_id, created_at, roles(id, role_name)");
+    .select("id, vehicle_id, role_id, created_at, roles(id, role_name)");
 
   if (error) throw new Error(error.message);
   return data as unknown as UserWithRole[];

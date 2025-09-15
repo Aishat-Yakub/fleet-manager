@@ -2,18 +2,18 @@ import { supabase } from "../lib/supabaseClient";
 
 type UserWithRole = {
   id: string;
-  email: string;
+  vehicle_id: string;
   password: string;
   role_id: number;
   roles: { role_name: string };
 };
 
-export async function login(email: string, password: string) {
+export async function login(vehicle_id: string, password: string) {
   try {
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('id, email, password, role_id, roles(role_name)')
-      .eq('email', email)
+      .select('id, vehicle_id, password, role_id, roles(role_name)')
+      .eq('vehicle_id', vehicle_id)
       .single<UserWithRole>();
 
     if (userError || !user) {
@@ -28,7 +28,7 @@ export async function login(email: string, password: string) {
 
     return {
       userId: user.id,
-      email: user.email,
+      vehicle_id: user.vehicle_id,
       role: user.roles?.role_name || null,
     };
   } catch (error) {

@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 const CreateUserPage = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: '',
+    vehicle_id: '',
     password: '',
     role_id: '3', // Default to manager role
   });
@@ -37,7 +37,7 @@ const CreateUserPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'users',
-          email: formData.email,
+          vehicle_id: formData.vehicle_id,
           password: formData.password,
           role_id: Number(formData.role_id),
         }),
@@ -73,17 +73,17 @@ const CreateUserPage = () => {
                 </div>
               )}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sky-900 font-medium">Email
+              <Label htmlFor="vehicle_id" className="text-sky-900 font-medium">Vehicle ID
                 <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
+                id="vehicle_id"
+                name="vehicle_id"
+                type="text"
+                value={formData.vehicle_id}
                 onChange={handleChange}
                 className='bg-white border text-sky-950 placeholder:text-sky-950/40 border-sky-950/30 focus:border-sky-500 focus:ring-sky-500'
-                placeholder="Enter user email"
+                placeholder="Enter vehicle ID or email"
                 required
               />
             </div>

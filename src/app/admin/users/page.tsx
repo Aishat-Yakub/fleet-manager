@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 type User = {
   id: string;
-  email: string;
+  vehicle_id: string;
   role_id: number;
   roles?: {
     role_name: string;
@@ -113,7 +113,7 @@ export default function UsersPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
+                Vehicle ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Role
@@ -130,7 +130,7 @@ export default function UsersPage() {
             {usersArray.map((user) => (
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                  <div className="text-sm font-medium text-gray-900">{user.vehicle_id}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{getRoleName(user.role_id)}</div>
