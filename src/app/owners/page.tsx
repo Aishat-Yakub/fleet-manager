@@ -19,8 +19,9 @@ import { Wrench, ArrowLeft } from 'lucide-react';
 
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('condition');
-  // Initialize state at the top of the component
-  const [ownerId] = useState<string>('1');
+  // Get logged-in user data from localStorage
+  const [user, setUser] = useState<any>(null);
+  const [ownerId, setOwnerId] = useState<string>('');
   
   // Use the useFuelRequests hook
   const { 
@@ -30,6 +31,16 @@ const OwnerDashboard = () => {
     createFuelRequest,
     fetchFuelRequests 
   } = useFuelRequests(ownerId);
+  
+  // Get user data from localStorage on component mount
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      setOwnerId(parsedUser.vehicle_id || '');
+    }
+  }, []);
   
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [isSubmittingFuel, setIsSubmittingFuel] = useState(false);
@@ -118,8 +129,10 @@ const OwnerDashboard = () => {
 
   // ownerId is now managed by the state above
 
-  // Fetch maintenance requests from API
+  // Fetch maintenance requests from API - filtered by user's vehicle_id
   const fetchMaintenanceRequests = useCallback(async () => {
+    if (!ownerId) return;
+    
     setError(null);
     try {
       const response = await fetch('/api/owners?type=maintenance');
@@ -127,27 +140,33 @@ const OwnerDashboard = () => {
         throw new Error('Failed to fetch maintenance requests');
       }
       const data = await response.json();
-      setMaintenanceRequests(Array.isArray(data) ? data : []);
+      // Filter maintenance requests by user's vehicle_id
+      const filteredData = Array.isArray(data) ? data.filter((request: any) => request.vehicle_id === ownerId) : [];
+      setMaintenanceRequests(filteredData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
-  }, []);
+  }, [ownerId]);
 
 
-  // Fetch vehicle conditions
+  // Fetch vehicle conditions - filtered by user's vehicle_id
   const fetchConditionUpdates = useCallback(async () => {
+    if (!ownerId) return;
+    
     setIsConditionLoading(true);
     setConditionError(null);
     try {
       const data = await getConditionUpdates();
-      setConditionUpdates(data);
+      // Filter condition updates by user's vehicle_id
+      const filteredData = Array.isArray(data) ? data.filter((update: any) => update.vehicle_id === ownerId) : [];
+      setConditionUpdates(filteredData);
     } catch (err) {
       console.error('Error fetching vehicle conditions:', err);
       setConditionError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsConditionLoading(false);
     }
-  }, []);
+  }, [ownerId]);
 
   useEffect(() => {
     fetchMaintenanceRequests();
@@ -170,7 +189,7 @@ const OwnerDashboard = () => {
     try {
       const result = await createFuelRequest({
         ...newFuelRequest,
-        vehicle_id: newFuelRequest.vehicle_id,
+        vehicle_id: ownerId, // Use logged-in user's vehicle_id
         litres: newFuelRequest.litres,
         reason: newFuelRequest.reason,
         bank: newFuelRequest.bank,
@@ -220,7 +239,7 @@ const OwnerDashboard = () => {
       
       // Include file URL in the request if a file was uploaded
       const requestData = {
-        vehicle_id: vehicle_id,
+        vehicle_id: ownerId, // Use logged-in user's vehicle_id
         issue: issue,
         priority: priority || 'medium' as const,
         name: name || null,
@@ -264,14 +283,17 @@ const OwnerDashboard = () => {
 
     try {
       const { submitConditionUpdate } = await import('@/services/conditionService');
-      await submitConditionUpdate(newConditionUpdate);
+      await submitConditionUpdate({
+        ...newConditionUpdate,
+        vehicle_id: ownerId // Use logged-in user's vehicle_id
+      });
       
       // Add the new condition update to the list
       setConditionUpdates(prev => [
         {
           id: Date.now(), // Temporary ID
           name: newConditionUpdate.name || 'Owner',
-          vehicle_id: newConditionUpdate.vehicle_id,
+          vehicle_id: ownerId, // Use logged-in user's vehicle_id
           conditon: newConditionUpdate.conditon,
           status: 'pending',
           created_at: new Date().toISOString(),
@@ -939,14 +961,7 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
-                    <Button
-                      type="submit"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      Submit Request
-                    </Button>
-                  </div>
+
                 </form>
 
 
@@ -977,6 +992,14 @@ const OwnerDashboard = () => {
                         )}
                       </CardContent>
                     </Card>
+                  </div>
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+                    <Button
+                      type="submit"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Submit Request
+                    </Button>
                   </div>
                 
 
