@@ -80,7 +80,7 @@ export default function LoginPage() {
                 type="email"
                 required
                 placeholder="Email"
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                className="appearance-none bg-white/10 backdrop-blur-lg text-white rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 rounded-t-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
               />
             </div>
             <div>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                 type="password"
                 required
                 placeholder="Password"
-                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
+                className="appearance-none bg-white/10 backdrop-blur-lg text-white rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 ounded-b-md focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm"
               />
             </div>
           </div>
