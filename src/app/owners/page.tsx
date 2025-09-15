@@ -12,10 +12,10 @@ import { FuelRequest, MaintenanceRequest } from './types';
 import { ConditionUpdate } from '@/services/conditionService';
 import { useFuelRequests } from './hooks/useFuelRequests';
 import { getConditionUpdates } from '@/services/conditionService';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import Logo from '@/app/assets/logo/Logo.jpg'; 
 import Image from 'next/image'
 import { Wrench, ArrowLeft } from 'lucide-react';
+import FileUpload from '@/components/FileUpload';
 
 // Define User type
 interface User {
@@ -80,56 +80,18 @@ const OwnerDashboard = () => {
     name: ''
   });
 
-  // Initialize file upload state
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // file upload logic
-  const handleFileUpload = async (file: File) => {
-    setUploading(true);
-    setUploadError(null);
-    setFileUrl(null);
-  
-    try {
-      const supabase = createClientComponentClient();
-      const fileExt = file.name.split('.').pop();
-      
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      const filePath = `uploads/${fileName}`;
-  
-      // ⚡ Make sure bucket name matches your dashboard
-      const { error } = await supabase.storage
-        .from('upload') 
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: file.type,
-        });
-  
-      if (error) throw error;
-  
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('upload') 
-        .getPublicUrl(filePath);
-  
-      setFileUrl(publicUrl);
-      return publicUrl;
-    } catch (err) {
-      console.error('Upload error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'File upload failed';
-      setUploadError(errorMessage);
-      throw new Error(errorMessage);
-    } finally {
-      setUploading(false);
-    }
-  };
-  
   const [error, setError] = useState<string | null>(null);
   const [isConditionLoading, setIsConditionLoading] = useState(false);
   const [conditionError, setConditionError] = useState<string | null>(null);
+
+  // Handle file upload for condition updates
+  const handleConditionFileUpload = (fileUrl: string) => {
+    // Store the file URL for condition submission
+    setNewConditionUpdate(prev => ({
+      ...prev,
+      note: prev.note ? `${prev.note}\nFile: ${fileUrl}` : fileUrl
+    }));
+  };
 
   // ownerId is now managed by the state above
 
@@ -461,34 +423,13 @@ const OwnerDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Standalone File Upload Section */}
-                  <div className="my-8">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Upload Inspection File  </CardTitle>
-                        <CardDescription>Upload images or PDFs.</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <input
-                          type="file"
-                          accept="image/*,application/pdf"
-                          ref={fileInputRef}
-                          onChange={async (e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              await handleFileUpload(e.target.files[0]);
-                            }
-                          }}
-                          disabled={uploading}
-                          className="block w-full text-sm text-sky-950 border border-sky-200 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        />
-                        {uploading && <div className="text-blue-600 text-xs mt-2">Uploading...</div>}
-                        {uploadError && <div className="text-red-600 text-xs mt-2">{uploadError}</div>}
-                        {fileUrl && (
-                          <div className="text-green-700 text-xs mt-2 break-all">File uploaded: <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">View file</a></div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
+                  {/* File Upload Section */}
+                  <FileUpload
+                    onFileUpload={handleConditionFileUpload}
+                    acceptedFileTypes="image/*,application/pdf"
+                    maxFileSize={10}
+                    className="my-8"
+                  />
                   <div className="pt-4">
                     <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white" disabled={isConditionLoading}>
                       Submit Update
@@ -969,34 +910,13 @@ const OwnerDashboard = () => {
                 </form>
 
 
-                  {/* Standalone File Upload Section */}
-                  <div className="my-8">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Upload Inspection File</CardTitle>
-                        <CardDescription>Upload images or PDFs</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <input
-                          type="file"
-                          accept="image/*,application/pdf"
-                          ref={fileInputRef}
-                          onChange={async (e) => {
-                            if (e.target.files && e.target.files[0]) {
-                              await handleFileUpload(e.target.files[0]);
-                            }
-                          }}
-                          disabled={uploading}
-                          className="block w-full text-sm text-sky-950 border border-sky-200 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        />
-                        {uploading && <div className="text-blue-600 text-xs mt-2">Uploading...</div>}
-                        {uploadError && <div className="text-red-600 text-xs mt-2">{uploadError}</div>}
-                        {fileUrl && (
-                          <div className="text-green-700 text-xs mt-2 break-all">File uploaded: <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="underline">View file</a></div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
+                  {/* File Upload Section */}
+                  <FileUpload
+                    onFileUpload={handleConditionFileUpload}
+                    acceptedFileTypes="image/*,application/pdf"
+                    maxFileSize={10}
+                    className="my-8"
+                  />
                   <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                     <Button
                       type="submit"
