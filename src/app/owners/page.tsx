@@ -17,10 +17,15 @@ import Logo from '@/app/assets/logo/Logo.jpg';
 import Image from 'next/image'
 import { Wrench, ArrowLeft } from 'lucide-react';
 
+// Define User type
+interface User {
+  vehicle_id: string;
+  [key: string]: any;
+}
+
 const OwnerDashboard = () => {
   const [activeTab, setActiveTab] = useState('condition');
-  // Get logged-in user data from localStorage
-  const [user, setUser] = useState<any>(null);
+  // Get logged-in user data from localStoragedashboard
   const [ownerId, setOwnerId] = useState<string>('');
   
   // Use the useFuelRequests hook
@@ -36,8 +41,7 @@ const OwnerDashboard = () => {
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
-      const parsedUser = JSON.parse(userData);
-      setUser(parsedUser);
+      const parsedUser: User = JSON.parse(userData);
       setOwnerId(parsedUser.vehicle_id || '');
     }
   }, []);
@@ -141,7 +145,7 @@ const OwnerDashboard = () => {
       }
       const data = await response.json();
       // Filter maintenance requests by user's vehicle_id
-      const filteredData = Array.isArray(data) ? data.filter((request: any) => request.vehicle_id === ownerId) : [];
+      const filteredData = Array.isArray(data) ? data.filter((request: MaintenanceRequest) => request.vehicle_id === ownerId) : [];
       setMaintenanceRequests(filteredData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -158,7 +162,7 @@ const OwnerDashboard = () => {
     try {
       const data = await getConditionUpdates();
       // Filter condition updates by user's vehicle_id
-      const filteredData = Array.isArray(data) ? data.filter((update: any) => update.vehicle_id === ownerId) : [];
+      const filteredData = Array.isArray(data) ? data.filter((update: ConditionUpdate) => update.vehicle_id === ownerId) : [];
       setConditionUpdates(filteredData);
     } catch (err) {
       console.error('Error fetching vehicle conditions:', err);
@@ -396,7 +400,7 @@ const OwnerDashboard = () => {
                   : 'text-sky-700'}
               `}
             >
-              <span className="truncate">Maintenance</span>
+              <span className="truncate">Maintenance Requests</span>
             </TabsTrigger>
           </TabsList>
 
@@ -461,7 +465,7 @@ const OwnerDashboard = () => {
                   <div className="my-8">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Upload </CardTitle>
+                        <CardTitle>Upload Inspection File  </CardTitle>
                         <CardDescription>Upload images or PDFs.</CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -969,7 +973,7 @@ const OwnerDashboard = () => {
                   <div className="my-8">
                     <Card>
                       <CardHeader>
-                        <CardTitle>Upload</CardTitle>
+                        <CardTitle>Upload Inspection File</CardTitle>
                         <CardDescription>Upload images or PDFs</CardDescription>
                       </CardHeader>
                       <CardContent>

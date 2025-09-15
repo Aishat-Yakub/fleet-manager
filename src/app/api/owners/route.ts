@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { getMaintenanceRequests } from '@/services/maintenanceService';
 import { supabase } from '@/lib/supabaseClient';
 
+// Define User interface
+interface User {
+  id: string;
+  vehicle_id: string;
+  role_id: string;
+  created_at: string;
+  roles?: Array<{ role_name: string }>;
+}
+
 export async function GET(request: Request) {
   console.log('GET /api/owners called');
   try {
@@ -114,7 +123,7 @@ export async function GET(request: Request) {
         }
 
         // Format the response to match the expected frontend format
-        const formattedUsers = users.map((user: any) => ({
+        const formattedUsers = users.map((user: User) => ({
           id: user.id,
           vehicle_id: user.vehicle_id,
           role_id: user.role_id,

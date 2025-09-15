@@ -2,7 +2,6 @@
 
 import React from 'react'
 import AuditorsPage from './component/main';
-import NotificationSidebar from './component/notification';
 
 export default function page() {
   return (

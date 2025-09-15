@@ -73,7 +73,8 @@ export async function getFuelRequests(): Promise<FuelRequest[]> {
 			bank,
 			account,
 			Name
-		`);
+		`)
+		.order('created_at', { ascending: false });
 	if (error) throw new Error(error.message);
 	return (data || []).map((req: FuelRequestRow) => ({
 		id: req.id,
@@ -123,7 +124,8 @@ export async function getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
 			   status,
 			   created_at,
 			   name
-		   `);
+		   `)
+		   .order('created_at', { ascending: false });
 	if (error) throw new Error(error.message);
 	// Map DB fields to UI fields if needed
 		   type MaintenanceRequestRow = {
