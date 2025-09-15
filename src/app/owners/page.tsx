@@ -20,7 +20,7 @@ import { Wrench, ArrowLeft } from 'lucide-react';
 // Define User type
 interface User {
   vehicle_id: string;
-  [key: string]: any;
+  [key: string]: string;
 }
 
 const OwnerDashboard = () => {
