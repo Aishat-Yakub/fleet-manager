@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Upload, FileText, X } from 'lucide-react';
+import { saveInspectionFileRecord } from '@/services/inspectionService';
 
 interface FileUploadProps {
   onFileUpload: (fileUrl: string) => void;
+  vehicleId: string;
+  ownerId: string;
   acceptedFileTypes?: string;
   maxFileSize?: number; // in MB
   className?: string;
@@ -15,6 +18,8 @@ interface FileUploadProps {
 
 export default function FileUpload({
   onFileUpload,
+  vehicleId,
+  ownerId,
   acceptedFileTypes = 'image/*,application/pdf',
   maxFileSize = 10,
   className = ''
@@ -54,6 +59,16 @@ export default function FileUpload({
       const { data: { publicUrl } } = supabase.storage
         .from('inspection_files')
         .getPublicUrl(filePath);
+
+      // Save file record to database
+      try {
+        await saveInspectionFileRecord(vehicleId, ownerId, publicUrl);
+        console.log('File record saved successfully');
+      } catch (dbError) {
+        console.error('Failed to save file record to database:', dbError);
+        // Don't throw here - the file is still uploaded, just the record isn't saved
+        setUploadError('File uploaded but failed to save record to database');
+      }
 
       setUploadedFile({
         name: file.name,
@@ -150,15 +165,7 @@ export default function FileUpload({
             </div>
             
             <div className="text-green-700 text-sm">
-              File uploaded successfully!{' '}
-              <a
-                href={uploadedFile.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-green-800"
-              >
-                View file
-              </a>
+              File uploaded successfully!
             </div>
           </div>
         )}

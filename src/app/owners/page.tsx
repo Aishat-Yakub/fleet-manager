@@ -426,6 +426,8 @@ const OwnerDashboard = () => {
                   {/* File Upload Section */}
                   <FileUpload
                     onFileUpload={handleConditionFileUpload}
+                    vehicleId={ownerId}
+                    ownerId={ownerId}
                     acceptedFileTypes="image/*,application/pdf"
                     maxFileSize={10}
                     className="my-8"
@@ -913,6 +915,8 @@ const OwnerDashboard = () => {
                   {/* File Upload Section */}
                   <FileUpload
                     onFileUpload={handleConditionFileUpload}
+                    vehicleId={ownerId}
+                    ownerId={ownerId}
                     acceptedFileTypes="image/*,application/pdf"
                     maxFileSize={10}
                     className="my-8"
